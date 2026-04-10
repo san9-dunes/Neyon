@@ -26,7 +26,10 @@ class ChaptersLoader @Inject constructor(
 	val size: Int
 		get() = chapters.size()
 
+	private var currentMangaDetails: MangaDetails? = null
+
 	suspend fun init(manga: MangaDetails) = mutex.withLock {
+		currentMangaDetails = manga
 		chapters.clear()
 		manga.allChapters.forEach {
 			chapters.put(it.id, it)
@@ -91,8 +94,23 @@ class ChaptersLoader @Inject constructor(
 
 	private suspend fun loadChapter(chapterId: Long): List<ReaderPage> {
 		val chapter = checkNotNull(chapters[chapterId]) { "Requested chapter not found" }
-		val repo = mangaRepositoryFactory.create(chapter.source)
-		return repo.getPages(chapter).mapIndexed { index, page ->
+		val localChapter = currentMangaDetails?.local?.manga?.chapters?.find { it.id == chapterId }
+		val isDownloaded = localChapter != null
+
+		val pages = try {
+			val repo = mangaRepositoryFactory.create(chapter.source)
+			repo.getPages(chapter)
+		} catch (e: Exception) {
+			if (e is kotlinx.coroutines.CancellationException) throw e
+			if (isDownloaded && localChapter != null) {
+				val localRepo = mangaRepositoryFactory.create(io.github.landwarderer.futon.core.model.LocalMangaSource)
+				localRepo.getPages(localChapter)
+			} else {
+				throw e
+			}
+		}
+
+		return pages.mapIndexed { index, page ->
 			ReaderPage(page, index, chapterId)
 		}
 	}

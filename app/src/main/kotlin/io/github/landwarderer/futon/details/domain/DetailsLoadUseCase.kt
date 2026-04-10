@@ -137,7 +137,17 @@ class DetailsLoadUseCase @Inject constructor(
 				),
 			)
 		}
-		val remoteDetails = remoteDeferred.await().getOrThrow()
+		val remoteDetails = try {
+			remoteDeferred.await().getOrThrow()
+		} catch (e: Exception) {
+			if (e is kotlinx.coroutines.CancellationException) throw e
+			if (localManga != null && !force && networkState.isOfflineOrRestricted()) {
+				return@coroutineScope // Suppress refresh if we have local and offline
+			} else if (localManga != null && !force) {
+				return@coroutineScope // Or even just suppress it if we have local, but we'll stick to offline
+			}
+			throw e
+		}
 		emit(
 			MangaDetails(
 				manga = remoteDetails,
