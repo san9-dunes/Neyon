@@ -54,8 +54,8 @@ class FeedAggregator @Inject constructor(
 			.take(3)
 
 		// 3. Concurrently fetch arrays
-		val genreQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it.mangaSource, true, topTags) } }
-		val latestQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it.mangaSource, false, topTags) } }
+		val genreQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, true, topTags) } }
+		val latestQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, false, topTags) } }
 
 		val genreLists = genreQueries.awaitAll()
 		val latestLists = latestQueries.awaitAll()
