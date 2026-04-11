@@ -113,7 +113,7 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 			val adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
 				override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
 					val checkBox = CheckBox(context).apply {
-						layoutParams = android.view.ViewGroup.LayoutParams(
+						layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(
 							android.view.ViewGroup.LayoutParams.MATCH_PARENT,
 							android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 						)

@@ -45,7 +45,7 @@ class FeedAggregator @Inject constructor(
 		// Build the exclude-genres blacklist from user settings (same threshold as SuggestionsWorker)
 		val tagsBlacklist = TagsBlacklist(
 			appSettings.suggestionsTagsBlacklist,
-			io.github.landwarderer.futon.suggestions.ui.SuggestionsWorker.TAG_EQ_THRESHOLD
+			0.4f
 		)
 
 		// 2. Extract Top Genres from History — or use the forced chip genre
