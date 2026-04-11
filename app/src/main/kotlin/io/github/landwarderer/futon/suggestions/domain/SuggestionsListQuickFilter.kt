@@ -5,6 +5,7 @@ import io.github.landwarderer.futon.list.domain.ListFilterOption
 import io.github.landwarderer.futon.list.domain.MangaListQuickFilter
 import io.github.landwarderer.futon.history.data.HistoryRepository
 import io.github.landwarderer.futon.core.model.distinctById
+import io.github.landwarderer.futon.core.model.UnknownMangaSource
 import org.koitharu.kotatsu.parsers.model.MangaTag
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import javax.inject.Inject
@@ -20,11 +21,11 @@ class SuggestionsListQuickFilter @Inject constructor(
                 val pinnedTags = settings.suggestionsPinnedTags
 
                 pinnedTags.forEach { title ->
-                        add(ListFilterOption.Tag(MangaTag("📌 $title", title, MangaSource(""))))
+                        add(ListFilterOption.Tag(MangaTag("📌 $title", title, UnknownMangaSource)))
                 }
 
                 val randomTags = historyRepository.getList(0, 50).distinctById()
-                        .flatMap { it.manga.tags }
+                        .flatMap { it.tags }
                         .filterNot { tag -> tag in tagsBlacklist || tag.title in pinnedTags }
                         .map { it.title }
                         .distinct()
@@ -32,7 +33,7 @@ class SuggestionsListQuickFilter @Inject constructor(
                         .take(5)
 
                 randomTags.forEach { title ->
-                        add(ListFilterOption.Tag(MangaTag(title, title, MangaSource(""))))
+                        add(ListFilterOption.Tag(MangaTag(title, title, UnknownMangaSource)))
                 }
 
                 if (!settings.isNsfwContentDisabled && !settings.isSuggestionsExcludeNsfw) {

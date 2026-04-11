@@ -127,3 +127,6 @@ class FeedAggregator @Inject constructor(
                                 list.removeAll { manga -> manga in tagsBlacklist }
                         }
                         list
+                } ?: emptyList()
+        }.getOrElse { emptyList() }
+}

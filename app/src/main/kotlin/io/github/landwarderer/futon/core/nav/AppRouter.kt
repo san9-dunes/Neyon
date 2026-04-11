@@ -380,10 +380,11 @@ class AppRouter private constructor(
     }
 
     fun showTagDialog(tag: MangaTag) {
+        val context = contextOrNull() ?: return
         val isPinned = tag.title in settings.suggestionsPinnedTags
         val pinString = if (isPinned) context.getString(R.string.unpin_from_suggestion) else context.getString(R.string.pin_for_suggestion)
 
-        buildAlertDialog(contextOrNull() ?: return) {
+        buildAlertDialog(context) {
             setIcon(R.drawable.ic_tag)
             setTitle(tag.title)
             setItems(
