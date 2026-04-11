@@ -89,7 +89,7 @@ Date: 2025-12-31
 - Parser upgrade and stability improvements.
 
 ### Fixes
-- Bumped futon-parsers to a newer revision to address multiple source parsing issues.
+- Bumped neyon-parsers to a newer revision to address multiple source parsing issues.
 - Small compatibility fixes and stability improvements related to the parser upgrade.
 
 ---
@@ -177,10 +177,10 @@ Date: 2025-12-22
 Date: 2025-12-22
 
 ### Highlights
-- Rebrand to Futon; packaging and translation updates.
+- Rebrand to Neyon; packaging and translation updates.
 
 ### Fixes
-- Rebranded app resources and package names (Kotatsu → Futon); updated icons and assets.
+- Rebranded app resources and package names (Kotatsu → Neyon); updated icons and assets.
 - Fixed IzzyOnDroid / F-Droid packaging issues; applied release workflow permission fixes.
 - Parser and dependency updates, and a large set of translations from Weblate.
 - Multiple crash fixes, UI tweaks, and reader improvements.

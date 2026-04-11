@@ -1,6 +1,6 @@
-Futon is a free and open source manga reader for Android.
+Neyon is a free and open source manga reader for Android.
 
-Note: Futon is an unofficial fork of Kotatsu
+Note: Neyon is an unofficial fork of Kotatsu
 
 **Main Features:**
 

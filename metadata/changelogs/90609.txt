@@ -2,10 +2,10 @@
 Parser upgrade and stability improvements.
 
 Highlights:
-- Upgraded futon-parsers to address multiple parsing edge cases across sources.
+- Upgraded neyon-parsers to address multiple parsing edge cases across sources.
 
 Fixes:
-- Bumped futon-parsers to a newer revision to address multiple source parsing issues.
+- Bumped neyon-parsers to a newer revision to address multiple source parsing issues.
 - Small compatibility fixes and stability improvements related to the parser upgrade.
 
 Notes:

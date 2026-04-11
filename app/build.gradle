@@ -17,7 +17,7 @@ plugins {
 android {
     compileSdk = 36
     buildToolsVersion = '35.0.0'
-    namespace = 'io.github.landwarderer.futon'
+    namespace = 'io.github.landwarderer.neyon'
 
     dependenciesInfo {
         // Disables dependency metadata when building APKs (for IzzyOnDroid/F-Droid)
@@ -27,13 +27,13 @@ android {
     }
 
     defaultConfig {
-        applicationId 'io.github.landwarderer.futon'
+        applicationId 'io.github.landwarderer.neyon'
         minSdk = 23
         targetSdk = 36
         versionCode project.hasProperty('versionCode') ? project.property('versionCode').toInteger() : 90614
         versionName project.hasProperty('versionName') ? project.property('versionName') : '9.6.14'
         generatedDensities = []
-        testInstrumentationRunner 'io.github.landwarderer.futon.HiltTestRunner'
+        testInstrumentationRunner 'io.github.landwarderer.neyon.HiltTestRunner'
         ksp {
             arg('room.generateKotlin', 'true')
         }
@@ -266,7 +266,7 @@ dependencies {
 }
 
 sentry {
-    org = "appfuton"
+    org = "appneyon"
     projectName = "android"
     authToken = System.getenv('SENTRY_AUTH_TOKEN') ?: ''
 

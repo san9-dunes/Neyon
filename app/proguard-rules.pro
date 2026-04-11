@@ -16,12 +16,12 @@
 -dontwarn com.google.j2objc.annotations.**
 -dontwarn coil3.PlatformContext
 
--keep class io.github.landwarderer.futon.settings.NotificationSettingsLegacyFragment
--keep class io.github.landwarderer.futon.settings.about.changelog.ChangelogFragment
+-keep class io.github.landwarderer.neyon.settings.NotificationSettingsLegacyFragment
+-keep class io.github.landwarderer.neyon.settings.about.changelog.ChangelogFragment
 
--keep class io.github.landwarderer.futon.core.exceptions.* { *; }
--keep class io.github.landwarderer.futon.core.prefs.ScreenshotsPolicy { *; }
--keep class io.github.landwarderer.futon.backups.ui.periodical.PeriodicalBackupSettingsFragment { *; }
+-keep class io.github.landwarderer.neyon.core.exceptions.* { *; }
+-keep class io.github.landwarderer.neyon.core.prefs.ScreenshotsPolicy { *; }
+-keep class io.github.landwarderer.neyon.backups.ui.periodical.PeriodicalBackupSettingsFragment { *; }
 -keep class org.jsoup.parser.Tag
 -keep class org.jsoup.internal.StringUtil
 

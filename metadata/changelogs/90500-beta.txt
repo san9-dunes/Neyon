@@ -2,8 +2,8 @@
 Beta release: image and asset updates.
 
 Highlights:
-- Pre-release update with updated image assets (futon.jpg) and visual polish for the Futon branding.
-- Updated launcher and marketing artwork to reflect the Futon branding for testing.
+- Pre-release update with updated image assets (neyon.jpg) and visual polish for the Neyon branding.
+- Updated launcher and marketing artwork to reflect the Neyon branding for testing.
 
 Fixes:
 - Replaced/updated several image assets to correct resolution and format issues (webp/png adjustments).
