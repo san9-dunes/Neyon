@@ -396,6 +396,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val isSuggestionsNotificationAvailable: Boolean
 		get() = prefs.getBoolean(KEY_SUGGESTIONS_NOTIFICATIONS, false)
 
+	var suggestionsPinnedTags: Set<String>
+		get() = prefs.getStringSet(KEY_SUGGESTIONS_PINNED_TAGS, emptySet()) ?: emptySet()
+		set(value) = prefs.edit { putStringSet(KEY_SUGGESTIONS_PINNED_TAGS, value) }
+
 	val suggestionsTagsBlacklist: Set<String>
 		get() {
 			val string = prefs.getString(KEY_SUGGESTIONS_EXCLUDE_TAGS, null)?.trimEnd(' ', ',')
@@ -748,6 +752,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_SUGGESTIONS_WIFI_ONLY = "suggestions_wifi"
 		const val KEY_SUGGESTIONS_EXCLUDE_NSFW = "suggestions_exclude_nsfw"
 		const val KEY_SUGGESTIONS_EXCLUDE_TAGS = "suggestions_exclude_tags"
+		const val KEY_SUGGESTIONS_PINNED_TAGS = "suggestions_pinned_tags"
 		const val KEY_SUGGESTION_SOURCES_WHITELIST = "suggestion_sources_whitelist"
 		const val KEY_SUGGESTIONS_DISABLED_SOURCES = "suggestions_disabled_sources"
 		const val KEY_SUGGESTIONS_NOTIFICATIONS = "suggestions_notifications"

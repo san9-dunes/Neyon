@@ -72,6 +72,9 @@
     <string name="read_mode">Read mode</string>
     <string name="grid_size">Grid size</string>
     <string name="search_on_s">Search on %s</string>
+    <string name="search_everywhere">Search everywhere</string>
+    <string name="pin_for_suggestion">Pin for suggestion</string>
+    <string name="unpin_from_suggestion">Unpin from suggestion</string>
     <string name="delete_manga">Delete manga</string>
     <string name="text_delete_local_manga">Permanently delete \"%s\" from device?</string>
     <string name="reader_settings">Reader settings</string>

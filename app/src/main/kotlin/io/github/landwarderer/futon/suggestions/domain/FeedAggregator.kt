@@ -32,102 +32,98 @@ class FeedAggregator @Inject constructor(
 
 	private val preferredSortOrders = listOf(SortOrder.UPDATED, SortOrder.POPULARITY)
 
-	suspend fun mixFeed(forceGenreTag: String? = null): List<Manga> = supervisorScope {
-		val whitelistNames = appSettings.suggestionSourcesWhitelist
-		if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
+        var cachedFeed: List<Manga>? = null
+        private var cachedWhitelist: Set<String>? = null
 
-		// 1. Get enabled sources that are whitelisted
-		val allEnabled = sourcesRepository.getEnabledSources()
-		val sourcesToUse = allEnabled.filter { it.name in whitelistNames }.shuffled().take(8)
+        suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false): List<Manga> = supervisorScope {
+                val whitelistNames = appSettings.suggestionSourcesWhitelist     
+                if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
 
-		if (sourcesToUse.isEmpty()) return@supervisorScope emptyList()
+                if (cachedWhitelist != whitelistNames) {
+                        cachedFeed = null
+                        cachedWhitelist = whitelistNames
+                }
 
-		// Build the exclude-genres blacklist from user settings (same threshold as SuggestionsWorker)
-		val tagsBlacklist = TagsBlacklist(
-			appSettings.suggestionsTagsBlacklist,
-			0.4f
-		)
+                if (!forceRefresh && forceGenreTag == null && !cachedFeed.isNullOrEmpty()) {
+                        return@supervisorScope cachedFeed!!
+                }
 
-		// 2. Extract Top Genres from History — or use the forced chip genre
-		val topTags: List<String> = if (forceGenreTag != null) {
-			listOf(forceGenreTag) // Genre chip was clicked: use it exclusively
-		} else {
-			historyRepository.getList(0, 50).distinctById()
-				.flatMap { it.tags.filterNot { tag -> tag in tagsBlacklist }.map { x -> x.title } }
-				.groupingBy { it }
-				.eachCount()
-				.entries
-				.sortedByDescending { it.value }
-				.take(10)
-				.map { it.key }
-				.shuffled()
-				.take(3)
-		}
+                val allEnabled = sourcesRepository.getEnabledSources()
+                val sourcesToUse = allEnabled.filter { it.name in whitelistNames }.shuffled().take(8)
 
-		// 3. Concurrently fetch arrays
-		val genreQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, true, topTags, tagsBlacklist) } }
-		val latestQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, false, topTags, tagsBlacklist) } }
+                if (sourcesToUse.isEmpty()) return@supervisorScope emptyList()  
 
-		val genreLists = genreQueries.awaitAll()
-		val latestLists = latestQueries.awaitAll()
+                val tagsBlacklist = TagsBlacklist(appSettings.suggestionsTagsBlacklist, 0.4f)
 
-		val allGenres = genreLists.flatten().shuffled().iterator()
-		val allLatest = latestLists.flatten().shuffled().iterator()
+                val queries = sourcesToUse.map { source ->
+                        async(Dispatchers.IO) {
+                                fetch(source, forceGenreTag, tagsBlacklist)
+                        }
+                }
 
-		val mergedList = mutableListOf<Manga>()
+                val results = queries.awaitAll()
 
-		// 4. Weighted Interleave Algorithm (2 Genre Match blocks to 1 Latest)
-		while (allGenres.hasNext() || allLatest.hasNext()) {
-			if (allGenres.hasNext()) mergedList.add(allGenres.next())
-			if (allGenres.hasNext()) mergedList.add(allGenres.next())
-			if (allLatest.hasNext()) mergedList.add(allLatest.next())
-		}
-		
-		mergedList.distinctById()
-	}
+                val mergedList = mutableListOf<Manga>()
+                val iterators = results.map { it.iterator() }
 
-	private suspend fun fetch(
-		source: MangaSource,
-		isGenreMatch: Boolean,
-		topTags: List<String>,
-		tagsBlacklist: TagsBlacklist,
-	): List<Manga> = runCatchingCancellable {
-		withTimeoutOrNull(5000L) {
-			val repository = mangaRepositoryFactory.create(source)
-			val availableOrders = repository.sortOrders
-			val order = preferredSortOrders.firstOrNull { it in availableOrders } ?: availableOrders.firstOrNull()
-			
-			val filter = if (isGenreMatch && topTags.isNotEmpty()) {
-				val targetTagTitle = topTags.randomOrNull()
-				val matchedTag = targetTagTitle?.let { title ->
-					// Respect blacklist: don't query a tag the user has excluded
-					repository.getFilterOptions().availableTags.find { x ->
-						x !in tagsBlacklist && x.title.almostEquals(title, 0.7f)
-					}
-				}
-				if (matchedTag != null) {
-					MangaListFilter(tags = setOf(matchedTag))
-				} else {
-					MangaListFilter(query = targetTagTitle) // Fallback to keyword search
-				}
-			} else {
-				MangaListFilter() // Latest / Default Popular
-			}
+                var hasMore = true
+                while (hasMore) {
+                        hasMore = false
+                        for (it in iterators) {
+                                for (i in 0 until 5) {
+                                        if (it.hasNext()) {
+                                                mergedList.add(it.next())
+                                                hasMore = true
+                                        }
+                                }
+                        }
+                }
 
-			val list = repository.getList(
-				offset = 0,
-				order = order,
-				filter = filter
-			).asArrayList()
+                val finalFeed = mergedList.distinctById()
+                if (forceGenreTag == null) {
+                        cachedFeed = finalFeed
+                }
+                finalFeed
+        }
 
-			if (appSettings.isSuggestionsExcludeNsfw) {
-				list.removeAll { it.isNsfw() }
-			}
-			if (tagsBlacklist.isNotEmpty()) {
-				list.removeAll { manga -> manga in tagsBlacklist }
-			}
-			list.shuffle()
-			list.take(15) // Limit each block so we don't blow up memory
-		} ?: emptyList()
-	}.getOrDefault(emptyList())
-}
+        private suspend fun fetch(
+                source: MangaSource,
+                forceGenreTag: String?,
+                tagsBlacklist: TagsBlacklist,
+        ): List<Manga> = runCatchingCancellable {
+                withTimeoutOrNull(5000L) {
+                        val repository = mangaRepositoryFactory.create(source)  
+                        val availableOrders = repository.sortOrders
+                        
+                        val filter = if (forceGenreTag != null) {
+                                val matchedTag = repository.getFilterOptions().availableTags.find { x ->
+                                        x.title.almostEquals(forceGenreTag, 0.7f)
+                                }
+                                if (matchedTag != null) {
+                                        MangaListFilter(tags = setOf(matchedTag))
+                                } else {
+                                        MangaListFilter(query = forceGenreTag)
+                                }
+                        } else {
+                                MangaListFilter() 
+                        }
+
+                        val order = if (forceGenreTag == null) {
+                                if (SortOrder.UPDATED in availableOrders) SortOrder.UPDATED else availableOrders.firstOrNull()
+                        } else {
+                                preferredSortOrders.firstOrNull { it in availableOrders } ?: availableOrders.firstOrNull()
+                        }
+
+                        val list = repository.getList(
+                                offset = 0,
+                                order = order,
+                                filter = filter
+                        ).asArrayList()
+
+                        if (appSettings.isSuggestionsExcludeNsfw) {
+                                list.removeAll { it.isNsfw() }
+                        }
+                        if (tagsBlacklist.isNotEmpty()) {
+                                list.removeAll { manga -> manga in tagsBlacklist }
+                        }
+                        list

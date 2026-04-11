@@ -45,16 +45,20 @@ class SuggestionsViewModel @Inject constructor(
 	override val listMode = settings.observeAsFlow(AppSettings.KEY_LIST_MODE_SUGGESTIONS) { suggestionsListMode }
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, settings.suggestionsListMode)
 
-	private val refreshSignal = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(Unit) }
+	private val refreshSignal = MutableSharedFlow<Boolean>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(false) }
 	// Holds an optional tag override from chip clicks — null means use history-derived tags
 	private val genreOverride = MutableSharedFlow<String?>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(null) }
 	private var lastMenuRefresh = 0L
 
 	override val content = combine(
-		refreshSignal.flatMapLatest { _ ->
-			genreOverride.flatMapLatest { genre ->
-				flow { emit(feedAggregator.mixFeed(forceGenreTag = genre)) }
-			}
+		refreshSignal.flatMapLatest { forceRefresh ->
+                        genreOverride.flatMapLatest { genre ->
+                                flow {
+                                        kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
+                                        emit(feedAggregator.mixFeed(genre, forceRefresh))
+                                        kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
+                                }
+                        }
 		},
 		quickFilter.appliedOptions,
 		observeListModeWithTriggers(),
@@ -95,17 +99,14 @@ class SuggestionsViewModel @Inject constructor(
 				mangaListMapper.toListModelList(this, list, mode)
 			}
 		}
-	}.onStart {
-		loadingCounter.increment()
 	}.catch {
-		emit(listOf(it.toErrorState(canRetry = false)))
-	}.onFirst {
-		loadingCounter.decrement()
+                kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
+                emit(listOf(it.toErrorState(canRetry = false)))
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, listOf(LoadingState))
 
 	// Wire swipe-to-refresh: no rate limit — user explicitly pulled
 	override fun onRefresh() {
-		refreshSignal.tryEmit(Unit)
+		refreshSignal.tryEmit(true)
 	}
 
 	override fun onRetry() {
@@ -118,7 +119,7 @@ class SuggestionsViewModel @Inject constructor(
 		if (now - lastMenuRefresh < 3000L) return
 		lastMenuRefresh = now
 		genreOverride.tryEmit(null) // Reset genre override
-		refreshSignal.tryEmit(Unit)
+		refreshSignal.tryEmit(true)
 	}
 
 	// Called by genre chip tap — triggers live re-fetch with that genre forced
@@ -129,7 +130,8 @@ class SuggestionsViewModel @Inject constructor(
 			val applied = quickFilter.appliedOptions.value
 			val newOverride = if (option in applied) option.tag.title else null
 			genreOverride.tryEmit(newOverride)
-			refreshSignal.tryEmit(Unit)
+			refreshSignal.tryEmit(true)
 		}
 	}
 }
+

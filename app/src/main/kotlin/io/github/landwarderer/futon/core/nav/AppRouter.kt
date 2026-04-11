@@ -380,6 +380,9 @@ class AppRouter private constructor(
     }
 
     fun showTagDialog(tag: MangaTag) {
+        val isPinned = tag.title in settings.suggestionsPinnedTags
+        val pinString = if (isPinned) context.getString(R.string.unpin_from_suggestion) else context.getString(R.string.pin_for_suggestion)
+
         buildAlertDialog(contextOrNull() ?: return) {
             setIcon(R.drawable.ic_tag)
             setTitle(tag.title)
@@ -387,11 +390,23 @@ class AppRouter private constructor(
                 arrayOf(
                     context.getString(R.string.search_on_s, tag.source.getTitle(context)),
                     context.getString(R.string.search_everywhere),
+                    pinString,
                 ),
             ) { _, which ->
                 when (which) {
                     0 -> openList(tag)
                     1 -> openSearch(tag.title, SearchKind.TAG)
+                    2 -> {
+                        val current = settings.suggestionsPinnedTags.toMutableSet()
+                        if (isPinned) {
+                            current.remove(tag.title)
+                            android.widget.Toast.makeText(context, "${tag.title} unpinned", android.widget.Toast.LENGTH_SHORT).show()
+                        } else {
+                            current.add(tag.title)
+                            android.widget.Toast.makeText(context, "${tag.title} pinned", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                        settings.suggestionsPinnedTags = current
+                    }
                 }
             }
             setNegativeButton(R.string.close, null)
