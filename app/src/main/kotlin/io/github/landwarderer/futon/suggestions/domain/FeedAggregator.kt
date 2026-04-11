@@ -43,7 +43,10 @@ class FeedAggregator @Inject constructor(
 		if (sourcesToUse.isEmpty()) return@supervisorScope emptyList()
 
 		// Build the exclude-genres blacklist from user settings (same threshold as SuggestionsWorker)
-		val tagsBlacklist = TagsBlacklist(appSettings.suggestionsTagsBlacklist, TAG_EQ_THRESHOLD)
+		val tagsBlacklist = TagsBlacklist(
+			appSettings.suggestionsTagsBlacklist,
+			io.github.landwarderer.futon.suggestions.ui.SuggestionsWorker.TAG_EQ_THRESHOLD
+		)
 
 		// 2. Extract Top Genres from History — or use the forced chip genre
 		val topTags: List<String> = if (forceGenreTag != null) {
