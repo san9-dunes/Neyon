@@ -405,6 +405,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 			return string.split(',').mapToSet { it.trim() }
 		}
 
+	var suggestionSourcesWhitelist: Set<String>
+		get() = prefs.getStringSet(KEY_SUGGESTION_SOURCES_WHITELIST, emptySet()) ?: emptySet()
+		set(value) = prefs.edit { putStringSet(KEY_SUGGESTION_SOURCES_WHITELIST, value) }
+
 	val isReaderBarEnabled: Boolean
 		get() = prefs.getBoolean(KEY_READER_BAR, true)
 
@@ -744,6 +748,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_SUGGESTIONS_WIFI_ONLY = "suggestions_wifi"
 		const val KEY_SUGGESTIONS_EXCLUDE_NSFW = "suggestions_exclude_nsfw"
 		const val KEY_SUGGESTIONS_EXCLUDE_TAGS = "suggestions_exclude_tags"
+		const val KEY_SUGGESTION_SOURCES_WHITELIST = "suggestion_sources_whitelist"
 		const val KEY_SUGGESTIONS_DISABLED_SOURCES = "suggestions_disabled_sources"
 		const val KEY_SUGGESTIONS_NOTIFICATIONS = "suggestions_notifications"
 		const val KEY_SHIKIMORI = "shikimori"

@@ -21,20 +21,22 @@ import io.github.landwarderer.futon.list.ui.MangaListViewModel
 import io.github.landwarderer.futon.list.ui.model.EmptyState
 import io.github.landwarderer.futon.list.ui.model.LoadingState
 import io.github.landwarderer.futon.list.ui.model.toErrorState
-import io.github.landwarderer.futon.suggestions.domain.SuggestionRepository
+import io.github.landwarderer.futon.suggestions.domain.FeedAggregator
 import io.github.landwarderer.futon.suggestions.domain.SuggestionsListQuickFilter
 import javax.inject.Inject
 import io.github.landwarderer.futon.local.data.LocalStorageChanges
 import io.github.landwarderer.futon.local.domain.model.LocalManga
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.flow
 
 @HiltViewModel
 class SuggestionsViewModel @Inject constructor(
-	repository: SuggestionRepository,
+	private val feedAggregator: FeedAggregator,
 	settings: AppSettings,
 	private val mangaListMapper: MangaListMapper,
 	private val quickFilter: SuggestionsListQuickFilter,
-	private val suggestionsScheduler: SuggestionsWorker.Scheduler,
 	mangaDataRepository: MangaDataRepository,
 	@LocalStorageChanges localStorageChanges: SharedFlow<LocalManga?>,
 ) : MangaListViewModel(settings, mangaDataRepository, localStorageChanges), QuickFilterListener by quickFilter {
@@ -42,19 +44,31 @@ class SuggestionsViewModel @Inject constructor(
 	override val listMode = settings.observeAsFlow(AppSettings.KEY_LIST_MODE_SUGGESTIONS) { suggestionsListMode }
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, settings.suggestionsListMode)
 
+	private val refreshSignal = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(Unit) }
+	private var lastRequestedRefresh = 0L
+
 	override val content = combine(
-		quickFilter.appliedOptions.combineWithSettings().flatMapLatest { repository.observeAll(0, it) },
+		refreshSignal.flatMapLatest { flow { emit(feedAggregator.mixFeed()) } },
 		quickFilter.appliedOptions,
 		observeListModeWithTriggers(),
-	) { list, filters, mode ->
+		settings.observeAsFlow(AppSettings.KEY_SUGGESTION_SOURCES_WHITELIST) { suggestionSourcesWhitelist },
+	) { list, filters, mode, whitelist ->
 		when {
+			whitelist.isEmpty() -> listOf(
+				EmptyState(
+					icon = R.drawable.ic_empty_common,
+					textPrimary = R.string.no_manga_sources,
+					textSecondary = R.string.no_manga_sources_text,
+					actionStringRes = R.string.suggestions_manage_sources,
+				),
+			)
 			list.isEmpty() -> if (filters.isEmpty()) {
 				listOf(
 					EmptyState(
 						icon = R.drawable.ic_empty_common,
 						textPrimary = R.string.nothing_found,
 						textSecondary = R.string.text_suggestion_holder,
-						actionStringRes = 0,
+						actionStringRes = R.string.suggestions_manage_sources,
 					),
 				)
 			} else {
@@ -84,11 +98,14 @@ class SuggestionsViewModel @Inject constructor(
 
 	override fun onRefresh() = Unit
 
-	override fun onRetry() = Unit
+	override fun onRetry() {
+		updateSuggestions()
+	}
 
 	fun updateSuggestions() {
-		launchJob(Dispatchers.IO) {
-			suggestionsScheduler.startNow()
-		}
+		val now = System.currentTimeMillis()
+		if (now - lastRequestedRefresh < 3000L) return
+		lastRequestedRefresh = now
+		refreshSignal.tryEmit(Unit)
 	}
 }

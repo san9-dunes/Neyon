@@ -45,6 +45,13 @@
 		android:summary="@string/exclude_nsfw_from_suggestions_summary"
 		android:title="@string/exclude_nsfw_from_suggestions" />
 
+	<MultiSelectListPreference
+		android:dependency="suggestions"
+		android:key="suggestion_sources_whitelist"
+		android:summary="@string/suggestions_manage_sources_summary"
+		android:title="@string/suggestions_manage_sources"
+		app:allowDividerAbove="true" />
+
 	<Preference
 		android:icon="@drawable/ic_info_outline"
 		android:key="track_warning"

@@ -26,6 +26,10 @@ class SuggestionsFragment : MangaListFragment() {
 
 	override fun onScrolledToEnd() = Unit
 
+	override fun onEmptyActionClick() {
+		router.openSuggestionsSettings()
+	}
+
 	override fun onCreateActionMode(
 		controller: ListSelectionController,
 		menuInflater: MenuInflater,

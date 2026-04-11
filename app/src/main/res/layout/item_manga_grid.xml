@@ -23,6 +23,8 @@
 			android:background="?colorSurfaceContainer"
 			android:orientation="horizontal"
 			app:allowRgb565="true"
+			app:aspectRationWidth="2"
+			app:aspectRationHeight="3"
 			app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Futon.Cover"
 			tools:ignore="ContentDescription"
 			tools:src="@tools:sample/backgrounds/scenic[5]" />
