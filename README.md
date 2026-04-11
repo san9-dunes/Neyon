@@ -12,6 +12,8 @@
 
 * Online [manga catalogues](https://github.com/Kotatsu-Redo/kotatsu-parsers-redo) (with 1200+ manga sources)
 * Search manga by name, genres and more filters
+* **New:** "Pin for suggestion" feature on genre and tag chips to customize your feed
+* **Optimized:** Interleaved caching feed aggregator for ultra-fast, stutter-free Suggestions tab browsing
 * Favorites organized by user-defined categories
 * Reading history, bookmarks and incognito mode support
 * Download manga and read it offline. Third-party CBZ archives are also supported

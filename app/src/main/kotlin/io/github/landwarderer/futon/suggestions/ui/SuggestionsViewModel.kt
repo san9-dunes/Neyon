@@ -53,8 +53,9 @@ class SuggestionsViewModel @Inject constructor(
 	override val content = combine(
 		refreshSignal.flatMapLatest { forceRefresh ->
                         genreOverride.flatMapLatest { genre ->
-                                flow {
+                                flow<List<Manga>?> {
                                         kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
+                                        emit(null)
                                         emit(feedAggregator.mixFeed(genre, forceRefresh))
                                         kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
                                 }
@@ -72,6 +73,10 @@ class SuggestionsViewModel @Inject constructor(
 					textSecondary = R.string.no_manga_sources_text,
 					actionStringRes = R.string.suggestions_manage_sources,
 				),
+			)
+			list == null -> listOfNotNull(
+				quickFilter.filterItem(filters),
+				LoadingState
 			)
 			list.isEmpty() -> if (filters.isEmpty()) {
 				listOf(
