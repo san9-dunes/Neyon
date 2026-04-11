@@ -132,6 +132,16 @@ class PageLoader @Inject constructor(
 		}
 	}
 
+	fun evictFromMemoryCache(pages: List<MangaPage>) {
+		coil.memoryCache?.let { cache ->
+			for (page in pages) {
+				page.preview?.let { preview ->
+					cache.remove(MemoryCache.Key(preview))
+				}
+			}
+		}
+	}
+
 	suspend fun loadPreview(page: MangaPage): ImageSource? {
 		val preview = page.preview
 		if (preview.isNullOrEmpty()) {
@@ -340,7 +350,7 @@ class PageLoader @Inject constructor(
 	companion object {
 
 		private const val PROGRESS_UNDEFINED = -1f
-		private const val PREFETCH_LIMIT_DEFAULT = 6
+		private const val PREFETCH_LIMIT_DEFAULT = 5
 		private const val PREFETCH_MIN_RAM_MB = 80L
 
 		fun createPageRequest(pageUrl: String, mangaSource: MangaSource) = Request.Builder()

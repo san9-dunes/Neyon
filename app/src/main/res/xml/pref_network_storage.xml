@@ -14,6 +14,14 @@
             android:persistent="false"
             android:title="@string/data_removal" />
 
+        <ListPreference
+            android:defaultValue="200"
+            android:entries="@array/pages_cache_size_entries"
+            android:entryValues="@array/pages_cache_size_values"
+            android:key="pages_cache_size"
+            android:title="@string/pages_cache_size"
+            app:useSimpleSummaryProvider="true" />
+
     </PreferenceCategory>
 
     <ListPreference

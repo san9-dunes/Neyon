@@ -10,9 +10,15 @@ import org.koitharu.kotatsu.parsers.model.MangaSource
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import io.github.landwarderer.futon.core.util.ext.processLifecycleScope
 
 @Singleton
-class MemoryContentCache @Inject constructor(application: Application) : ComponentCallbacks2 {
+class MemoryContentCache @Inject constructor(
+	application: Application,
+	private val diskPageCache: DiskPageCache
+) : ComponentCallbacks2 {
 
 	private val isLowRam = application.isLowRamDevice()
 
@@ -35,11 +41,16 @@ class MemoryContentCache @Inject constructor(application: Application) : Compone
 	}
 
 	suspend fun getPages(source: MangaSource, url: String): List<MangaPage>? {
-		return pagesCache[Key(source, url)]?.awaitOrNull()
+		return pagesCache[Key(source, url)]?.awaitOrNull() ?: diskPageCache.getPages(source, url)
 	}
 
 	fun putPages(source: MangaSource, url: String, pages: SafeDeferred<List<MangaPage>>) {
 		pagesCache[Key(source, url)] = pages
+		processLifecycleScope.launch(Dispatchers.IO) {
+			pages.awaitOrNull()?.let { resolvedPages ->
+				diskPageCache.putPages(source, url, resolvedPages)
+			}
+		}
 	}
 
 	suspend fun getRelatedManga(source: MangaSource, url: String): List<Manga>? {

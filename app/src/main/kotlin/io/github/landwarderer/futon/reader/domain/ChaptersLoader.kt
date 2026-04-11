@@ -98,13 +98,18 @@ class ChaptersLoader @Inject constructor(
 		val isDownloaded = localChapter != null
 
 		val pages = try {
-			val repo = mangaRepositoryFactory.create(chapter.source)
-			repo.getPages(chapter)
-		} catch (e: Exception) {
-			if (e is kotlinx.coroutines.CancellationException) throw e
 			if (isDownloaded && localChapter != null) {
 				val localRepo = mangaRepositoryFactory.create(io.github.landwarderer.futon.core.model.LocalMangaSource)
 				localRepo.getPages(localChapter)
+			} else {
+				val repo = mangaRepositoryFactory.create(chapter.source)
+				repo.getPages(chapter)
+			}
+		} catch (e: Exception) {
+			if (e is kotlinx.coroutines.CancellationException) throw e
+			if (isDownloaded && localChapter != null) {
+				val repo = mangaRepositoryFactory.create(chapter.source)
+				repo.getPages(chapter)
 			} else {
 				throw e
 			}

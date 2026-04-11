@@ -50,7 +50,8 @@ class StorageAndNetworkSettingsFragment :
 
     override fun onSharedPreferenceChanged(prefs: SharedPreferences?, key: String?) {
         when (key) {
-            AppSettings.KEY_SSL_BYPASS -> {
+            AppSettings.KEY_SSL_BYPASS,
+            AppSettings.KEY_PAGES_CACHE_SIZE -> {
                 Snackbar.make(listView, R.string.settings_apply_restart_required, Snackbar.LENGTH_INDEFINITE).show()
             }
 

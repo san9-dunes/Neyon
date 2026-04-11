@@ -621,6 +621,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		prefs.edit { putString(KEY_PAGES_SAVE_DIR, uri?.toString()) }
 	}
 
+	val pagesCacheSizeMB: Int
+		get() = prefs.getString(KEY_PAGES_CACHE_SIZE, "200")?.toIntOrNull() ?: 200
+
 	fun getMangaListBadges(): Int {
 		val raw = prefs.getStringSet(KEY_MANGA_LIST_BADGES, mangaListBadgesDefault).orEmpty()
 		var result = 0
@@ -682,6 +685,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_THUMBS_CACHE_CLEAR = "thumbs_cache_clear"
 		const val KEY_SEARCH_HISTORY_CLEAR = "search_history_clear"
 		const val KEY_UPDATES_FEED_CLEAR = "updates_feed_clear"
+		const val KEY_PAGES_CACHE_SIZE = "pages_cache_size"
 		const val KEY_GRID_SIZE = "grid_size"
 		const val KEY_GRID_SIZE_PAGES = "grid_size_pages"
 		const val KEY_REMOTE_SOURCES = "remote_sources"

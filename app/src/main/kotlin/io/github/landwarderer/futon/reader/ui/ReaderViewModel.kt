@@ -77,7 +77,7 @@ import java.time.Instant
 import javax.inject.Inject
 
 private const val BOUNDS_PAGE_OFFSET = 2
-private const val PREFETCH_LIMIT = 10
+private const val PREFETCH_LIMIT = 5
 
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
@@ -369,6 +369,13 @@ class ReaderViewModel @Inject constructor(
             }
             if (pageLoader.isPrefetchApplicable()) {
                 pageLoader.prefetch(pages.trySublist(upperPos + 1, upperPos + PREFETCH_LIMIT))
+            }
+            
+            // Explicitly clear coil memory cache for pages left far behind (e.g. earlier than lowerPos - 4)
+            val trailingEvictLimit = (lowerPos - 4).coerceAtLeast(0)
+            if (trailingEvictLimit > 0) {
+                val pagesToEvict = pages.trySublist(0, trailingEvictLimit)
+                pageLoader.evictFromMemoryCache(pagesToEvict.map { it.toMangaPage() })
             }
         }
     }

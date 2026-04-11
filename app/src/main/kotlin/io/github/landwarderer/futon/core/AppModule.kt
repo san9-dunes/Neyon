@@ -202,12 +202,17 @@ interface AppModule {
 		@PageCache
 		fun providePageCache(
 			@ApplicationContext context: Context,
-		) = LocalStorageCache(
-			context = context,
-			dir = CacheDir.PAGES,
-			defaultSize = FileSize.MEGABYTES.convert(200, FileSize.BYTES),
-			minSize = FileSize.MEGABYTES.convert(20, FileSize.BYTES),
-		)
+			settings: AppSettings,
+		): LocalStorageCache {
+			val userLimit = settings.pagesCacheSizeMB.toLong()
+			val defaultSize = if (userLimit == -1L) Long.MAX_VALUE else FileSize.MEGABYTES.convert(userLimit, FileSize.BYTES)
+			return LocalStorageCache(
+				context = context,
+				dir = CacheDir.PAGES,
+				defaultSize = defaultSize,
+				minSize = FileSize.MEGABYTES.convert(20, FileSize.BYTES),
+			)
+		}
 
 		@Provides
 		@Singleton

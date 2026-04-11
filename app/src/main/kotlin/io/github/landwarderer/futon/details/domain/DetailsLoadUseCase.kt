@@ -129,11 +129,11 @@ class DetailsLoadUseCase @Inject constructor(
 		if (localManga != null) {
 			emit(
 				MangaDetails(
-					manga = manga,
+					manga = localManga.manga,
 					localManga = localManga,
 					override = override,
-					description = localManga.manga.description?.parseAsHtml(withImages = true),
-					isLoaded = false,
+					description = (localManga.manga.description ?: manga.description)?.parseAsHtml(withImages = true),
+					isLoaded = true,
 				),
 			)
 		}
@@ -141,10 +141,20 @@ class DetailsLoadUseCase @Inject constructor(
 			remoteDeferred.await().getOrThrow()
 		} catch (e: Exception) {
 			if (e is kotlinx.coroutines.CancellationException) throw e
-			if (localManga != null && !force && networkState.isOfflineOrRestricted()) {
-				return@coroutineScope // Suppress refresh if we have local and offline
-			} else if (localManga != null && !force) {
-				return@coroutineScope // Or even just suppress it if we have local, but we'll stick to offline
+			if (localManga != null) {
+				return@coroutineScope // Suppress refresh error if we've successfully emitted a local backup
+			} else if (!force && networkState.isOfflineOrRestricted()) {
+				// We don't have a downloaded copy, but we are offline. Suppress the error so the cached details are shown.
+				emit(
+					MangaDetails(
+						manga = manga,
+						localManga = localManga,
+						override = override,
+						description = manga.description?.parseAsHtml(withImages = true),
+						isLoaded = true,
+					)
+				)
+				return@coroutineScope
 			}
 			throw e
 		}
