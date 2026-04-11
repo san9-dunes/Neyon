@@ -2,6 +2,7 @@ package io.github.landwarderer.neyon.suggestions.ui
 
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import org.koitharu.kotatsu.parsers.model.Manga
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch

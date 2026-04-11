@@ -68,6 +68,7 @@ import io.github.landwarderer.neyon.reader.domain.DetectReaderModeUseCase
 import io.github.landwarderer.neyon.reader.domain.PageLoader
 import io.github.landwarderer.neyon.reader.ui.config.ReaderSettings
 import io.github.landwarderer.neyon.reader.ui.pager.ReaderUiState
+import io.github.landwarderer.neyon.reader.ui.pager.ReaderPage
 import io.github.landwarderer.neyon.scrobbling.discord.ui.DiscordRpc
 import io.github.landwarderer.neyon.stats.domain.StatsCollector
 import kotlinx.coroutines.flow.collectLatest
