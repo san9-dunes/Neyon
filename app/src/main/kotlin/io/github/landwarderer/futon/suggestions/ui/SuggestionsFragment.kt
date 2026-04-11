@@ -17,7 +17,7 @@ import io.github.landwarderer.futon.list.ui.MangaListFragment
 class SuggestionsFragment : MangaListFragment() {
 
 	override val viewModel by viewModels<SuggestionsViewModel>()
-	override val isSwipeRefreshEnabled = false
+	override val isSwipeRefreshEnabled = true
 
 	override fun onViewBindingCreated(binding: FragmentListBinding, savedInstanceState: Bundle?) {
 		super.onViewBindingCreated(binding, savedInstanceState)

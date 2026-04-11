@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.flow
+import io.github.landwarderer.futon.list.domain.ListFilterOption
 
 @HiltViewModel
 class SuggestionsViewModel @Inject constructor(
@@ -45,10 +46,16 @@ class SuggestionsViewModel @Inject constructor(
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, settings.suggestionsListMode)
 
 	private val refreshSignal = MutableSharedFlow<Unit>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(Unit) }
-	private var lastRequestedRefresh = 0L
+	// Holds an optional tag override from chip clicks — null means use history-derived tags
+	private val genreOverride = MutableSharedFlow<String?>(replay = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST).apply { tryEmit(null) }
+	private var lastMenuRefresh = 0L
 
 	override val content = combine(
-		refreshSignal.flatMapLatest { flow { emit(feedAggregator.mixFeed()) } },
+		refreshSignal.flatMapLatest { _ ->
+			genreOverride.flatMapLatest { genre ->
+				flow { emit(feedAggregator.mixFeed(forceGenreTag = genre)) }
+			}
+		},
 		quickFilter.appliedOptions,
 		observeListModeWithTriggers(),
 		settings.observeAsFlow(AppSettings.KEY_SUGGESTION_SOURCES_WHITELIST) { suggestionSourcesWhitelist },
@@ -90,22 +97,39 @@ class SuggestionsViewModel @Inject constructor(
 		}
 	}.onStart {
 		loadingCounter.increment()
-	}.onFirst {
-		loadingCounter.decrement()
 	}.catch {
 		emit(listOf(it.toErrorState(canRetry = false)))
+	}.onFirst {
+		loadingCounter.decrement()
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, listOf(LoadingState))
 
-	override fun onRefresh() = Unit
+	// Wire swipe-to-refresh: no rate limit — user explicitly pulled
+	override fun onRefresh() {
+		refreshSignal.tryEmit(Unit)
+	}
 
 	override fun onRetry() {
 		updateSuggestions()
 	}
 
+	// Toolbar refresh button: 3-second guard against rapid taps
 	fun updateSuggestions() {
 		val now = System.currentTimeMillis()
-		if (now - lastRequestedRefresh < 3000L) return
-		lastRequestedRefresh = now
+		if (now - lastMenuRefresh < 3000L) return
+		lastMenuRefresh = now
+		genreOverride.tryEmit(null) // Reset genre override
 		refreshSignal.tryEmit(Unit)
+	}
+
+	// Called by genre chip tap — triggers live re-fetch with that genre forced
+	override fun toggleFilterOption(option: ListFilterOption) {
+		quickFilter.toggleFilterOption(option)
+		if (option is ListFilterOption.Tag) {
+			// Check if the tag is now applied or cleared
+			val applied = quickFilter.appliedOptions.value
+			val newOverride = if (option in applied) option.tag.title else null
+			genreOverride.tryEmit(newOverride)
+			refreshSignal.tryEmit(Unit)
+		}
 	}
 }

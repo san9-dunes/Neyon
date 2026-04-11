@@ -12,6 +12,7 @@ import io.github.landwarderer.futon.core.parser.MangaRepository
 import io.github.landwarderer.futon.core.model.distinctById
 import io.github.landwarderer.futon.core.model.isNsfw
 import io.github.landwarderer.futon.core.util.ext.asArrayList
+import io.github.landwarderer.futon.suggestions.domain.TagsBlacklist
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaListFilter
 import org.koitharu.kotatsu.parsers.model.SortOrder
@@ -31,31 +32,38 @@ class FeedAggregator @Inject constructor(
 
 	private val preferredSortOrders = listOf(SortOrder.UPDATED, SortOrder.POPULARITY)
 
-	suspend fun mixFeed(): List<Manga> = supervisorScope {
+	suspend fun mixFeed(forceGenreTag: String? = null): List<Manga> = supervisorScope {
 		val whitelistNames = appSettings.suggestionSourcesWhitelist
 		if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
 
 		// 1. Get enabled sources that are whitelisted
 		val allEnabled = sourcesRepository.getEnabledSources()
-		val sourcesToUse = allEnabled.filter { it.name in whitelistNames }
+		val sourcesToUse = allEnabled.filter { it.name in whitelistNames }.shuffled().take(8)
 
 		if (sourcesToUse.isEmpty()) return@supervisorScope emptyList()
 
-		// 2. Extract Top Genres from History (Top 10, pick 3)
-		val seedHistory = historyRepository.getList(0, 50).distinctById()
-		val topTags = seedHistory.flatMap { it.tags.map { x -> x.title } }
-			.groupingBy { it }
-			.eachCount()
-			.entries
-			.sortedByDescending { it.value }
-			.take(10)
-			.map { it.key }
-			.shuffled()
-			.take(3)
+		// Build the exclude-genres blacklist from user settings (same threshold as SuggestionsWorker)
+		val tagsBlacklist = TagsBlacklist(appSettings.suggestionsTagsBlacklist, TAG_EQ_THRESHOLD)
+
+		// 2. Extract Top Genres from History — or use the forced chip genre
+		val topTags: List<String> = if (forceGenreTag != null) {
+			listOf(forceGenreTag) // Genre chip was clicked: use it exclusively
+		} else {
+			historyRepository.getList(0, 50).distinctById()
+				.flatMap { it.tags.filterNot { tag -> tag in tagsBlacklist }.map { x -> x.title } }
+				.groupingBy { it }
+				.eachCount()
+				.entries
+				.sortedByDescending { it.value }
+				.take(10)
+				.map { it.key }
+				.shuffled()
+				.take(3)
+		}
 
 		// 3. Concurrently fetch arrays
-		val genreQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, true, topTags) } }
-		val latestQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, false, topTags) } }
+		val genreQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, true, topTags, tagsBlacklist) } }
+		val latestQueries = sourcesToUse.map { async(Dispatchers.IO) { fetch(it, false, topTags, tagsBlacklist) } }
 
 		val genreLists = genreQueries.awaitAll()
 		val latestLists = latestQueries.awaitAll()
@@ -75,7 +83,12 @@ class FeedAggregator @Inject constructor(
 		mergedList.distinctById()
 	}
 
-	private suspend fun fetch(source: MangaSource, isGenreMatch: Boolean, topTags: List<String>): List<Manga> = runCatchingCancellable {
+	private suspend fun fetch(
+		source: MangaSource,
+		isGenreMatch: Boolean,
+		topTags: List<String>,
+		tagsBlacklist: TagsBlacklist,
+	): List<Manga> = runCatchingCancellable {
 		withTimeoutOrNull(5000L) {
 			val repository = mangaRepositoryFactory.create(source)
 			val availableOrders = repository.sortOrders
@@ -84,7 +97,10 @@ class FeedAggregator @Inject constructor(
 			val filter = if (isGenreMatch && topTags.isNotEmpty()) {
 				val targetTagTitle = topTags.randomOrNull()
 				val matchedTag = targetTagTitle?.let { title ->
-					repository.getFilterOptions().availableTags.find { x -> x.title.almostEquals(title, 0.7f) }
+					// Respect blacklist: don't query a tag the user has excluded
+					repository.getFilterOptions().availableTags.find { x ->
+						x !in tagsBlacklist && x.title.almostEquals(title, 0.7f)
+					}
 				}
 				if (matchedTag != null) {
 					MangaListFilter(tags = setOf(matchedTag))
@@ -103,6 +119,9 @@ class FeedAggregator @Inject constructor(
 
 			if (appSettings.isSuggestionsExcludeNsfw) {
 				list.removeAll { it.isNsfw() }
+			}
+			if (tagsBlacklist.isNotEmpty()) {
+				list.removeAll { manga -> manga in tagsBlacklist }
 			}
 			list.shuffle()
 			list.take(15) // Limit each block so we don't blow up memory

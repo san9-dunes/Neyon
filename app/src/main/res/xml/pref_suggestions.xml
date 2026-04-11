@@ -45,7 +45,7 @@
 		android:summary="@string/exclude_nsfw_from_suggestions_summary"
 		android:title="@string/exclude_nsfw_from_suggestions" />
 
-	<MultiSelectListPreference
+	<Preference
 		android:dependency="suggestions"
 		android:key="suggestion_sources_whitelist"
 		android:summary="@string/suggestions_manage_sources_summary"
