@@ -38,15 +38,15 @@
 ### Building the Project
 
 1. **Clone the repository:**
-   \\\ash
+   ```bash
    git clone https://github.com/AppNeyon/Neyon.git
    cd Neyon
-   \\\
+   ```
 
 2. **Build debug APK:**
-   \\\ash
+   ```bash
    ./gradlew assembleDebug
-   \\\
+   ```
 
 ## License
 
