@@ -6,7 +6,7 @@
 *A revival and continuation of the project formerly known as Futon.*
 
 ![Android 6.0](https://img.shields.io/badge/android-6.0+-brightgreen)
-[![License](https://img.shields.io/github/license/AppNeyon/Neyon)](./LICENSE)
+[![License](https://img.shields.io/github/license/AppFuton/Futon)](./LICENSE)
 
 </div>
 
