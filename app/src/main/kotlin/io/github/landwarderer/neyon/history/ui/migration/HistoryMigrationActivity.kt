@@ -13,7 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.nav.router
 import io.github.landwarderer.neyon.core.ui.BaseActivity
-import io.github.landwarderer.neyon.core.util.ext.launchWhenStarted
+import kotlinx.coroutines.launch
 import io.github.landwarderer.neyon.databinding.ActivityHistoryMigrationBinding
 
 @AndroidEntryPoint
@@ -26,30 +26,30 @@ class HistoryMigrationActivity : BaseActivity<ActivityHistoryMigrationBinding>()
         super.onCreate(savedInstanceState)
         setContentView(ActivityHistoryMigrationBinding.inflate(layoutInflater))
 
-        binding.toolbar.setNavigationOnClickListener { finish() }
+        viewBinding.toolbar.setNavigationOnClickListener { finish() }
 
         adapter = HistoryMigrationAdapter { oldManga ->
             router.openAlternatives(oldManga)
         }
 
-        binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        binding.recyclerView.adapter = adapter
+        viewBinding.recyclerView.layoutManager = LinearLayoutManager(this)
+        viewBinding.recyclerView.adapter = adapter
 
-        binding.fabMigrateAll.setOnClickListener {
+        viewBinding.fabMigrateAll.setOnClickListener {
             viewModel.migrateAll()
-            Snackbar.make(binding.root, R.string.migration_completed, Snackbar.LENGTH_SHORT).show()
+            Snackbar.make(viewBinding.root, R.string.migration_completed, Snackbar.LENGTH_SHORT).show()
         }
 
-        viewScope.launchWhenStarted {
+        lifecycleScope.launch {
             viewModel.items.collect { items ->
                 adapter.submitList(items)
                 updateEmptyState()
             }
         }
 
-        viewScope.launchWhenStarted {
+        lifecycleScope.launch {
             viewModel.isScanning.collect { isScanning ->
-                binding.progressBar.visibility = if (isScanning && viewModel.items.value.isEmpty()) View.VISIBLE else View.GONE
+                viewBinding.progressBar.visibility = if (isScanning && viewModel.items.value.isEmpty()) View.VISIBLE else View.GONE
                 updateEmptyState()
             }
         }
@@ -63,25 +63,25 @@ class HistoryMigrationActivity : BaseActivity<ActivityHistoryMigrationBinding>()
 
     private fun updateEmptyState() {
         if (!viewModel.isScanning.value && viewModel.items.value.isEmpty()) {
-            binding.emptyView.visibility = View.VISIBLE
-            binding.recyclerView.visibility = View.GONE
-            binding.fabMigrateAll.hide()
+            viewBinding.emptyView.visibility = View.VISIBLE
+            viewBinding.recyclerView.visibility = View.GONE
+            viewBinding.fabMigrateAll.hide()
         } else {
-            binding.emptyView.visibility = View.GONE
-            binding.recyclerView.visibility = View.VISIBLE
+            viewBinding.emptyView.visibility = View.GONE
+            viewBinding.recyclerView.visibility = View.VISIBLE
             if (viewModel.items.value.isNotEmpty()) {
-                binding.fabMigrateAll.show()
+                viewBinding.fabMigrateAll.show()
             } else {
-                binding.fabMigrateAll.hide()
+                viewBinding.fabMigrateAll.hide()
             }
         }
     }
 
     override fun onApplyWindowInsets(v: View, insets: WindowInsetsCompat): WindowInsetsCompat {
         val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-        binding.toolbar.updatePadding(top = bars.top)
-        binding.recyclerView.updatePadding(bottom = bars.bottom + 88)
-        binding.fabMigrateAll.updatePadding(bottom = bars.bottom)
+        viewBinding.toolbar.updatePadding(top = bars.top)
+        viewBinding.recyclerView.updatePadding(bottom = bars.bottom + 88)
+        viewBinding.fabMigrateAll.updatePadding(bottom = bars.bottom)
         return insets
     }
 }
