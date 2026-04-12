@@ -403,6 +403,8 @@ class DetailsActivity :
 						override fun onReadClick(manga: Manga, view: View) = Unit
 
 						override fun onTagClick(manga: Manga, tag: MangaTag, view: View) = Unit
+						
+						override fun onMigrationClick(item: MangaListModel) = Unit
 					},
 				),
 			).also { rv.adapter = it }

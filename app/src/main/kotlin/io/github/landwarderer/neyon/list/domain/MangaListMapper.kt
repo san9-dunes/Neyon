@@ -153,7 +153,20 @@ class MangaListMapper @Inject constructor(
 		isSourceAvailable: Boolean,
 	): MangaListModel = when (mode) {
 		ListMode.LIST -> toCompactListModel(manga, options, override, isSourceAvailable)
-		ListMode.DETAILED_LIST -> toDetailedListModel(manga, options, override, isSourceAvailable)
+		ListMode.DETAILED_LIST -> {
+			val progress = getProgress(manga.id, options)
+			MangaDetailedListModel(
+				manga = manga,
+				override = override,
+				subtitle = manga.altTitles.firstOrNull(),
+				counter = getCounter(manga.id, options),
+				progress = progress,
+				isFavorite = isFavorite(manga.id, options),
+				isSaved = isSaved(manga.id, options),
+				tags = mapTags(manga.tags),
+				isSourceAvailable = isSourceAvailable,
+			)
+		}
 		ListMode.GRID -> toGridModel(manga, options, override, isSourceAvailable)
 	}
 
