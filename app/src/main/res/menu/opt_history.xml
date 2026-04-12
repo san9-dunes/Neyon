@@ -12,7 +12,7 @@
 	<item
 		android:id="@+id/action_migrate_all_unavailable"
 		android:orderInCategory="20"
-		android:title="@string/search_alternatives"
+		android:title="@string/action_search"
 		app:showAsAction="never" />
 
 	<item
@@ -22,3 +22,4 @@
 		app:showAsAction="never" />
 
 </menu>
+

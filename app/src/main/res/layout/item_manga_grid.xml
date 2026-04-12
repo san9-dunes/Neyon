@@ -77,14 +77,8 @@
 			android:layout_height="36dp"
 			android:layout_gravity="center"
 			android:background="@drawable/custom_selectable_item_background"
-			android:contentDescription="@string/search_alternatives"
-			android:src="@drawable/ic_refresh"
-			app:tint="?attr/colorError"
-			android:padding="6dp"
-			android:visibility="gone"
-			tools:visibility="visible" />
-
-	</FrameLayout>
+                        android:contentDescription="@string/action_search"
+                        android:src="@drawable/ic_sync"
 
 	<TextView
 		android:id="@+id/textView_title"
