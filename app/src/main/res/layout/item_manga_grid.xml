@@ -71,16 +71,22 @@
 			tools:number="8"
 			tools:visibility="visible" />
 
-		<ImageButton
-			android:id="@+id/button_migrate"
-			android:layout_width="36dp"
-			android:layout_height="36dp"
-			android:layout_gravity="center"
-			android:background="@drawable/custom_selectable_item_background"
-                        android:contentDescription="@string/action_search"
-                        android:src="@drawable/ic_sync"
+		<ImageButton 
+    android:id="@+id/button_migrate"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
+    android:layout_gravity="center"
+    android:background="@drawable/custom_selectable_item_background"
+    android:contentDescription="@string/action_search"
+    android:src="@drawable/ic_sync"
+    app:tint="?attr/colorError"
+    android:padding="6dp"
+    android:visibility="gone"
+    tools:visibility="visible" />
 
-	<TextView
+        </FrameLayout>
+
+        <TextView
 		android:id="@+id/textView_title"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
@@ -95,3 +101,4 @@
 		tools:text="@tools:sample/lorem" />
 
 </LinearLayout>
+
