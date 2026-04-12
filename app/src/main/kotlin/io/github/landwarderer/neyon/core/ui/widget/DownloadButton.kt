@@ -39,7 +39,7 @@ class DownloadButton @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 6f
-        color = context.getThemeColor(materialR.attr.colorPrimary)
+        color = context.getThemeColor(appcompatR.attr.colorPrimary)
     }
 
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
