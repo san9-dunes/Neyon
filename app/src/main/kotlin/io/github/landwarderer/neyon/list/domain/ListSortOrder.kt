@@ -4,7 +4,9 @@ import androidx.annotation.StringRes
 import io.github.landwarderer.neyon.R
 import org.koitharu.kotatsu.parsers.util.find
 import java.util.EnumSet
+import androidx.annotation.Keep
 
+@Keep
 enum class ListSortOrder(
 	@StringRes val titleResId: Int,
 ) {
@@ -21,6 +23,7 @@ enum class ListSortOrder(
 	LAST_READ(R.string.last_read),
 	LONG_AGO_READ(R.string.long_ago_read),
 	UPDATED(R.string.updated),
+	POPULARITY(R.string.popular),
 	;
 
 	fun isGroupingSupported() = this == LAST_READ || this == NEWEST || this == PROGRESS
@@ -52,7 +55,7 @@ enum class ListSortOrder(
 			LONG_AGO_READ,
 			UPDATED,
 		)
-		val SUGGESTIONS: Set<ListSortOrder> = EnumSet.of(RELEVANCE)
+		val SUGGESTIONS: Set<ListSortOrder> = EnumSet.of(UPDATED, POPULARITY)
 
 		operator fun invoke(value: String, fallback: ListSortOrder) = entries.find(value) ?: fallback
 	}

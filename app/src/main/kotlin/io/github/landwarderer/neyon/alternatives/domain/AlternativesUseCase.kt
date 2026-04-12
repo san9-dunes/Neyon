@@ -4,8 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
+import kotlinx.coroutines.withTimeoutOrNull
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.util.ext.toLocale
 import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
@@ -18,8 +17,6 @@ import io.github.landwarderer.neyon.search.domain.SearchV2Helper
 import java.util.Locale
 import javax.inject.Inject
 
-private const val MAX_PARALLELISM = 4
-
 class AlternativesUseCase @Inject constructor(
 	private val sourcesRepository: MangaSourcesRepository,
 	private val searchHelperFactory: SearchV2Helper.Factory,
@@ -31,13 +28,12 @@ class AlternativesUseCase @Inject constructor(
 		if (sources.isEmpty()) {
 			return emptyFlow()
 		}
-		val semaphore = Semaphore(MAX_PARALLELISM)
 		return channelFlow {
 			for (source in sources) {
 				launch {
 					val searchHelper = searchHelperFactory.create(source)
 					val list = runCatchingCancellable {
-						semaphore.withPermit {
+						withTimeoutOrNull(15000L) {
 							searchHelper(manga.title, SearchKind.TITLE)?.manga
 						}
 					}.getOrNull()

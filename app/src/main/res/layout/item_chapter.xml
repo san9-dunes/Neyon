@@ -51,12 +51,11 @@
 		android:contentDescription="@string/bookmarks"
 		app:srcCompat="@drawable/ic_bookmark" />
 
-	<ImageView
-		android:id="@+id/imageView_downloaded"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
+	<io.github.landwarderer.neyon.core.ui.widget.DownloadButton
+		android:id="@+id/button_download"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
 		android:layout_marginEnd="?android:listPreferredItemPaddingEnd"
-		android:contentDescription="@string/downloaded"
-		app:srcCompat="@drawable/ic_storage" />
+		android:contentDescription="@string/download" />
 
 </LinearLayout>

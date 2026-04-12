@@ -24,6 +24,7 @@ import org.koitharu.kotatsu.parsers.model.MangaTag
 import io.github.landwarderer.neyon.tracker.domain.TrackingRepository
 import io.github.landwarderer.neyon.tracker.domain.model.TrackingLogItem
 import io.github.landwarderer.neyon.tracker.ui.feed.model.FeedItem
+import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
 import javax.inject.Inject
 
 @Reusable
@@ -35,6 +36,7 @@ class MangaListMapper @Inject constructor(
 	private val favouritesRepository: FavouritesRepository,
 	private val localMangaIndex: LocalMangaIndex,
 	private val dataRepository: MangaDataRepository,
+	private val sourcesRepository: MangaSourcesRepository,
 ) {
 
 
@@ -59,8 +61,9 @@ class MangaListMapper @Inject constructor(
 	) {
 		val options = getOptions(flags)
 		val overrides = dataRepository.getOverrides()
+        val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
 		manga.mapTo(destination) {
-			toListModelImpl(it, mode, options, overrides[it.id])
+			toListModelImpl(it, mode, options, overrides[it.id], enabledSources.contains(it.source.name))
 		}
 	}
 
@@ -68,12 +71,16 @@ class MangaListMapper @Inject constructor(
 		manga: Manga,
 		mode: ListMode,
 		@Flags flags: Int = DEFAULTS,
-	): MangaListModel = toListModelImpl(
-		manga = manga,
-		mode = mode,
-		options = getOptions(flags),
-		override = dataRepository.getOverride(manga.id),
-	)
+	): MangaListModel {
+		val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
+		return toListModelImpl(
+			manga = manga,
+			mode = mode,
+			options = getOptions(flags),
+			override = dataRepository.getOverride(manga.id),
+			isSourceAvailable = enabledSources.contains(manga.source.name),
+		)
+	}
 
 	suspend fun toFeedItem(logItem: TrackingLogItem) = FeedItem(
 		id = logItem.id,
@@ -95,17 +102,18 @@ class MangaListMapper @Inject constructor(
 		manga: Manga,
 		@Options options: Int,
 		override: MangaOverride?,
+		isSourceAvailable: Boolean,
 	) = MangaCompactListModel(
 		manga = manga,
 		override = override,
 		subtitle = manga.tags.joinToString(", ") { it.title },
 		counter = getCounter(manga.id, options),
+		isSourceAvailable = isSourceAvailable,
 	)
 
 	private suspend fun toDetailedListModel(
 		manga: Manga,
-		@Options options: Int,
-		override: MangaOverride?,
+		isSourceAvailable: Boolean,
 	) = MangaDetailedListModel(
 		subtitle = manga.altTitles.firstOrNull(),
 		manga = manga,
@@ -115,12 +123,16 @@ class MangaListMapper @Inject constructor(
 		isFavorite = isFavorite(manga.id, options),
 		isSaved = isSaved(manga.id, options),
 		tags = mapTags(manga.tags),
+		isSourceAvailable = isSourceAvailablenga.id, options),
+		isSaved = isSaved(manga.id, options),
+		tags = mapTags(manga.tags),
 	)
 
 	private suspend fun toGridModel(
 		manga: Manga,
 		@Options options: Int,
 		override: MangaOverride?
+		isSourceAvailable: Boolean,
 	) = MangaGridModel(
 		manga = manga,
 		override = override,
@@ -128,6 +140,7 @@ class MangaListMapper @Inject constructor(
 		progress = getProgress(manga.id, options),
 		isFavorite = isFavorite(manga.id, options),
 		isSaved = isSaved(manga.id, options),
+		isSourceAvailable = isSourceAvailable,
 	)
 
 	private suspend fun toListModelImpl(
@@ -135,10 +148,11 @@ class MangaListMapper @Inject constructor(
 		mode: ListMode,
 		@Options options: Int,
 		override: MangaOverride?,
+		isSourceAvailable: Boolean,
 	): MangaListModel = when (mode) {
-		ListMode.LIST -> toCompactListModel(manga, options, override)
-		ListMode.DETAILED_LIST -> toDetailedListModel(manga, options, override)
-		ListMode.GRID -> toGridModel(manga, options, override)
+		ListMode.LIST -> toCompactListModel(manga, options, override, isSourceAvailable)
+		ListMode.DETAILED_LIST -> toDetailedListModel(manga, options, override, isSourceAvailable)
+		ListMode.GRID -> toGridModel(manga, options, override, isSourceAvailable)
 	}
 
 	private suspend fun getCounter(mangaId: Long, @Options options: Int): Int {

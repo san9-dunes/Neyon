@@ -36,6 +36,11 @@ class HistoryListMenuProvider(
 				true
 			}
 
+			R.id.action_migrate_all_unavailable -> {
+				viewModel.migrateAllUnavailable()
+				true
+			}
+
 			R.id.action_stats -> {
 				router.openStatistic()
 				true

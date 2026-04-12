@@ -40,13 +40,10 @@ import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.plus
-import kotlinx.coroutines.sync.Semaphore
-import kotlinx.coroutines.sync.withPermit
 import java.util.Locale
 import javax.inject.Inject
-
-private const val MAX_PARALLELISM = 4
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
@@ -147,12 +144,9 @@ class SearchViewModel @Inject constructor(
 				sourcesRepository.getDisabledSources()
 					.sortedByDescending { it.priority() }
 			}
-			val semaphore = Semaphore(MAX_PARALLELISM)
 			sources.map { source ->
 				launch {
-					semaphore.withPermit {
-						appendResult(searchSource(source))
-					}
+					appendResult(searchSource(source))
 				}
 			}.joinAll()
 		}
@@ -170,12 +164,9 @@ class SearchViewModel @Inject constructor(
 			} else {
 				sourcesRepository.getEnabledSources()
 			}
-			val semaphore = Semaphore(MAX_PARALLELISM)
 			sources.map { source ->
 				launch {
-					semaphore.withPermit {
-						appendResult(searchSource(source))
-					}
+					appendResult(searchSource(source))
 				}
 			}.joinAll()
 		}
@@ -184,8 +175,10 @@ class SearchViewModel @Inject constructor(
 	// impl
 
 	private suspend fun searchSource(source: MangaSource): SearchResultsListModel? = runCatchingCancellable {
-		val searchHelper = searchHelperFactory.create(source)
-		searchHelper(query, kind)
+		withTimeoutOrNull(15000L) {
+			val searchHelper = searchHelperFactory.create(source)
+			searchHelper(query, kind)
+		}
 	}.fold(
 		onSuccess = { result ->
 			if (result == null || result.manga.isEmpty()) {

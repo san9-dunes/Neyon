@@ -13,12 +13,17 @@ import io.github.landwarderer.neyon.list.ui.model.ListModel
 
 fun chapterGridItemAD(
 	clickListener: OnListItemClickListener<ChapterListItem>,
+	onDownloadClick: ((ChapterListItem) -> Unit)? = null,
 ) = adapterDelegateViewBinding<ChapterListItem, ListModel, ItemChapterGridBinding>(
 	viewBinding = { inflater, parent -> ItemChapterGridBinding.inflate(inflater, parent, false) },
 	on = { item, _, _ -> item is ChapterListItem && item.isGrid },
 ) {
 
 	AdapterDelegateClickListenerAdapter(this, clickListener).attach(itemView)
+	
+	binding.buttonDownload.setOnClickListener {
+		onDownloadClick?.invoke(item)
+	}
 
 	bind { payloads ->
 		if (payloads.isEmpty()) {
@@ -28,7 +33,19 @@ fun chapterGridItemAD(
 		binding.imageViewNew.isVisible = item.isNew
 		binding.imageViewCurrent.isVisible = item.isCurrent
 		binding.imageViewBookmarked.isVisible = item.isBookmarked
-		binding.imageViewDownloaded.isVisible = item.isDownloaded
+		
+		val btn = binding.buttonDownload
+		btn.isVisible = item.isDownloaded || item.isDownloadPaused || item.downloadPercent != null
+		
+		when {
+			item.isDownloaded -> btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.COMPLETED
+			item.isDownloadPaused -> btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.PENDING
+			item.downloadPercent != null -> {
+				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.ACTIVE
+				btn.progress = item.downloadPercent
+			}
+			else -> btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.DEFAULT
+		}
 
 		when {
 			item.isCurrent -> {

@@ -15,7 +15,7 @@ import io.github.landwarderer.neyon.list.ui.size.ItemSizeResolver
 
 fun mangaGridItemAD(
 	sizeResolver: ItemSizeResolver,
-	clickListener: OnListItemClickListener<MangaListModel>,
+	clickListener: MangaDetailsClickListener,
 ) = adapterDelegateViewBinding<MangaGridModel, ListModel, ItemMangaGridBinding>(
 	{ inflater, parent -> ItemMangaGridBinding.inflate(inflater, parent, false) },
 ) {
@@ -36,5 +36,11 @@ fun mangaGridItemAD(
 		binding.imageViewCover.setImageAsync(item.coverUrl, item.manga)
 		binding.badge.number = item.counter
 		binding.badge.isVisible = item.counter > 0
+
+		binding.buttonMigrate.isVisible = !item.isSourceAvailable
+		binding.textViewUnavailable.isVisible = !item.isSourceAvailable
+		binding.buttonMigrate.setOnClickListener {
+			clickListener.onMigrationClick(item)
+		}
 	}
 }

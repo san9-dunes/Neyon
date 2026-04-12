@@ -31,12 +31,12 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.flow
-import io.github.landwarderer.neyon.list.domain.ListFilterOption
+import io.github.landwarderer.neyon.list.domain.ListSortOrder
 
 @HiltViewModel
 class SuggestionsViewModel @Inject constructor(
 	private val feedAggregator: FeedAggregator,
-	settings: AppSettings,
+	private val settings: AppSettings,
 	private val mangaListMapper: MangaListMapper,
 	private val quickFilter: SuggestionsListQuickFilter,
 	mangaDataRepository: MangaDataRepository,
@@ -52,18 +52,22 @@ class SuggestionsViewModel @Inject constructor(
 	private var lastMenuRefresh = 0L
 
 	override val content = combine(
-		refreshSignal.flatMapLatest { forceRefresh ->
-                        genreOverride.flatMapLatest { genre ->
-                                flow<List<Manga>?> {
-                                        kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
-                                        // Only wipe the screen if we have no memory cache or explicitly requested a fresh fetch
-                                        if (forceRefresh || genre != null || feedAggregator.cachedFeed == null) {
-                                                emit(null)
-                                        }
-                                        emit(feedAggregator.mixFeed(genre, forceRefresh))
-                                        kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
-                                }
-                        }
+		combine(
+			refreshSignal,
+			genreOverride,
+			settings.observeAsFlow(AppSettings.KEY_SUGGESTIONS_ORDER) { suggestionsSortOrder }
+		) { forceRefresh, genre, sortOrder -> Triple(forceRefresh, genre, sortOrder) }
+		.flatMapLatest { (forceRefresh, genre, sortOrder) ->
+				flow<List<Manga>?> {
+						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
+						// Only wipe the screen if we have no memory cache or explicitly requested a fresh fetch
+						// Added cachedSortOrder check to ensure UI blanks and resets properly when sort order changes
+						if (forceRefresh || genre != null || feedAggregator.cachedFeed == null || feedAggregator.cachedSortOrder != sortOrder) {
+								emit(null)
+						}
+						emit(feedAggregator.mixFeed(genre, forceRefresh, sortOrder))
+						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
+				}
 		},
 		quickFilter.appliedOptions,
 		observeListModeWithTriggers(),

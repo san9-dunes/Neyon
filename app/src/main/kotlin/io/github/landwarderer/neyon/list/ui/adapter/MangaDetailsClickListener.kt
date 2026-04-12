@@ -11,4 +11,6 @@ interface MangaDetailsClickListener : OnListItemClickListener<MangaListModel> {
 	fun onReadClick(manga: Manga, view: View)
 
 	fun onTagClick(manga: Manga, tag: MangaTag, view: View)
+	
+	fun onMigrationClick(item: MangaListModel) {}
 }

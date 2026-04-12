@@ -72,6 +72,10 @@ interface NetworkModule {
             cookieJar(cookieJar)
             proxySelector(proxyProvider.selector)
             proxyAuthenticator(proxyProvider.authenticator)
+            dispatcher(okhttp3.Dispatcher().apply {
+                maxRequests = 128
+                maxRequestsPerHost = 4
+            })
             dns(DoHManager(cache, settings))
             if (settings.isSSLBypassEnabled) {
                 disableCertificateVerification()

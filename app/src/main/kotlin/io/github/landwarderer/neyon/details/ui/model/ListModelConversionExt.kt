@@ -16,6 +16,8 @@ fun MangaChapter.toListItem(
 	isDownloaded: Boolean,
 	isBookmarked: Boolean,
 	isGrid: Boolean,
+	downloadPercent: Float? = null,
+	isDownloadPaused: Boolean = false,
 ): ChapterListItem {
 	var flags: Byte = 0
 	if (isCurrent) flags = flags or FLAG_CURRENT
@@ -27,5 +29,7 @@ fun MangaChapter.toListItem(
 	return ChapterListItem(
 		chapter = this,
 		flags = flags,
+		downloadPercent = downloadPercent,
+		isDownloadPaused = isDownloadPaused,
 	)
 }

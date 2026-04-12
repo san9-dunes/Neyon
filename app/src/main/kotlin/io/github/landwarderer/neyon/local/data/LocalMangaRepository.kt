@@ -43,7 +43,6 @@ import java.util.EnumSet
 import javax.inject.Inject
 import javax.inject.Singleton
 
-private const val MAX_PARALLELISM = 4
 private const val FILENAME_SKIP = ".notamanga"
 
 @Singleton
@@ -237,7 +236,7 @@ class LocalMangaRepository @Inject constructor(
 
 	fun getRawListAsFlow(): Flow<LocalManga> = channelFlow {
 		val files = getAllFiles()
-		val dispatcher = Dispatchers.IO.limitedParallelism(MAX_PARALLELISM)
+		val dispatcher = Dispatchers.IO
 		for (file in files) {
 			launch(dispatcher) {
 				runCatchingCancellable {

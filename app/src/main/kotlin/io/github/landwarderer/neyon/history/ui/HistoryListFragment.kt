@@ -19,6 +19,11 @@ import io.github.landwarderer.neyon.databinding.FragmentListBinding
 import io.github.landwarderer.neyon.list.ui.MangaListFragment
 import io.github.landwarderer.neyon.list.ui.size.DynamicItemSizeResolver
 
+import io.github.landwarderer.neyon.list.ui.model.MangaListModel
+
+import io.github.landwarderer.neyon.core.util.ext.observeEvent
+import io.github.landwarderer.neyon.core.model.getTitle
+
 @AndroidEntryPoint
 class HistoryListFragment : MangaListFragment() {
 
@@ -30,6 +35,16 @@ class HistoryListFragment : MangaListFragment() {
 		RecyclerScrollKeeper(binding.recyclerView).attach()
 		addMenuProvider(HistoryListMenuProvider(binding.root.context, router, viewModel))
 		viewModel.isStatsEnabled.observe(viewLifecycleOwner, MenuInvalidator(requireActivity()))
+		
+		viewModel.fastMigrationCandidates.observeEvent(viewLifecycleOwner) { (manga, items) ->
+			buildAlertDialog(requireContext()) {
+				setTitle(getString(R.string.migration))
+				setItems(items.map { it.title + " (${it.source.getTitle(context)})" }.toTypedArray()) { _, which ->
+					viewModel.confirmFastMigration(manga, items[which])
+				}
+				setNegativeButton(android.R.string.cancel, null)
+			}.show()
+		}
 	}
 
 	override fun onScrolledToEnd() = viewModel.requestMoreItems()
@@ -76,4 +91,8 @@ class HistoryListFragment : MangaListFragment() {
 		this,
 		DynamicItemSizeResolver(resources, viewLifecycleOwner, settings, adjustWidth = false),
 	)
+
+	override fun onMigrationClick(item: MangaListModel) {
+		viewModel.performFastMigration(item.manga)
+	}
 }

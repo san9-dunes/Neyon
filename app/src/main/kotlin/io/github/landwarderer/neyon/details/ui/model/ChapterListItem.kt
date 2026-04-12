@@ -11,6 +11,8 @@ import kotlin.experimental.and
 data class ChapterListItem(
 	val chapter: MangaChapter,
 	val flags: Byte,
+	val downloadPercent: Float? = null,
+	val isDownloadPaused: Boolean = false,
 ) : ListModel {
 
 	private var cachedTitle: String? = null
@@ -97,7 +99,15 @@ data class ChapterListItem(
 		if (previousState !is ChapterListItem) {
 			return super.getChangePayload(previousState)
 		}
-		return if (chapter == previousState.chapter && flags != previousState.flags) {
+		if (chapter != previousState.chapter) {
+			return super.getChangePayload(previousState)
+		}
+
+		if (downloadPercent != previousState.downloadPercent || isDownloadPaused != previousState.isDownloadPaused) {
+			return io.github.landwarderer.neyon.list.ui.ListModelDiffCallback.PAYLOAD_PROGRESS_CHANGED
+		}
+		
+		return if (flags != previousState.flags) {
 			flags
 		} else {
 			super.getChangePayload(previousState)

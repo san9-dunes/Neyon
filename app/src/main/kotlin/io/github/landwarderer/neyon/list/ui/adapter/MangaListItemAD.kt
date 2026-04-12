@@ -12,7 +12,7 @@ import io.github.landwarderer.neyon.list.ui.model.MangaCompactListModel
 import io.github.landwarderer.neyon.list.ui.model.MangaListModel
 
 fun mangaListItemAD(
-	clickListener: OnListItemClickListener<MangaListModel>,
+	clickListener: MangaDetailsClickListener,
 ) = adapterDelegateViewBinding<MangaCompactListModel, ListModel, ItemMangaListBinding>(
 	{ inflater, parent -> ItemMangaListBinding.inflate(inflater, parent, false) },
 ) {
@@ -26,5 +26,11 @@ fun mangaListItemAD(
 		binding.imageViewCover.setImageAsync(item.coverUrl, item.manga)
 		binding.badge.number = item.counter
 		binding.badge.isVisible = item.counter > 0
+
+		binding.buttonMigrate.isVisible = !item.isSourceAvailable
+		binding.textViewUnavailable.isVisible = !item.isSourceAvailable
+		binding.buttonMigrate.setOnClickListener {
+			clickListener.onMigrationClick(item)
+		}
 	}
 }

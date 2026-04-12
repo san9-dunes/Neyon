@@ -38,6 +38,11 @@ import io.github.landwarderer.neyon.details.ui.DetailsViewModel
 import io.github.landwarderer.neyon.details.ui.mapChapters
 import io.github.landwarderer.neyon.details.ui.model.ChapterListItem
 import io.github.landwarderer.neyon.download.ui.worker.DownloadTask
+import io.github.landwarderer.neyon.download.domain.DownloadState
+import androidx.work.WorkInfo
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import io.github.landwarderer.neyon.download.ui.worker.DownloadWorker
 import io.github.landwarderer.neyon.history.data.HistoryRepository
 import io.github.landwarderer.neyon.list.domain.ListFilterOption
@@ -121,6 +126,29 @@ abstract class ChaptersPagesViewModel(
 		}
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, emptyList())
 
+	val downloadStatesFlow = downloadScheduler.observeWorks().combine(mangaDetails) { works, details ->
+		if (details == null) return@combine emptyMap()
+		val result = mutableMapOf<Long, Pair<Float, Boolean>>()
+		for (work in works) {
+			val workData = work.outputData.takeUnless { it.isEmpty }
+				?: work.progress.takeUnless { it.isEmpty }
+				?: continue
+			val mangaId = DownloadState.getMangaId(workData)
+			if (mangaId != details.id) continue
+			
+			val currentChapterId = DownloadState.getCurrentChapterId(workData)
+			val max = DownloadState.getMax(workData)
+			val progress = DownloadState.getProgress(workData)
+			val isPaused = DownloadState.isPaused(workData)
+			
+			if (currentChapterId != 0L) {
+				val percent = if (max > 0) progress.toFloat() / max else 0f
+				result[currentChapterId] = percent to isPaused
+			}
+		}
+		result
+	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Lazily, emptyMap())
+
 	val chapters = combine(
 		combine(
 			mangaDetails,
@@ -138,12 +166,24 @@ abstract class ChaptersPagesViewModel(
 				bookmarks = bookmarks,
 				isGrid = grid,
 				isDownloadedOnly = downloadedOnly,
+				downloadStates = downloadStatesFlow.value,
 			).orEmpty()
 		},
 		isChaptersReversed,
 		chaptersQuery,
-	) { list, reversed, query ->
-		(if (reversed) list.asReversed() else list).filterSearch(query)
+		downloadStatesFlow,
+	) { list, reversed, query, states ->
+		val processedList = if (states.isNotEmpty()) {
+			list.map { item ->
+				val state = states[item.chapter.id]
+				if (state != null) {
+					item.copy(downloadPercent = state.first, isDownloadPaused = state.second)
+				} else {
+					item.copy(downloadPercent = null, isDownloadPaused = false)
+				}
+			}
+		} else list
+		(if (reversed) processedList.asReversed() else processedList).filterSearch(query)
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, emptyList())
 
 	val quickFilter = combine(
@@ -222,6 +262,41 @@ abstract class ChaptersPagesViewModel(
 			)
 			downloadScheduler.schedule(setOf(manga to task))
 			onDownloadStarted.call(Unit)
+		}
+	}
+
+	fun pauseOrCancelDownload(chapterId: Long) {
+		launchJob(Dispatchers.IO) {
+			// For simplicity, we just skip or pause the chapter.
+			val mangaId = mangaDetails.value?.id ?: return@launchJob
+			val works = downloadScheduler.observeWorks().firstOrNull() ?: emptyList()
+			for (work in works) {
+				val data = work.outputData.takeUnless { it.isEmpty }
+					?: work.progress.takeUnless { it.isEmpty }
+					?: continue
+				val currentMangaId = DownloadState.getMangaId(data)
+				if (currentMangaId == mangaId) {
+					val currentChapterId = DownloadState.getCurrentChapterId(data)
+					if (currentChapterId == chapterId) {
+						downloadScheduler.pause(work.id)
+					}
+				}
+			}
+		}
+	}
+
+	fun deleteLocalChapter(chapterId: Long) {
+		val m = mangaDetails.value?.local?.manga
+		if (m == null) {
+			errorEvent.call(FileNotFoundException())
+			return
+		}
+		launchLoadingJob(Dispatchers.IO) {
+			io.github.landwarderer.neyon.local.data.output.LocalMangaUtil(m).deleteChapters(setOf(chapterId))
+			// Need to notify the tracker to refresh chapters
+			val remoteManga = mangaDetails.value?.toManga() ?: return@launchLoadingJob
+			val updatedLocal = interactor.getDetails(remoteManga).local?.manga
+			onDownloadComplete(updatedLocal)
 		}
 	}
 

@@ -13,6 +13,7 @@ data class MangaGridModel(
 	val progress: ReadingProgress?,
 	val isFavorite: Boolean,
 	val isSaved: Boolean,
+	override val isSourceAvailable: Boolean = true,
 ) : MangaListModel() {
 
 	override fun getChangePayload(previousState: ListModel): Any? = when {

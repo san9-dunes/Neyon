@@ -16,6 +16,7 @@ sealed class MangaListModel : ListModel {
 	abstract val override: MangaOverride?
 	abstract val manga: Manga
 	abstract val counter: Int
+	abstract val isSourceAvailable: Boolean
 
 	val id: Long
 		get() = manga.id

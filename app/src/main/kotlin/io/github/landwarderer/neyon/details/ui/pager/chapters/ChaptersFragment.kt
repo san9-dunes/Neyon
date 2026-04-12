@@ -66,7 +66,18 @@ class ChaptersFragment :
 
 	override fun onViewBindingCreated(binding: FragmentChaptersBinding, savedInstanceState: Bundle?) {
 		super.onViewBindingCreated(binding, savedInstanceState)
-		chaptersAdapter = ChaptersAdapter(this)
+		chaptersAdapter = ChaptersAdapter(
+			onItemClickListener = this,
+			onDownloadClick = { item ->
+				if (item.isDownloaded) {
+					viewModel.deleteLocalChapter(item.chapter.id)
+				} else if (item.isDownloadPaused || item.downloadPercent != null) {
+					viewModel.pauseOrCancelDownload(item.chapter.id)
+				} else {
+					viewModel.download(setOf(item.chapter.id), allowMeteredNetwork = false)
+				}
+			}
+		)
 		selectionController = ListSelectionController(
 			appCompatDelegate = checkNotNull(findAppCompatDelegate()),
 			decoration = ChaptersSelectionDecoration(binding.root.context),

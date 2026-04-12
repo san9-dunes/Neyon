@@ -17,12 +17,17 @@ import com.google.android.material.R as materialR
 
 fun chapterListItemAD(
 	clickListener: OnListItemClickListener<ChapterListItem>,
+	onDownloadClick: ((ChapterListItem) -> Unit)? = null,
 ) = adapterDelegateViewBinding<ChapterListItem, ListModel, ItemChapterBinding>(
 	viewBinding = { inflater, parent -> ItemChapterBinding.inflate(inflater, parent, false) },
 	on = { item, _, _ -> item is ChapterListItem && !item.isGrid },
 ) {
 
 	AdapterDelegateClickListenerAdapter(this, clickListener).attach(itemView)
+	
+	binding.buttonDownload.setOnClickListener {
+		onDownloadClick?.invoke(item)
+	}
 
 	bind {
 		binding.textViewTitle.text = item.getTitle(context.resources)
@@ -57,6 +62,22 @@ fun chapterListItemAD(
 			}
 		}
 		binding.imageViewBookmarked.isVisible = item.isBookmarked
-		binding.imageViewDownloaded.isVisible = item.isDownloaded
+
+		val btn = binding.buttonDownload
+		when {
+			item.isDownloaded -> {
+				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.COMPLETED
+			}
+			item.isDownloadPaused -> {
+				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.PENDING
+			}
+			item.downloadPercent != null -> {
+				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.ACTIVE
+				btn.progress = item.downloadPercent
+			}
+			else -> {
+				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.DEFAULT
+			}
+		}
 	}
 }

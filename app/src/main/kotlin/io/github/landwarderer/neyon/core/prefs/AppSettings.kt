@@ -492,6 +492,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		get() = prefs.getEnumValue(KEY_HISTORY_ORDER, ListSortOrder.LAST_READ)
 		set(value) = prefs.edit { putEnumValue(KEY_HISTORY_ORDER, value) }
 
+	var suggestionsSortOrder: ListSortOrder
+		get() = prefs.getEnumValue(KEY_SUGGESTIONS_ORDER, ListSortOrder.UPDATED)
+		set(value) = prefs.edit { putEnumValue(KEY_SUGGESTIONS_ORDER, value) }
+
 	var allFavoritesSortOrder: ListSortOrder
 		get() = prefs.getEnumValue(KEY_FAVORITES_ORDER, ListSortOrder.NEWEST)
 		set(value) = prefs.edit { putEnumValue(KEY_FAVORITES_ORDER, value) }
@@ -779,6 +783,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_READER_OPTIMIZE = "reader_optimize"
 		const val KEY_LOCAL_LIST_ORDER = "local_order"
 		const val KEY_HISTORY_ORDER = "history_order"
+		const val KEY_SUGGESTIONS_ORDER = "suggestions_order"
 		const val KEY_FAVORITES_ORDER = "fav_order"
 		const val KEY_WEBTOON_GAPS = "webtoon_gaps"
 		const val KEY_WEBTOON_ZOOM = "webtoon_zoom"

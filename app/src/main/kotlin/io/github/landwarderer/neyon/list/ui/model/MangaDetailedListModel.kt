@@ -16,6 +16,7 @@ data class MangaDetailedListModel(
 	val isFavorite: Boolean,
 	val isSaved: Boolean,
 	val tags: List<ChipsView.ChipModel>,
+	override val isSourceAvailable: Boolean = true,
 ) : MangaListModel() {
 
 	override fun getChangePayload(previousState: ListModel): Any? = when {

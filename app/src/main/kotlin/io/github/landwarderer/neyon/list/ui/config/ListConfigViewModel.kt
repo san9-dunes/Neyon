@@ -83,7 +83,7 @@ class ListConfigViewModel @Inject constructor(
 		ListConfigSection.General -> null
 		ListConfigSection.Updated -> null
 		ListConfigSection.History -> settings.historySortOrder
-		ListConfigSection.Suggestions -> ListSortOrder.RELEVANCE
+		ListConfigSection.Suggestions -> settings.suggestionsSortOrder
 	}
 
 	fun setSortOrder(position: Int) {
@@ -100,7 +100,7 @@ class ListConfigViewModel @Inject constructor(
 			ListConfigSection.General -> Unit
 			ListConfigSection.History -> settings.historySortOrder = value
 
-			ListConfigSection.Suggestions -> Unit
+			ListConfigSection.Suggestions -> settings.suggestionsSortOrder = value
 			ListConfigSection.Updated -> Unit
 		}
 	}

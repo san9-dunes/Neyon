@@ -17,6 +17,7 @@ import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaListFilter
 import org.koitharu.kotatsu.parsers.model.SortOrder
 import org.koitharu.kotatsu.parsers.model.MangaSource
+import io.github.landwarderer.neyon.list.domain.ListSortOrder
 import org.koitharu.kotatsu.parsers.util.almostEquals
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import javax.inject.Inject
@@ -34,14 +35,16 @@ class FeedAggregator @Inject constructor(
 
         var cachedFeed: List<Manga>? = null
         private var cachedWhitelist: Set<String>? = null
+        var cachedSortOrder: ListSortOrder? = null
 
-        suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false): List<Manga> = supervisorScope {
+        suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false, listSortOrder: ListSortOrder): List<Manga> = supervisorScope {
                 val whitelistNames = appSettings.suggestionSourcesWhitelist     
                 if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
 
-                if (cachedWhitelist != whitelistNames) {
+                if (cachedWhitelist != whitelistNames || cachedSortOrder != listSortOrder) {
                         cachedFeed = null
                         cachedWhitelist = whitelistNames
+                        cachedSortOrder = listSortOrder
                 }
 
                 if (!forceRefresh && forceGenreTag == null && !cachedFeed.isNullOrEmpty()) {
@@ -57,7 +60,7 @@ class FeedAggregator @Inject constructor(
 
                 val queries = sourcesToUse.map { source ->
                         async(Dispatchers.IO) {
-                                fetch(source, forceGenreTag, tagsBlacklist)
+                                fetch(source, forceGenreTag, tagsBlacklist, listSortOrder)
                         }
                 }
 
@@ -90,6 +93,7 @@ class FeedAggregator @Inject constructor(
                 source: MangaSource,
                 forceGenreTag: String?,
                 tagsBlacklist: TagsBlacklist,
+                listSortOrder: ListSortOrder,
         ): List<Manga> = runCatchingCancellable {
                 withTimeoutOrNull(5000L) {
                         val repository = mangaRepositoryFactory.create(source)  
@@ -108,10 +112,17 @@ class FeedAggregator @Inject constructor(
                                 MangaListFilter() 
                         }
 
+                        val targetPrimarySort = if (listSortOrder == ListSortOrder.POPULARITY) SortOrder.POPULARITY else SortOrder.UPDATED
+                        val targetSecondarySort = if (listSortOrder == ListSortOrder.POPULARITY) SortOrder.UPDATED else SortOrder.POPULARITY
+                        
                         val order = if (forceGenreTag == null) {
-                                if (SortOrder.UPDATED in availableOrders) SortOrder.UPDATED else availableOrders.firstOrNull()
+                                if (targetPrimarySort in availableOrders) targetPrimarySort else availableOrders.firstOrNull()
                         } else {
-                                preferredSortOrders.firstOrNull { it in availableOrders } ?: availableOrders.firstOrNull()
+                                // Default user request: "when i click a genre/tag it was supposed to show in popular order"
+                                // Always try to display POPULARITY first if forced genre tag is used unless ListSortOrder is explicitly set differently
+                                val forcedSort = if (listSortOrder == ListSortOrder.POPULARITY || listSortOrder == ListSortOrder.UPDATED) targetPrimarySort else SortOrder.POPULARITY
+                                val fallbackSort = if (forcedSort == SortOrder.POPULARITY) SortOrder.UPDATED else SortOrder.POPULARITY
+                                listOf(forcedSort, fallbackSort).firstOrNull { it in availableOrders } ?: availableOrders.firstOrNull()
                         }
 
                         val list = repository.getList(

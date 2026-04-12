@@ -8,4 +8,5 @@ data class MangaCompactListModel(
 	override val override: MangaOverride?,
 	val subtitle: String,
 	override val counter: Int,
+	override val isSourceAvailable: Boolean = true,
 ) : MangaListModel()

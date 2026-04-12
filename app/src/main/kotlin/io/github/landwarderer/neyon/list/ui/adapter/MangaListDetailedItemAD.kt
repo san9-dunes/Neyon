@@ -36,5 +36,11 @@ fun mangaListDetailedItemAD(
 		binding.textViewTags.text = item.tags.joinToString(separator = ", ") { it.title ?: "" }
 		binding.badge.number = item.counter
 		binding.badge.isVisible = item.counter > 0
+
+		binding.buttonMigrate.isVisible = !item.isSourceAvailable
+		binding.textViewUnavailable.isVisible = !item.isSourceAvailable
+		binding.buttonMigrate.setOnClickListener {
+			clickListener.onMigrationClick(item)
+		}
 	}
 }

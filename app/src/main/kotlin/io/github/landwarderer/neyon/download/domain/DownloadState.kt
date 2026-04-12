@@ -17,6 +17,7 @@ data class DownloadState(
 	val currentChapter: Int = 0,
 	val totalPages: Int = 0,
 	val currentPage: Int = 0,
+	val currentChapterId: Long = 0L,
 	val eta: Long = -1L,
 	val isStuck: Boolean = false,
 	val localManga: LocalManga? = null,
@@ -38,6 +39,7 @@ data class DownloadState(
 
 	fun toWorkData() = Data.Builder()
 		.putLong(DATA_MANGA_ID, manga.id)
+		.putLong(DATA_CURRENT_CHAPTER_ID, currentChapterId)
 		.putInt(DATA_MAX, max)
 		.putInt(DATA_PROGRESS, progress)
 		.putLong(DATA_ETA, eta)
@@ -52,6 +54,7 @@ data class DownloadState(
 	companion object {
 
 		private const val DATA_MANGA_ID = "manga_id"
+		private const val DATA_CURRENT_CHAPTER_ID = "current_chapter_id"
 		private const val DATA_MAX = "max"
 		private const val DATA_PROGRESS = "progress"
 		private const val DATA_CHAPTERS = "chapter_cnt"
@@ -63,6 +66,8 @@ data class DownloadState(
 		private const val DATA_PAUSED = "paused"
 
 		fun getMangaId(data: Data): Long = data.getLong(DATA_MANGA_ID, 0L)
+
+		fun getCurrentChapterId(data: Data): Long = data.getLong(DATA_CURRENT_CHAPTER_ID, 0L)
 
 		fun isIndeterminate(data: Data): Boolean = data.getBoolean(DATA_INDETERMINATE, false)
 

@@ -29,6 +29,18 @@
 			tools:ignore="ContentDescription"
 			tools:src="@tools:sample/backgrounds/scenic[5]" />
 
+		<TextView
+			android:id="@+id/textView_unavailable"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:background="#80000000"
+			android:gravity="center"
+			android:text="!"
+			android:textColor="@android:color/white"
+			android:textSize="24sp"
+			android:textStyle="bold"
+			android:visibility="gone" />
+
 		<io.github.landwarderer.neyon.history.ui.util.ReadingProgressView
 			android:id="@+id/progressView"
 			android:layout_width="@dimen/card_indicator_size"
@@ -57,6 +69,19 @@
 			android:visibility="gone"
 			app:maxCharacterCount="@integer/manga_badge_max_character_count"
 			tools:number="8"
+			tools:visibility="visible" />
+
+		<ImageButton
+			android:id="@+id/button_migrate"
+			android:layout_width="36dp"
+			android:layout_height="36dp"
+			android:layout_gravity="center"
+			android:background="@drawable/custom_selectable_item_background"
+			android:contentDescription="@string/search_alternatives"
+			android:src="@drawable/ic_refresh"
+			app:tint="?attr/colorError"
+			android:padding="6dp"
+			android:visibility="gone"
 			tools:visibility="visible" />
 
 	</FrameLayout>

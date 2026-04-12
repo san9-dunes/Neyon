@@ -12,6 +12,7 @@ import androidx.work.BackoffPolicy
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.Data
+import androidx.work.ExistingWorkPolicy
 import androidx.work.ForegroundInfo
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
@@ -254,6 +255,7 @@ class DownloadWorker @AssistedInject constructor(
 						DownloadProgress(
 							totalChapters = chapters.size,
 							currentChapter = chapterIndex,
+							currentChapterId = chapter.value.id,
 							totalPages = pages.size,
 							currentPage = pageCounter.getAndIncrement(),
 						)
@@ -262,6 +264,7 @@ class DownloadWorker @AssistedInject constructor(
 							currentState.copy(
 								totalChapters = progress.totalChapters,
 								currentChapter = progress.currentChapter,
+								currentChapterId = progress.currentChapterId,
 								totalPages = progress.totalPages,
 								currentPage = progress.currentPage,
 								isIndeterminate = false,
@@ -564,9 +567,10 @@ class DownloadWorker @AssistedInject constructor(
 			if (tasks.isEmpty()) {
 				return
 			}
-			val requests = tasks.map { (manga, task) ->
+			var continuation: androidx.work.WorkContinuation? = null
+			for ((manga, task) in tasks) {
 				mangaDataRepository.storeManga(manga, replaceExisting = true)
-				OneTimeWorkRequestBuilder<DownloadWorker>()
+				val request = OneTimeWorkRequestBuilder<DownloadWorker>()
 					.setConstraints(createConstraints(task.allowMeteredNetwork))
 					.addTag(TAG)
 					.keepResultsForAtLeast(30, TimeUnit.DAYS)
@@ -574,8 +578,13 @@ class DownloadWorker @AssistedInject constructor(
 					.setInputData(task.toData())
 					.setExpedited(OutOfQuotaPolicy.RUN_AS_NON_EXPEDITED_WORK_REQUEST)
 					.build()
+				continuation = if (continuation == null) {
+					workManager.beginUniqueWork(TAG, ExistingWorkPolicy.APPEND_OR_REPLACE, request)
+				} else {
+					continuation.then(request)
+				}
 			}
-			workManager.enqueue(requests).await()
+			continuation?.enqueue()?.await()
 		}
 
 		private fun createConstraints(allowMeteredNetwork: Boolean) = Constraints.Builder()

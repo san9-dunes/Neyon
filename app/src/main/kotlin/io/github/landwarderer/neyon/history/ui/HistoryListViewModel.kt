@@ -47,6 +47,14 @@ import io.github.landwarderer.neyon.local.data.LocalStorageChanges
 import io.github.landwarderer.neyon.local.domain.model.LocalManga
 import kotlinx.coroutines.flow.SharedFlow
 
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
+import io.github.landwarderer.neyon.alternatives.domain.AlternativesUseCase
+import io.github.landwarderer.neyon.alternatives.domain.MigrateUseCase
+import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
+import io.github.landwarderer.neyon.core.model.getTitle
+import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
+
 private const val PAGE_SIZE = 16
 
 @HiltViewModel
@@ -57,6 +65,9 @@ class HistoryListViewModel @Inject constructor(
 	private val markAsReadUseCase: MarkAsReadUseCase,
 	private val quickFilter: HistoryListQuickFilter,
 	mangaDataRepository: MangaDataRepository,
+	private val sourcesRepository: MangaSourcesRepository,
+	private val alternativesUseCase: AlternativesUseCase,
+	private val migrateUseCase: MigrateUseCase,
 	@LocalStorageChanges localStorageChanges: SharedFlow<LocalManga?>,
 ) : MangaListViewModel(settings, mangaDataRepository, localStorageChanges), QuickFilterListener by quickFilter {
 
@@ -94,7 +105,8 @@ class HistoryListViewModel @Inject constructor(
 		isGroupingEnabled,
 		observeListModeWithTriggers(),
 		settings.observeAsFlow(AppSettings.KEY_INCOGNITO_MODE) { isIncognitoModeEnabled },
-	) { filters, list, grouped, mode, incognito ->
+		sourcesRepository.observeEnabledSourcesCount(),
+	) { filters, list, grouped, mode, incognito, _ ->
 		mapList(list, grouped, mode, filters, incognito)
 	}.distinctUntilChanged().onEach {
 		isPaginationReady.set(true)
@@ -145,6 +157,70 @@ class HistoryListViewModel @Inject constructor(
 	fun requestMoreItems() {
 		if (isPaginationReady.compareAndSet(true, false)) {
 			limit.value += PAGE_SIZE
+		}
+	}
+
+	val fastMigrationCandidates = MutableEventFlow<Pair<Manga, List<Manga>>>()
+	private val isMigrating = AtomicBoolean(false)
+
+	fun performFastMigration(manga: Manga) {
+		if (!isMigrating.compareAndSet(false, true)) return
+		launchLoadingJob(Dispatchers.IO) {
+			try {
+				val candidates = alternativesUseCase(manga, throughDisabledSources = false)
+					.take(3)
+					.toList()
+				if (candidates.isNotEmpty()) {
+					fastMigrationCandidates.call(manga to candidates)
+				} else {
+					onActionDone.call(ReversibleAction(R.string.nothing_found, null))
+				}
+			} finally {
+				isMigrating.set(false)
+			}
+		}
+	}
+
+	fun confirmFastMigration(oldManga: Manga, newManga: Manga) {
+		if (!isMigrating.compareAndSet(false, true)) return
+		launchLoadingJob(Dispatchers.IO) {
+			try {
+				migrateUseCase(oldManga, newManga)
+				onActionDone.call(ReversibleAction(R.string.migration_completed, null))
+			} finally {
+				isMigrating.set(false)
+			}
+		}
+	}
+
+	fun migrateAllUnavailable() {
+		if (!isMigrating.compareAndSet(false, true)) return
+		launchLoadingJob(Dispatchers.IO) {
+			try {
+				val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
+				val currentlyLoaded = content.value.mapNotNull { (it as? MangaListModel)?.manga }
+				var migratedCount = 0
+				
+				for (manga in currentlyLoaded) {
+					if (!enabledSources.contains(manga.source.name)) {
+						val candidates = alternativesUseCase(manga, throughDisabledSources = false)
+							.take(1)
+							.toList()
+						
+						val bestMatch = candidates.firstOrNull() ?: continue
+						migrateUseCase(manga, bestMatch)
+						migratedCount++
+					}
+				}
+				
+				if (migratedCount > 0) {
+					onActionDone.call(ReversibleAction(R.string.migration_completed, null))
+				} else {
+					onActionDone.call(ReversibleAction(R.string.nothing_found, null))
+				}
+			} finally {
+				isMigrating.set(false)
+			}
 		}
 	}
 
@@ -226,7 +302,7 @@ class HistoryListViewModel @Inject constructor(
 
 		ListSortOrder.ALPHABETIC,
 		ListSortOrder.ALPHABETIC_REVERSE,
-		ListSortOrder.RELEVANCE,
+		ListSortOrder.POPULARITY,
 		ListSortOrder.NEW_CHAPTERS,
 		ListSortOrder.UPDATED,
 		ListSortOrder.RATING -> null

@@ -40,8 +40,8 @@
 			app:srcCompat="@drawable/ic_bookmark"
 			tools:visibility="visible" />
 
-		<ImageView
-			android:id="@+id/imageView_downloaded"
+		<io.github.landwarderer.neyon.core.ui.widget.DownloadButton
+			android:id="@+id/button_download"
 			android:layout_width="14dp"
 			android:layout_height="14dp"
 			android:layout_marginEnd="6dp"
@@ -50,7 +50,6 @@
 			android:visibility="gone"
 			app:layout_constraintBottom_toBottomOf="@id/textView_title"
 			app:layout_constraintEnd_toStartOf="@id/imageView_bookmarked"
-			app:srcCompat="@drawable/ic_save_ok"
 			tools:visibility="visible" />
 
 		<ImageView

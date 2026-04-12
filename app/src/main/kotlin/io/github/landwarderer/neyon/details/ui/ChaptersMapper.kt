@@ -17,6 +17,7 @@ fun MangaDetails.mapChapters(
 	bookmarks: List<Bookmark>,
 	isGrid: Boolean,
 	isDownloadedOnly: Boolean,
+	downloadStates: Map<Long, Pair<Float, Boolean>> = emptyMap(),
 ): List<ChapterListItem> {
 	val remoteChapters = chapters[branch].orEmpty()
 	val localChapters = local?.manga?.getChapters(branch).orEmpty()
@@ -49,6 +50,8 @@ fun MangaDetails.mapChapters(
 				isDownloaded = local != null,
 				isBookmarked = chapter.id in bookmarked,
 				isGrid = isGrid,
+				downloadPercent = downloadStates[chapter.id]?.first,
+				isDownloadPaused = downloadStates[chapter.id]?.second ?: false,
 			)
 		}
 	}
@@ -64,6 +67,8 @@ fun MangaDetails.mapChapters(
 				isDownloaded = !isLocal,
 				isBookmarked = chapter.id in bookmarked,
 				isGrid = isGrid,
+				downloadPercent = downloadStates[chapter.id]?.first,
+				isDownloadPaused = downloadStates[chapter.id]?.second ?: false,
 			)
 		}
 	}
