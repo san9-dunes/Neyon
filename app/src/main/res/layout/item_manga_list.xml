@@ -82,18 +82,18 @@
 		tools:number="8"
 		tools:visibility="visible" />
 
-	<ImageButton 
-    android:id="@+id/button_migrate"
-    android:layout_width="48dp"
-    android:layout_height="48dp"
-    android:background="?attr/selectableItemBackgroundBorderless"
-    android:contentDescription="@string/action_search"
-    android:src="@drawable/ic_sync"
-    app:tint="?attr/colorError"
-    android:visibility="gone"
-    app:layout_constraintBottom_toBottomOf="@+id/imageView_cover"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintTop_toTopOf="@+id/imageView_cover"
-    tools:visibility="visible" />
+	<ImageButton
+			android:id="@+id/button_migrate"
+			android:layout_width="48dp"
+			android:layout_height="48dp"
+			android:background="?attr/selectableItemBackgroundBorderless"
+			android:contentDescription="@string/action_search"
+			android:src="@drawable/ic_sync"
+			app:tint="?attr/colorError"
+			android:visibility="gone"
+			app:layout_constraintBottom_toBottomOf="@+id/imageView_cover"
+			app:layout_constraintEnd_toEndOf="parent"
+			app:layout_constraintTop_toTopOf="@+id/imageView_cover"
+			tools:visibility="visible" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
