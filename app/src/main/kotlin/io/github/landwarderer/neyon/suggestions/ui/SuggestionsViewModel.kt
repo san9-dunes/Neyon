@@ -66,7 +66,8 @@ class SuggestionsViewModel @Inject constructor(
 						if (forceRefresh || genre != null || feedAggregator.cachedFeed == null || feedAggregator.cachedSortOrder != sortOrder) {
 								emit(null)
 						}
-						emit(feedAggregator.mixFeed(genre, forceRefresh, sortOrder))
+						val effectiveSortOrder = if (genre != null) ListSortOrder.POPULARITY else sortOrder
+						emit(feedAggregator.mixFeed(genre, forceRefresh, effectiveSortOrder))
 						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
 				}
 		},
