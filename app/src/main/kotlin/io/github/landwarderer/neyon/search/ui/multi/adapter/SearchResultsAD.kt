@@ -15,6 +15,7 @@ import io.github.landwarderer.neyon.core.util.ext.getDisplayMessage
 import io.github.landwarderer.neyon.core.util.ext.textAndVisible
 import io.github.landwarderer.neyon.databinding.ItemListGroupBinding
 import io.github.landwarderer.neyon.list.ui.MangaSelectionDecoration
+import io.github.landwarderer.neyon.list.ui.adapter.MangaDetailsClickListener
 import io.github.landwarderer.neyon.list.ui.adapter.mangaGridItemAD
 import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.MangaListModel
@@ -26,7 +27,7 @@ fun searchResultsAD(
 	sharedPool: RecycledViewPool,
 	sizeResolver: ItemSizeResolver,
 	selectionDecoration: MangaSelectionDecoration,
-	listener: OnListItemClickListener<MangaListModel>,
+	listener: MangaDetailsClickListener,
 	itemClickListener: OnListItemClickListener<SearchResultsListModel>,
 ) = adapterDelegateViewBinding<SearchResultsListModel, ListModel, ItemListGroupBinding>(
 	{ layoutInflater, parent -> ItemListGroupBinding.inflate(layoutInflater, parent, false) },

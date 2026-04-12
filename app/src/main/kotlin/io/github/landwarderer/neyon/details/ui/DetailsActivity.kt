@@ -94,6 +94,7 @@ import io.github.landwarderer.neyon.details.ui.scrobbling.ScrollingInfoAdapter
 import io.github.landwarderer.neyon.download.ui.worker.DownloadStartedObserver
 import io.github.landwarderer.neyon.list.domain.ReadingProgress
 import io.github.landwarderer.neyon.list.ui.adapter.ListItemType
+import io.github.landwarderer.neyon.list.ui.adapter.MangaDetailsClickListener
 import io.github.landwarderer.neyon.list.ui.adapter.mangaGridItemAD
 import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.MangaListModel
@@ -394,9 +395,16 @@ class DetailsActivity :
 				ListItemType.MANGA_GRID,
 				mangaGridItemAD(
 					sizeResolver = StaticItemSizeResolver(resources.getDimensionPixelSize(R.dimen.smaller_grid_width)),
-				) { item, view ->
-					router.openDetails(item.toMangaWithOverride())
-				},
+					clickListener = object : MangaDetailsClickListener {
+						override fun onItemClick(item: MangaListModel, view: View) {
+							router.openDetails(item.toMangaWithOverride())
+						}
+
+						override fun onReadClick(manga: Manga, view: View) = Unit
+
+						override fun onTagClick(manga: Manga, tag: MangaTag, view: View) = Unit
+					},
+				),
 			).also { rv.adapter = it }
 		adapter.items = related
 		viewBinding.groupRelated.isVisible = true

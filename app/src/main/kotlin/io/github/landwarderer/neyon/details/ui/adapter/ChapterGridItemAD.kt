@@ -42,7 +42,7 @@ fun chapterGridItemAD(
 			item.isDownloadPaused -> btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.PENDING
 			item.downloadPercent != null -> {
 				btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.ACTIVE
-				btn.progress = item.downloadPercent
+				btn.progress = item.downloadPercent ?: 0f
 			}
 			else -> btn.state = io.github.landwarderer.neyon.core.ui.widget.DownloadButton.State.DEFAULT
 		}

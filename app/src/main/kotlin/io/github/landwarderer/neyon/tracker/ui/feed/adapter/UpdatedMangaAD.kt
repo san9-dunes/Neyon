@@ -7,6 +7,7 @@ import io.github.landwarderer.neyon.core.ui.list.OnListItemClickListener
 import io.github.landwarderer.neyon.databinding.ItemListGroupBinding
 import io.github.landwarderer.neyon.list.ui.adapter.ListHeaderClickListener
 import io.github.landwarderer.neyon.list.ui.adapter.ListItemType
+import io.github.landwarderer.neyon.list.ui.adapter.MangaDetailsClickListener
 import io.github.landwarderer.neyon.list.ui.adapter.mangaGridItemAD
 import io.github.landwarderer.neyon.list.ui.model.ListHeader
 import io.github.landwarderer.neyon.list.ui.model.ListModel
@@ -16,7 +17,7 @@ import io.github.landwarderer.neyon.tracker.ui.feed.model.UpdatedMangaHeader
 
 fun updatedMangaAD(
 	sizeResolver: ItemSizeResolver,
-	listener: OnListItemClickListener<MangaListModel>,
+	listener: MangaDetailsClickListener,
 	headerClickListener: ListHeaderClickListener,
 ) = adapterDelegateViewBinding<UpdatedMangaHeader, ListModel, ItemListGroupBinding>(
 	{ layoutInflater, parent -> ItemListGroupBinding.inflate(layoutInflater, parent, false) },

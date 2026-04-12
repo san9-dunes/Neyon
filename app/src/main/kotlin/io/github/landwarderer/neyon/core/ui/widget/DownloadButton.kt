@@ -9,6 +9,8 @@ import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
 import io.github.landwarderer.neyon.R
+import io.github.landwarderer.neyon.core.util.ext.getThemeColor
+import com.google.android.material.R as materialR
 import kotlin.math.min
 
 class DownloadButton @JvmOverloads constructor(
@@ -36,13 +38,13 @@ class DownloadButton @JvmOverloads constructor(
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 6f
-        color = ContextCompat.getColor(context, R.color.colorAccent)
+        color = context.getThemeColor(materialR.attr.colorPrimary)
     }
 
     private val backgroundPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeWidth = 6f
-        color = ContextCompat.getColor(context, R.color.colorSurfaceVariant)
+        color = context.getThemeColor(materialR.attr.colorSurfaceVariant)
     }
 
     private val defaultIcon: Drawable? = ContextCompat.getDrawable(context, R.drawable.ic_download)

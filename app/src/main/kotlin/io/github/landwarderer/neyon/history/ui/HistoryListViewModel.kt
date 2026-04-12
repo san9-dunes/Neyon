@@ -38,8 +38,10 @@ import io.github.landwarderer.neyon.list.ui.model.InfoModel
 import io.github.landwarderer.neyon.list.ui.model.ListHeader
 import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
+import io.github.landwarderer.neyon.list.ui.model.MangaListModel
 import io.github.landwarderer.neyon.list.ui.model.toErrorState
 import org.koitharu.kotatsu.parsers.model.Manga
+import org.koitharu.kotatsu.parsers.util.mapToSet
 import java.time.Instant
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
@@ -54,6 +56,14 @@ import io.github.landwarderer.neyon.alternatives.domain.MigrateUseCase
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.model.getTitle
 import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
+
+private data class ContentInput(
+	val filters: Set<ListFilterOption>,
+	val list: List<MangaWithHistory>,
+	val grouped: Boolean,
+	val mode: ListMode,
+	val isIncognito: Boolean,
+)
 
 private const val PAGE_SIZE = 16
 
@@ -105,9 +115,12 @@ class HistoryListViewModel @Inject constructor(
 		isGroupingEnabled,
 		observeListModeWithTriggers(),
 		settings.observeAsFlow(AppSettings.KEY_INCOGNITO_MODE) { isIncognitoModeEnabled },
+	) { filters, list, grouped, mode, incognito ->
+		ContentInput(filters, list, grouped, mode, incognito)
+	}.combine(
 		sourcesRepository.observeEnabledSourcesCount(),
-	) { filters, list, grouped, mode, incognito, _ ->
-		mapList(list, grouped, mode, filters, incognito)
+	) { input, _ ->
+		mapList(input.list, input.grouped, input.mode, input.filters, input.isIncognito)
 	}.distinctUntilChanged().onEach {
 		isPaginationReady.set(true)
 	}.catch { e ->
@@ -303,6 +316,7 @@ class HistoryListViewModel @Inject constructor(
 		ListSortOrder.ALPHABETIC,
 		ListSortOrder.ALPHABETIC_REVERSE,
 		ListSortOrder.POPULARITY,
+		ListSortOrder.RELEVANCE,
 		ListSortOrder.NEW_CHAPTERS,
 		ListSortOrder.UPDATED,
 		ListSortOrder.RATING -> null

@@ -29,6 +29,7 @@ import io.github.landwarderer.neyon.core.util.LocaleStringComparator
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.util.ext.call
 import io.github.landwarderer.neyon.core.util.ext.combine
+import io.github.landwarderer.neyon.core.util.ext.isEmpty
 import io.github.landwarderer.neyon.core.util.ext.requireValue
 import io.github.landwarderer.neyon.core.util.ext.sortedWithSafe
 import io.github.landwarderer.neyon.details.data.MangaDetails
@@ -293,10 +294,7 @@ abstract class ChaptersPagesViewModel(
 		}
 		launchLoadingJob(Dispatchers.IO) {
 			io.github.landwarderer.neyon.local.data.output.LocalMangaUtil(m).deleteChapters(setOf(chapterId))
-			// Need to notify the tracker to refresh chapters
-			val remoteManga = mangaDetails.value?.toManga() ?: return@launchLoadingJob
-			val updatedLocal = interactor.getDetails(remoteManga).local?.manga
-			onDownloadComplete(updatedLocal)
+			onDownloadComplete(LocalManga(m))
 		}
 	}
 

@@ -16,6 +16,7 @@ import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.observeAsFlow
 import io.github.landwarderer.neyon.core.util.ext.onFirst
+import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import io.github.landwarderer.neyon.list.domain.MangaListMapper
 import io.github.landwarderer.neyon.list.domain.QuickFilterListener
 import io.github.landwarderer.neyon.list.ui.MangaListViewModel

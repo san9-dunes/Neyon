@@ -1,17 +1,15 @@
 package io.github.landwarderer.neyon.list.domain
 
 import android.annotation.SuppressLint
-import android.content.Context
 import androidx.annotation.ColorRes
 import androidx.annotation.IntDef
 import dagger.Reusable
-import dagger.hilt.android.qualifiers.ApplicationContext
-import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.ListMode
 import io.github.landwarderer.neyon.core.ui.model.MangaOverride
 import io.github.landwarderer.neyon.core.ui.widgets.ChipsView
+import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
 import io.github.landwarderer.neyon.favourites.domain.FavouritesRepository
 import io.github.landwarderer.neyon.history.data.HistoryRepository
 import io.github.landwarderer.neyon.list.ui.model.MangaCompactListModel
@@ -19,17 +17,16 @@ import io.github.landwarderer.neyon.list.ui.model.MangaDetailedListModel
 import io.github.landwarderer.neyon.list.ui.model.MangaGridModel
 import io.github.landwarderer.neyon.list.ui.model.MangaListModel
 import io.github.landwarderer.neyon.local.data.index.LocalMangaIndex
-import org.koitharu.kotatsu.parsers.model.Manga
-import org.koitharu.kotatsu.parsers.model.MangaTag
 import io.github.landwarderer.neyon.tracker.domain.TrackingRepository
 import io.github.landwarderer.neyon.tracker.domain.model.TrackingLogItem
 import io.github.landwarderer.neyon.tracker.ui.feed.model.FeedItem
-import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
+import org.koitharu.kotatsu.parsers.model.Manga
+import org.koitharu.kotatsu.parsers.model.MangaTag
+import org.koitharu.kotatsu.parsers.util.mapToSet
 import javax.inject.Inject
 
 @Reusable
 class MangaListMapper @Inject constructor(
-	@ApplicationContext context: Context,
 	private val settings: AppSettings,
 	private val trackingRepository: TrackingRepository,
 	private val historyRepository: HistoryRepository,
@@ -38,7 +35,6 @@ class MangaListMapper @Inject constructor(
 	private val dataRepository: MangaDataRepository,
 	private val sourcesRepository: MangaSourcesRepository,
 ) {
-
 
 	suspend fun toListModelList(
 		manga: Collection<Manga>,
@@ -61,9 +57,15 @@ class MangaListMapper @Inject constructor(
 	) {
 		val options = getOptions(flags)
 		val overrides = dataRepository.getOverrides()
-        val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
+		val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
 		manga.mapTo(destination) {
-			toListModelImpl(it, mode, options, overrides[it.id], enabledSources.contains(it.source.name))
+			toListModelImpl(
+				manga = it,
+				mode = mode,
+				options = options,
+				override = overrides[it.id],
+				isSourceAvailable = enabledSources.contains(it.source.name),
+			)
 		}
 	}
 
@@ -113,25 +115,25 @@ class MangaListMapper @Inject constructor(
 
 	private suspend fun toDetailedListModel(
 		manga: Manga,
+		@Options options: Int,
+		override: MangaOverride?,
 		isSourceAvailable: Boolean,
 	) = MangaDetailedListModel(
-		subtitle = manga.altTitles.firstOrNull(),
 		manga = manga,
 		override = override,
+		subtitle = manga.altTitles.firstOrNull(),
 		counter = getCounter(manga.id, options),
 		progress = getProgress(manga.id, options),
 		isFavorite = isFavorite(manga.id, options),
 		isSaved = isSaved(manga.id, options),
 		tags = mapTags(manga.tags),
-		isSourceAvailable = isSourceAvailablenga.id, options),
-		isSaved = isSaved(manga.id, options),
-		tags = mapTags(manga.tags),
+		isSourceAvailable = isSourceAvailable,
 	)
 
 	private suspend fun toGridModel(
 		manga: Manga,
 		@Options options: Int,
-		override: MangaOverride?
+		override: MangaOverride?,
 		isSourceAvailable: Boolean,
 	) = MangaGridModel(
 		manga = manga,
@@ -183,7 +185,6 @@ class MangaListMapper @Inject constructor(
 	private fun getTagTint(tag: MangaTag): Int {
 		return 0
 	}
-
 
 	private fun Int.isBadgeEnabled(@Options badge: Int) = this and badge == badge
 
