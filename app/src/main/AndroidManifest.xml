@@ -303,6 +303,9 @@
 			android:name="io.github.landwarderer.neyon.alternatives.ui.AlternativesActivity"
 			android:label="@string/alternatives" />
 		<activity
+			android:name="io.github.landwarderer.neyon.history.ui.migration.HistoryMigrationActivity"
+			android:label="@string/migrate_all_unavailable" />
+		<activity
 			android:name="io.github.landwarderer.neyon.settings.about.AppUpdateActivity"
 			android:label="@string/app_update_available" />
 		<activity

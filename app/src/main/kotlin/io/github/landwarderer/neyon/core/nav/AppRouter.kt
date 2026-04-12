@@ -180,6 +180,12 @@ class AppRouter private constructor(
         )
     }
 
+    fun openHistoryMigration() {
+        startActivity(
+            Intent(contextOrNull() ?: return, io.github.landwarderer.neyon.history.ui.migration.HistoryMigrationActivity::class.java)
+        )
+    }
+
     fun openRelated(manga: Manga) {
         startActivity(
             Intent(contextOrNull(), RelatedMangaActivity::class.java)

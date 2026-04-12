@@ -629,7 +629,7 @@
     <string name="manga_migration">Manga migration</string>
     <string name="migration">Migration</string>
     <string name="migration_completed">Migration completed</string>
-    <string name="migrate_all_unavailable">Migrate unavailable in history</string>
+    <string name="migrate_all_unavailable">Fix Sources</string>
     <string name="delete_read_chapters">Delete read chapters</string>
     <string name="no_chapters_deleted">No chapters have been deleted</string>
     <string name="chapters_deleted_pattern">Removed %1$s, cleared %2$s</string>

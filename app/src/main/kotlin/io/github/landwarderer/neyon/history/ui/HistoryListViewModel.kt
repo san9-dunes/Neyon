@@ -66,7 +66,6 @@ private data class ContentInput(
 )
 
 private const val PAGE_SIZE = 16
-private const val MIGRATION_SCAN_PAGE_SIZE = 100
 
 @HiltViewModel
 class HistoryListViewModel @Inject constructor(
@@ -207,44 +206,7 @@ class HistoryListViewModel @Inject constructor(
 		}
 	}
 
-	fun migrateAllUnavailable() {
-		if (!isMigrating.compareAndSet(false, true)) return
-		launchLoadingJob(Dispatchers.IO) {
-			try {
-				val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
-				val unavailableHistoryManga = ArrayList<Manga>()
-				var offset = 0
-				while (true) {
-					val page = repository.getList(offset = offset, limit = MIGRATION_SCAN_PAGE_SIZE)
-					if (page.isEmpty()) {
-						break
-					}
-					unavailableHistoryManga += page.filter { manga ->
-						!manga.isLocal && manga.source.name !in enabledSources
-					}
-					offset += page.size
-				}
-				var migratedCount = 0
 
-				for (manga in unavailableHistoryManga) {
-					val bestMatch = alternativesUseCase(manga, throughDisabledSources = false)
-						.take(1)
-						.toList()
-						.firstOrNull() ?: continue
-					migrateUseCase(manga, bestMatch)
-					migratedCount++
-				}
-
-				if (migratedCount > 0) {
-					onActionDone.call(ReversibleAction(R.string.migration_completed, null))
-				} else {
-					onActionDone.call(ReversibleAction(R.string.nothing_found, null))
-				}
-			} finally {
-				isMigrating.set(false)
-			}
-		}
-	}
 
 	private fun observeHistory() = combine(
 		sortOrder,
