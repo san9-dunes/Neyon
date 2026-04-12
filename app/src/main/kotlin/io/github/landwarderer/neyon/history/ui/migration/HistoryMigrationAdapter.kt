@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import io.github.landwarderer.neyon.databinding.ItemHistoryMigrationBinding
 import org.koitharu.kotatsu.parsers.model.Manga
-import io.github.landwarderer.neyon.core.model.getTitle
 
 class HistoryMigrationAdapter(
     private val onChangeClick: (Manga) -> Unit
@@ -38,7 +37,7 @@ class HistoryMigrationAdapter(
         fun bind(item: MigrationPair) {
             val context = binding.root.context
             binding.imageViewCover.setImageAsync(item.oldManga.coverUrl, item.oldManga)
-            binding.textViewTitle.text = item.oldManga.getTitle(context)
+            binding.textViewTitle.text = item.oldManga.title
             binding.textViewOldSource.text = "From: ${item.oldManga.source.name}"
             
             if (item.isFetching || item.newManga == null) {
@@ -46,7 +45,7 @@ class HistoryMigrationAdapter(
                 binding.textViewNewSource.text = if (item.isFetching) "Finding match..." else "To: Not found"
             } else {
                 binding.progressLoading.visibility = View.GONE
-                binding.textViewNewSource.text = "To: ${item.newManga.source.name} - ${item.newManga.getTitle(context)}"
+                binding.textViewNewSource.text = "To: ${item.newManga.source.name} - ${item.newManga.title}"
             }
         }
     }
