@@ -129,7 +129,7 @@ class AppRouter private constructor(
         startActivity(listIntent(contextOrNull() ?: return, source, filter, sortOrder))
     }
 
-    fun openList(tag: MangaTag) = openList(tag.source, MangaListFilter(tags = setOf(tag)), null)
+    fun openList(tag: MangaTag) = openList(tag.source, MangaListFilter(tags = setOf(tag)), SortOrder.POPULARITY)
 
     fun openSearch(query: String, kind: SearchKind = SearchKind.SIMPLE) {
         startActivity(

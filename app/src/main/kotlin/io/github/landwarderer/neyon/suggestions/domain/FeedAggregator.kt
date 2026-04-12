@@ -31,8 +31,6 @@ class FeedAggregator @Inject constructor(
 	private val appSettings: AppSettings,
 ) {
 
-	private val preferredSortOrders = listOf(SortOrder.UPDATED, SortOrder.POPULARITY)
-
         var cachedFeed: List<Manga>? = null
         private var cachedWhitelist: Set<String>? = null
         var cachedSortOrder: ListSortOrder? = null
@@ -113,16 +111,12 @@ class FeedAggregator @Inject constructor(
                         }
 
                         val targetPrimarySort = if (listSortOrder == ListSortOrder.POPULARITY) SortOrder.POPULARITY else SortOrder.UPDATED
-                        val targetSecondarySort = if (listSortOrder == ListSortOrder.POPULARITY) SortOrder.UPDATED else SortOrder.POPULARITY
                         
                         val order = if (forceGenreTag == null) {
                                 if (targetPrimarySort in availableOrders) targetPrimarySort else availableOrders.firstOrNull()
                         } else {
-                                // Default user request: "when i click a genre/tag it was supposed to show in popular order"
-                                // Always try to display POPULARITY first if forced genre tag is used unless ListSortOrder is explicitly set differently
-                                val forcedSort = if (listSortOrder == ListSortOrder.POPULARITY || listSortOrder == ListSortOrder.UPDATED) targetPrimarySort else SortOrder.POPULARITY
-                                val fallbackSort = if (forcedSort == SortOrder.POPULARITY) SortOrder.UPDATED else SortOrder.POPULARITY
-                                listOf(forcedSort, fallbackSort).firstOrNull { it in availableOrders } ?: availableOrders.firstOrNull()
+                                listOf(SortOrder.POPULARITY, SortOrder.UPDATED).firstOrNull { it in availableOrders }
+                                        ?: availableOrders.firstOrNull()
                         }
 
                         val list = repository.getList(

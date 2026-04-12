@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.plus
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.model.MangaHistory
+import io.github.landwarderer.neyon.core.model.isLocal
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.ListMode
@@ -38,7 +39,6 @@ import io.github.landwarderer.neyon.list.ui.model.InfoModel
 import io.github.landwarderer.neyon.list.ui.model.ListHeader
 import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
-import io.github.landwarderer.neyon.list.ui.model.MangaListModel
 import io.github.landwarderer.neyon.list.ui.model.toErrorState
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.util.mapToSet
@@ -66,6 +66,7 @@ private data class ContentInput(
 )
 
 private const val PAGE_SIZE = 16
+private const val MIGRATION_SCAN_PAGE_SIZE = 100
 
 @HiltViewModel
 class HistoryListViewModel @Inject constructor(
@@ -106,7 +107,7 @@ class HistoryListViewModel @Inject constructor(
 	val isStatsEnabled = settings.observeAsStateFlow(
 		scope = viewModelScope + Dispatchers.IO,
 		key = AppSettings.KEY_STATS_ENABLED,
-		valueProducer = settings::isStatsEnabled,
+		valueProducer = { settings.isStatsEnabled },
 	)
 
 	override val content = combine(
@@ -211,21 +212,29 @@ class HistoryListViewModel @Inject constructor(
 		launchLoadingJob(Dispatchers.IO) {
 			try {
 				val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
-				val currentlyLoaded = content.value.mapNotNull { (it as? MangaListModel)?.manga }
-				var migratedCount = 0
-				
-				for (manga in currentlyLoaded) {
-					if (!enabledSources.contains(manga.source.name)) {
-						val candidates = alternativesUseCase(manga, throughDisabledSources = false)
-							.take(1)
-							.toList()
-						
-						val bestMatch = candidates.firstOrNull() ?: continue
-						migrateUseCase(manga, bestMatch)
-						migratedCount++
+				val unavailableHistoryManga = ArrayList<Manga>()
+				var offset = 0
+				while (true) {
+					val page = repository.getList(offset = offset, limit = MIGRATION_SCAN_PAGE_SIZE)
+					if (page.isEmpty()) {
+						break
 					}
+					unavailableHistoryManga += page.filter { manga ->
+						!manga.isLocal && manga.source.name !in enabledSources
+					}
+					offset += page.size
 				}
-				
+				var migratedCount = 0
+
+				for (manga in unavailableHistoryManga) {
+					val bestMatch = alternativesUseCase(manga, throughDisabledSources = false)
+						.take(1)
+						.toList()
+						.firstOrNull() ?: continue
+					migrateUseCase(manga, bestMatch)
+					migratedCount++
+				}
+
 				if (migratedCount > 0) {
 					onActionDone.call(ReversibleAction(R.string.migration_completed, null))
 				} else {

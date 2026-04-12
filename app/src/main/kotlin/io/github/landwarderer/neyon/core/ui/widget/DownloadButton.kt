@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.ContextCompat
+import androidx.appcompat.R as appcompatR
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.util.ext.getThemeColor
 import com.google.android.material.R as materialR

@@ -156,19 +156,20 @@ class SearchViewModel @Inject constructor(
 		val prevJob = searchJob
 		searchJob = launchLoadingJob(Dispatchers.IO) {
 			prevJob?.cancelAndJoin()
-			appendResult(searchHistory())
-			appendResult(searchFavorites())
-			appendResult(searchLocal())
 			val sources = if (pinnedOnly.value) {
 				sourcesRepository.getPinnedSources().toList()
 			} else {
 				sourcesRepository.getEnabledSources()
 			}
-			sources.map { source ->
+			(listOf(
+				launch { appendResult(searchHistory()) },
+				launch { appendResult(searchFavorites()) },
+				launch { appendResult(searchLocal()) },
+			) + sources.map { source ->
 				launch {
 					appendResult(searchSource(source))
 				}
-			}.joinAll()
+			}).joinAll()
 		}
 	}
 

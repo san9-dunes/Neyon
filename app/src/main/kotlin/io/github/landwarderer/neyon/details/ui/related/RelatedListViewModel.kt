@@ -7,11 +7,11 @@ import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.model.parcelable.ParcelableManga
 import io.github.landwarderer.neyon.core.nav.AppRouter
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
-import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.ext.call
 import io.github.landwarderer.neyon.core.util.ext.printStackTraceDebug
 import io.github.landwarderer.neyon.core.util.ext.require
+import io.github.landwarderer.neyon.details.domain.RelatedMangaUseCase
 import io.github.landwarderer.neyon.list.domain.MangaListMapper
 import io.github.landwarderer.neyon.list.ui.MangaListViewModel
 import io.github.landwarderer.neyon.list.ui.model.EmptyState
@@ -34,15 +34,14 @@ import javax.inject.Inject
 @HiltViewModel
 class RelatedListViewModel @Inject constructor(
 	savedStateHandle: SavedStateHandle,
-	mangaRepositoryFactory: MangaRepository.Factory,
 	settings: AppSettings,
 	private val mangaListMapper: MangaListMapper,
+	private val relatedMangaUseCase: RelatedMangaUseCase,
 	mangaDataRepository: MangaDataRepository,
 	@LocalStorageChanges localStorageChanges: SharedFlow<LocalManga?>,
 ) : MangaListViewModel(settings, mangaDataRepository, localStorageChanges) {
 
 	private val seed = savedStateHandle.require<ParcelableManga>(AppRouter.KEY_MANGA).manga
-	private val repository = mangaRepositoryFactory.create(seed.source)
 	private val mangaList = MutableStateFlow<List<Manga>?>(null)
 	private val listError = MutableStateFlow<Throwable?>(null)
 	private var loadingJob: Job? = null
@@ -79,7 +78,7 @@ class RelatedListViewModel @Inject constructor(
 		return launchLoadingJob(Dispatchers.IO) {
 			try {
 				listError.value = null
-				mangaList.value = repository.getRelated(seed)
+				mangaList.value = relatedMangaUseCase(seed).orEmpty()
 			} catch (e: CancellationException) {
 				throw e
 			} catch (e: Throwable) {

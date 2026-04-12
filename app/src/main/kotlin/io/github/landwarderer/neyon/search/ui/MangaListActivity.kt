@@ -207,7 +207,16 @@ class MangaListActivity :
 
 		override fun run() {
 			if (sortOrder != null) {
-				filterOwner.filterCoordinator.setSortOrder(sortOrder)
+				val availableSortOrders = filterOwner.filterCoordinator.sortOrder.value.availableItems
+				val selectedSortOrder = when {
+					sortOrder in availableSortOrders -> sortOrder
+					SortOrder.POPULARITY in availableSortOrders -> SortOrder.POPULARITY
+					SortOrder.UPDATED in availableSortOrders -> SortOrder.UPDATED
+					else -> availableSortOrders.firstOrNull()
+				}
+				if (selectedSortOrder != null) {
+					filterOwner.filterCoordinator.setSortOrder(selectedSortOrder)
+				}
 			}
 			if (filter != null) {
 				filterOwner.filterCoordinator.setAdjusted(filter)
