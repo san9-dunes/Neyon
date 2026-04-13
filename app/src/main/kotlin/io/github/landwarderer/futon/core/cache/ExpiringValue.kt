@@ -7,12 +7,13 @@ class ExpiringValue<T>(
 	private val value: T,
 	lifetime: Long,
 	timeUnit: TimeUnit,
+	private val timeProvider: () -> Long = { SystemClock.elapsedRealtime() },
 ) {
 
-	private val expiresAt = SystemClock.elapsedRealtime() + timeUnit.toMillis(lifetime)
+	private val expiresAt = timeProvider() + timeUnit.toMillis(lifetime)
 
 	val isExpired: Boolean
-		get() = SystemClock.elapsedRealtime() >= expiresAt
+		get() = timeProvider() >= expiresAt
 
 	fun get(): T? = if (isExpired) null else value
 
