@@ -27,12 +27,12 @@ class AppUpdateRepository @Inject constructor(
 	@BaseHttpClient private val okHttp: OkHttpClient,
 	@ApplicationContext context: Context,
 ) {
-// TODO("Fix update checking.")
 	private val availableUpdate = MutableStateFlow<AppVersion?>(null)
+
 	private val latestReleaseUrl = buildString {
 		append("https://api.github.com/repos/")
 		append(context.getString(R.string.github_updates_repo))
-		append("/releases/latest")
+		append("/releases")
 	}
 
 	private val changelogUrl = buildString {
@@ -48,12 +48,28 @@ class AppUpdateRepository @Inject constructor(
 
 	suspend fun fetchUpdate(): AppVersion? = withContext(Dispatchers.IO) {
 		runCatchingCancellable {
+			val isNightly = BuildConfig.BUILD_TYPE != BUILD_TYPE_RELEASE
+			val isUnstableAllowed = settings.isUnstableUpdatesAllowed
+			val url = if (isNightly || isUnstableAllowed) {
+				latestReleaseUrl // Fetch all releases and find the latest one we can use
+			} else {
+				"$latestReleaseUrl/latest" // Fetch only stable latest release
+			}
+
 			val request = Request.Builder()
 				.get()
-				.url(latestReleaseUrl)
+				.url(url)
 				.build()
 			val response = okHttp.newCall(request).await()
-			val json = JSONObject(response.body?.string() ?: "{}")
+			val responseString = response.body?.string() ?: return@runCatchingCancellable null
+
+			val json = if (isNightly || isUnstableAllowed) {
+				val jsonArray = org.json.JSONArray(responseString)
+				if (jsonArray.length() == 0) return@runCatchingCancellable null
+				jsonArray.getJSONObject(0)
+			} else {
+				JSONObject(responseString)
+			}
 			
 			val currentVersion = VersionId(BuildConfig.VERSION_NAME)
 			val releaseVersion = VersionId(json.getString("tag_name").removePrefix("v"))
@@ -63,12 +79,27 @@ class AppUpdateRepository @Inject constructor(
 				return@runCatchingCancellable null
 			}
 			
+			val assets = json.optJSONArray("assets")
+			var apkSize = 0L
+			var apkUrl = ""
+
+			if (assets != null && assets.length() > 0) {
+				for (i in 0 until assets.length()) {
+					val asset = assets.getJSONObject(i)
+					if (asset.getString("name").endsWith(".apk")) {
+						apkSize = asset.getLong("size")
+						apkUrl = asset.getString("browser_download_url")
+						break
+					}
+				}
+			}
+
 			AppVersion(
 				id = json.getLong("id"),
 				url = json.getString("html_url"),
 				name = json.getString("name").removePrefix("v"),
-				apkSize = 0L, // No longer downloading, so size not needed
-				apkUrl = "", // No longer downloading
+				apkSize = apkSize,
+				apkUrl = apkUrl,
 				description = json.getString("body"),
 			)
 		}.onFailure {
