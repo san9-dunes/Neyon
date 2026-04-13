@@ -173,11 +173,7 @@ class TrackingRepository @Inject constructor(
 		when {
 			ids.isEmpty() -> return
 			ids.size == 1 -> db.getTracksDao().clearCounter(ids.single())
-			else -> db.withTransaction {
-				for (id in ids) {
-					db.getTracksDao().clearCounter(id)
-				}
-			}
+			else -> db.getTracksDao().clearCounters(ids)
 		}
 	}
 
