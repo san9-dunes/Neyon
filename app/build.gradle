@@ -8,6 +8,8 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'androidx.room'
     id 'org.jetbrains.kotlin.plugin.serialization'
+    id 'io.gitlab.arturbosch.detekt'
+    id 'org.jlleitschuh.gradle.ktlint'
     // enable if needed
     // id 'dev.reformator.stacktracedecoroutinator'
 
@@ -263,6 +265,8 @@ dependencies {
 
     androidTestImplementation libs.hilt.android.testing
     kspAndroidTest libs.hilt.android.compiler
+    
+    detektPlugins "io.gitlab.arturbosch.detekt:detekt-formatting:${libs.versions.detekt.get()}"
 }
 
 sentry {
@@ -282,4 +286,16 @@ sentry {
     // Disable telemetry and dependency reporting
     includeDependenciesReport = false
     telemetry = false
+}
+
+detekt {
+    toolVersion = libs.versions.detekt.get()
+    config.setFrom(file("$rootDir/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+}
+
+ktlint {
+    version = libs.versions.ktlint.get()
+    android = true
+    outputToConsole = true
 }

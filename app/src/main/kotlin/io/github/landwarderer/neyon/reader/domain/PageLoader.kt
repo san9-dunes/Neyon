@@ -37,6 +37,7 @@ import io.github.landwarderer.neyon.core.util.ext.ensureRamAtLeast
 import io.github.landwarderer.neyon.core.util.ext.ensureSuccess
 import io.github.landwarderer.neyon.core.util.ext.getCompletionResultOrNull
 import io.github.landwarderer.neyon.core.util.ext.isFileUri
+import io.github.landwarderer.neyon.core.util.ext.isNetworkUri
 import io.github.landwarderer.neyon.core.util.ext.isNotEmpty
 import io.github.landwarderer.neyon.core.util.ext.isPowerSaveMode
 import io.github.landwarderer.neyon.core.util.ext.isZipUri
@@ -70,6 +71,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okio.source
 import okio.use
 import org.jetbrains.annotations.Blocking
 import java.io.File
@@ -295,7 +297,11 @@ class PageLoader @Inject constructor(
 		isPrefetch: Boolean,
 		skipCache: Boolean,
 	): Uri = semaphore.withPermit {
-		val pageUrl = getPageUrl(page)
+		if (!skipCache) {
+			cache[page.cacheKey()]?.let { return it.toUri() }
+			cache[page.url]?.let { return it.toUri() }
+		}
+		val pageUrl = resolvePageUrl(page)
 		check(pageUrl.isNotBlank()) { "Cannot obtain full image url for $page" }
 		if (!skipCache) {
 			cache[pageUrl]?.let { return it.toUri() }
@@ -316,11 +322,48 @@ class PageLoader @Inject constructor(
 				val request = createPageRequest(pageUrl, page.source)
 				imageProxyInterceptor.interceptPageRequest(request, okHttp).ensureSuccess().use { response ->
 					response.requireBody().withProgress(progress).use {
-						cache.set(pageUrl, it.source(), it.contentType()?.toMimeType())
+						cachePage(
+							page = page,
+							resolvedPageUrl = pageUrl,
+							source = it.source(),
+							mimeType = it.contentType()?.toMimeType(),
+						)
 					}
 				}.toUri()
 			}
 		}
+	}
+
+	private suspend fun resolvePageUrl(page: MangaPage): String {
+		return runCatchingCancellable {
+			getPageUrl(page)
+		}.getOrElse { error ->
+			if (page.url.toUri().isNetworkUri()) {
+				page.url
+			} else {
+				throw error
+			}
+		}
+	}
+
+	private suspend fun cachePage(
+		page: MangaPage,
+		resolvedPageUrl: String,
+		source: okio.Source,
+		mimeType: io.github.landwarderer.neyon.core.util.ext.MimeType?,
+	): File {
+		val stableKey = page.cacheKey()
+		val file = cache.set(stableKey, source, mimeType)
+		if (stableKey != resolvedPageUrl) {
+			file.source().use {
+				cache.set(resolvedPageUrl, it, mimeType)
+			}
+		}
+		return file
+	}
+
+	private fun MangaPage.cacheKey(): String {
+		return "${source.name}:${id}:${url}"
 	}
 
 	private fun isLowRam(): Boolean {

@@ -32,6 +32,7 @@ import org.koitharu.kotatsu.parsers.util.requireBody
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import io.github.landwarderer.neyon.reader.domain.PageLoader
 import javax.inject.Inject
+import okio.source
 
 class MangaPageFetcher(
 	private val okHttpClient: OkHttpClient,
@@ -51,8 +52,25 @@ class MangaPageFetcher(
 				return it
 			}
 		}
+		if (options.diskCachePolicy.readEnabled) {
+			pagesCache[page.cacheKey()]?.let { file ->
+				return SourceFetchResult(
+					source = ImageSource(file.toOkioPath(), options.fileSystem),
+					mimeType = MimeTypes.getMimeTypeFromExtension(file.name)?.toString(),
+					dataSource = DataSource.DISK,
+				)
+			}
+			pagesCache[page.url]?.let { file ->
+				return SourceFetchResult(
+					source = ImageSource(file.toOkioPath(), options.fileSystem),
+					mimeType = MimeTypes.getMimeTypeFromExtension(file.name)?.toString(),
+					dataSource = DataSource.DISK,
+				)
+			}
+		}
 		val repo = mangaRepositoryFactory.create(page.source)
-		val pageUrl = repo.getPageUrl(page)
+		val pageUrl = runCatchingCancellable { repo.getPageUrl(page) }
+			.getOrElse { if (page.url.toUri().isNetworkUri()) page.url else throw it }
 		if (options.diskCachePolicy.readEnabled) {
 			pagesCache[pageUrl]?.let { file ->
 				return SourceFetchResult(
@@ -79,7 +97,7 @@ class MangaPageFetcher(
 			}
 			val mimeType = response.mimeType?.toMimeTypeOrNull()
 			val file = response.requireBody().use {
-				pagesCache.set(pageUrl, it.source(), mimeType)
+				cachePage(pageUrl, it.source(), mimeType)
 			}
 			SourceFetchResult(
 				source = ImageSource(file.toOkioPath(), FileSystem.SYSTEM),
@@ -87,6 +105,21 @@ class MangaPageFetcher(
 				dataSource = DataSource.NETWORK,
 			)
 		}
+	}
+
+	private suspend fun cachePage(pageUrl: String, source: okio.Source, mimeType: org.koitharu.kotatsu.parsers.util.MimeType?): java.io.File {
+		val stableKey = page.cacheKey()
+		val file = pagesCache.set(stableKey, source, mimeType)
+		if (stableKey != pageUrl) {
+			file.source().use {
+				pagesCache.set(pageUrl, it, mimeType)
+			}
+		}
+		return file
+	}
+
+	private fun MangaPage.cacheKey(): String {
+		return "${source.name}:${id}:${url}"
 	}
 
 	private fun Response.toNetworkResponse() = NetworkResponse(

@@ -10,6 +10,21 @@
 
 </div>
 
+## Architecture & Tech Stack
+
+Neyon is a multi-module Android application architected using the standard **MVVM (Model-View-ViewModel)** design pattern, backed by dependency injection and comprehensive background task synchronization.
+
+- **Language:** Kotlin (100%)
+- **Dependency Injection:** [Hilt](https://dagger.dev/hilt/)
+- **Local Persistence & ORM:** Room
+- **Asynchronous Programming:** Kotlin Coroutines & Flow
+- **Network & Parsing:** OkHttp3, Retrofit, and [Kotatsu-Parsers-Redo](https://github.com/clquwu/kotatsu-parsers-redo)
+- **Image Loading:** Coil 3 (Network, GIF, SVG, AVIF support)
+- **Background Processing:** AndroidX WorkManager (powered by Hilt-Work)
+- **UI:** ViewBinding, Fragment-KTX, ViewPager2, Material Design Components
+- **Error Tracking:** Sentry (Android)
+- **Code Quality:** Detekt & Ktlint
+
 ### Main Features
 
 * Online manga catalogues (with 1200+ manga sources)
