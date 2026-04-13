@@ -107,7 +107,7 @@ class MangaPageFetcher(
 		}
 	}
 
-	private suspend fun cachePage(pageUrl: String, source: okio.Source, mimeType: org.koitharu.kotatsu.parsers.util.MimeType?): java.io.File {
+	private suspend fun cachePage(pageUrl: String, source: okio.Source, mimeType: io.github.landwarderer.neyon.core.util.ext.MimeType?): java.io.File {
 		val stableKey = page.cacheKey()
 		val file = pagesCache.set(stableKey, source, mimeType)
 		if (stableKey != pageUrl) {

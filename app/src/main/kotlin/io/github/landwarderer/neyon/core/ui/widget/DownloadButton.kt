@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable
 import android.util.AttributeSet
 import android.view.View
 import android.view.animation.LinearInterpolator
+import androidx.appcompat.R as appcompatR
 import androidx.core.content.ContextCompat
 import com.google.android.material.R as materialR
 import io.github.landwarderer.neyon.R
@@ -43,7 +44,7 @@ class DownloadButton @JvmOverloads constructor(
 
     private val dp = context.resources.displayMetrics.density
 
-    private val colorPrimary = context.getThemeColor(materialR.attr.colorPrimary)
+    private val colorPrimary = context.getThemeColor(appcompatR.attr.colorPrimary)
     private val colorOnSurfaceVariant = try {
         context.getThemeColor(materialR.attr.colorOnSurfaceVariant)
     } catch (e: Exception) {
@@ -52,7 +53,7 @@ class DownloadButton @JvmOverloads constructor(
     private val colorSurfaceVariant = try {
         context.getThemeColor(materialR.attr.colorSurfaceVariant)
     } catch (e: Exception) {
-        context.getThemeColor(materialR.attr.colorButtonNormal)
+        context.getThemeColor(appcompatR.attr.colorButtonNormal)
     }
 
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
