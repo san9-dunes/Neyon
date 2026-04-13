@@ -295,10 +295,14 @@ class PageLoader @Inject constructor(
 		isPrefetch: Boolean,
 		skipCache: Boolean,
 	): Uri = semaphore.withPermit {
+		val originalUrl = page.url
 		val pageUrl = getPageUrl(page)
 		check(pageUrl.isNotBlank()) { "Cannot obtain full image url for $page" }
 		if (!skipCache) {
-			cache[pageUrl]?.let { return it.toUri() }
+			cache[originalUrl]?.let { return it.toUri() }
+			if (originalUrl != pageUrl) {
+				cache[pageUrl]?.let { return it.toUri() }
+			}
 		}
 		val uri = pageUrl.toUri()
 		return when {
@@ -316,7 +320,7 @@ class PageLoader @Inject constructor(
 				val request = createPageRequest(pageUrl, page.source)
 				imageProxyInterceptor.interceptPageRequest(request, okHttp).ensureSuccess().use { response ->
 					response.requireBody().withProgress(progress).use {
-						cache.set(pageUrl, it.source(), it.contentType()?.toMimeType())
+						cache.set(originalUrl, it.source(), it.contentType()?.toMimeType())
 					}
 				}.toUri()
 			}

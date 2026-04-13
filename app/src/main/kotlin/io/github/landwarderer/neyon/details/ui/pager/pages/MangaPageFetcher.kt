@@ -51,9 +51,19 @@ class MangaPageFetcher(
 				return it
 			}
 		}
+		val originalUrl = page.url
+		if (options.diskCachePolicy.readEnabled) {
+			pagesCache[originalUrl]?.let { file ->
+				return SourceFetchResult(
+					source = ImageSource(file.toOkioPath(), options.fileSystem),
+					mimeType = MimeTypes.getMimeTypeFromExtension(file.name)?.toString(),
+					dataSource = DataSource.DISK,
+				)
+			}
+		}
 		val repo = mangaRepositoryFactory.create(page.source)
 		val pageUrl = repo.getPageUrl(page)
-		if (options.diskCachePolicy.readEnabled) {
+		if (options.diskCachePolicy.readEnabled && pageUrl != originalUrl) {
 			pagesCache[pageUrl]?.let { file ->
 				return SourceFetchResult(
 					source = ImageSource(file.toOkioPath(), options.fileSystem),
@@ -62,16 +72,16 @@ class MangaPageFetcher(
 				)
 			}
 		}
-		return loadPage(pageUrl)
+		return loadPage(pageUrl, originalUrl)
 	}
 
-	private suspend fun loadPage(pageUrl: String): FetchResult? = if (pageUrl.toUri().isNetworkUri()) {
-		fetchPage(pageUrl)
+	private suspend fun loadPage(pageUrl: String, originalUrl: String): FetchResult? = if (pageUrl.toUri().isNetworkUri()) {
+		fetchPage(pageUrl, originalUrl)
 	} else {
 		imageLoader.fetch(pageUrl, options)
 	}
 
-	private suspend fun fetchPage(pageUrl: String): FetchResult {
+	private suspend fun fetchPage(pageUrl: String, originalUrl: String): FetchResult {
 		val request = PageLoader.createPageRequest(pageUrl, page.source)
 		return imageProxyInterceptor.interceptPageRequest(request, okHttpClient).use { response ->
 			if (!response.isSuccessful) {
@@ -79,7 +89,7 @@ class MangaPageFetcher(
 			}
 			val mimeType = response.mimeType?.toMimeTypeOrNull()
 			val file = response.requireBody().use {
-				pagesCache.set(pageUrl, it.source(), mimeType)
+				pagesCache.set(originalUrl, it.source(), mimeType)
 			}
 			SourceFetchResult(
 				source = ImageSource(file.toOkioPath(), FileSystem.SYSTEM),
