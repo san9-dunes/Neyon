@@ -209,11 +209,7 @@ class HistoryRepository @Inject constructor(
 	}
 
 	private suspend fun recover(ids: Collection<Long>) {
-		db.withTransaction {
-			for (id in ids) {
-				db.getHistoryDao().recover(id)
-			}
-		}
+		db.getHistoryDao().recover(ids)
 	}
 
 	private suspend fun HistoryEntity.recoverIfNeeded(manga: Manga): HistoryEntity {
