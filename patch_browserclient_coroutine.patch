@@ -1,0 +1,50 @@
+--- app/src/main/kotlin/io/github/landwarderer/futon/browser/BrowserClient.kt
++++ app/src/main/kotlin/io/github/landwarderer/futon/browser/BrowserClient.kt
+@@ -10,6 +10,8 @@
+ import androidx.annotation.WorkerThread
+ import kotlinx.coroutines.Dispatchers
+ import kotlinx.coroutines.runBlocking
++import kotlinx.coroutines.CoroutineScope
++import kotlinx.coroutines.launch
+ import io.github.landwarderer.futon.core.network.webview.adblock.AdBlock
+ import java.io.ByteArrayInputStream
+ import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+@@ -18,6 +20,8 @@
+	private val callback: BrowserCallback,
+	private val adBlock: AdBlock?,
+ ) : WebViewClient() {
++
++	private val scope = CoroutineScope(Dispatchers.Main)
+
+	/**
+	 * https://stackoverflow.com/questions/57414530/illegalstateexception-reasonphrase-cant-be-empty-with-android-webview
+@@ -28,17 +32,19 @@
+		callback.onLoadingStateChanged(isLoading = false)
+
+-		val cssRules = adBlock?.getMatchingCssRules(url.toHttpUrlOrNull())
+-		if (!cssRules.isNullOrEmpty()) {
+-			val js = """
+-				(function() {
+-					var style = document.createElement('style');
+-					style.type = 'text/css';
+-					style.innerHTML = '$cssRules';
+-					document.head.appendChild(style);
+-				})();
+-			""".trimIndent()
+-			webView.evaluateJavascript(js, null)
++		scope.launch(Dispatchers.Default) {
++			val cssRules = adBlock?.getMatchingCssRules(url.toHttpUrlOrNull())
++			if (!cssRules.isNullOrEmpty()) {
++				val base64Css = android.util.Base64.encodeToString(cssRules.toByteArray(), android.util.Base64.NO_WRAP)
++				val js = """
++					(function() {
++						var style = document.createElement('style');
++						style.type = 'text/css';
++						style.innerHTML = window.atob('$base64Css');
++						document.head.appendChild(style);
++					})();
++				""".trimIndent()
++				launch(Dispatchers.Main) { webView.evaluateJavascript(js, null) }
++			}
+		}
+	}

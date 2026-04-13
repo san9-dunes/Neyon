@@ -1,0 +1,19 @@
+--- app/src/main/kotlin/io/github/landwarderer/futon/core/network/webview/adblock/CSSRuleBuilder.kt
++++ app/src/main/kotlin/io/github/landwarderer/futon/core/network/webview/adblock/CSSRuleBuilder.kt
+@@ -14,14 +14,13 @@
+			return@buildString
+		}
+
+-		append("<style> ")
+		val iterator = selectors.iterator()
+		while (iterator.hasNext()) {
+			append(iterator.next())
+			if (iterator.hasNext()) {
+				append(", ")
+			}
+		}
+-		append(" { display: none !important; }</style>")
++		append(" { display: none !important; }")
+	}
+
+	fun isEmpty() = selectors.isEmpty()
