@@ -139,6 +139,8 @@ abstract class HistoryDao : MangaQueryBuilder.ConditionCallback {
 
 	suspend fun delete(mangaId: Long) = setDeletedAt(mangaId, System.currentTimeMillis())
 
+	suspend fun delete(mangaIds: Collection<Long>) = setDeletedAt(mangaIds, System.currentTimeMillis())
+
 	suspend fun recover(mangaId: Long) = setDeletedAt(mangaId, 0L)
 
 	suspend fun recover(mangaIds: Collection<Long>) = setDeletedAt(mangaIds, 0L)
