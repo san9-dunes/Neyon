@@ -73,6 +73,9 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 	@Upsert
 	abstract suspend fun upsert(entity: TrackEntity)
 
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<TrackEntity>)
+
 	@Transaction
 	@RawQuery(observedEntities = [TrackEntity::class])
 	protected abstract fun observeMangaImpl(query: SupportSQLiteQuery): Flow<List<MangaWithTrack>>
