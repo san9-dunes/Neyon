@@ -32,6 +32,7 @@ import io.github.landwarderer.futon.core.util.ext.mangaSourceExtra
 import io.github.landwarderer.futon.core.util.ext.printStackTraceDebug
 import io.github.landwarderer.futon.download.domain.DownloadState
 import io.github.landwarderer.futon.download.ui.list.DownloadsActivity
+import androidx.collection.LruCache
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.util.format
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
@@ -52,7 +53,7 @@ class DownloadNotificationFactory @AssistedInject constructor(
 	@Assisted val isSilent: Boolean,
 ) {
 
-	private val covers = HashMap<Manga, Drawable>() // TODO cache
+	private val covers = LruCache<Manga, Drawable>(4)
 	private val builder = NotificationCompat.Builder(context, if (isSilent) CHANNEL_ID_SILENT else CHANNEL_ID_DEFAULT)
 	private val mutex = Mutex()
 
@@ -282,7 +283,7 @@ class DownloadNotificationFactory @AssistedInject constructor(
 					.build(),
 			).getDrawableOrThrow()
 		}.onSuccess {
-			covers[manga] = it
+			covers.put(manga, it)
 		}.onFailure {
 			it.printStackTraceDebug("DownloadNotificationFactory::getCover")
 		}.getOrNull()
