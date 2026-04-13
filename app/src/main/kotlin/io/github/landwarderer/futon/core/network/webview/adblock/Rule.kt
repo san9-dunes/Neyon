@@ -50,6 +50,26 @@ sealed interface Rule {
 					return false
 				}
 			}
+			val baseUrlHost = baseUrl.host
+			if (!domains.isNullOrEmpty()) {
+				var match = false
+				for (domain in domains) {
+					if (baseUrlHost == domain || baseUrlHost.endsWith(".$domain")) {
+						match = true
+						break
+					}
+				}
+				if (!match) {
+					return false
+				}
+			}
+			if (!domainsNot.isNullOrEmpty()) {
+				for (domain in domainsNot) {
+					if (baseUrlHost == domain || baseUrlHost.endsWith(".$domain")) {
+						return false
+					}
+				}
+			}
 			// TODO check other modifiers
 			return true
 		}

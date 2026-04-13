@@ -73,19 +73,33 @@ class RulesList {
 		}
 		var script: Boolean? = null
 		var thirdParty: Boolean? = null
+		var domains: MutableSet<String>? = null
+		var domainsNot: MutableSet<String>? = null
 		options.split(',').forEach {
 			val isNot = it.startsWith('~')
-			when (it.removePrefix("~")) {
-				"script" -> script = !isNot
-				"third-party" -> thirdParty = !isNot
+			val option = it.removePrefix("~")
+			when {
+				option == "script" -> script = !isNot
+				option == "third-party" -> thirdParty = !isNot
+				option.startsWith("domain=") -> {
+					option.removePrefix("domain=").split('|').forEach { domain ->
+						if (domain.startsWith('~')) {
+							if (domainsNot == null) domainsNot = mutableSetOf()
+							domainsNot?.add(domain.removePrefix("~"))
+						} else {
+							if (domains == null) domains = mutableSetOf()
+							domains?.add(domain)
+						}
+					}
+				}
 			}
 		}
 		return Rule.WithModifiers(
 			baseRule = this,
 			script = script,
 			thirdParty = thirdParty,
-			domains = null, //TODO
-			domainsNot = null, //TODO
+			domains = domains,
+			domainsNot = domainsNot,
 		)
 	}
 }
