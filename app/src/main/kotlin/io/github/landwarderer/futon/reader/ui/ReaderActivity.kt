@@ -194,7 +194,10 @@ class ReaderActivity :
         viewModel.isZoomControlsEnabled.observe(this) {
             viewBinding.zoomControl.isVisible = it
         }
-        addMenuProvider(ReaderMenuProvider(viewModel))
+        addMenuProvider(ReaderMenuProvider(viewModel) {
+            val manga = viewModel.getMangaOrNull() ?: return@ReaderMenuProvider
+            router.openDetails(manga)
+        })
 
         observeWindowLayout()
 

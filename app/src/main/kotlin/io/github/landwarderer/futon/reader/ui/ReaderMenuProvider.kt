@@ -8,6 +8,7 @@ import io.github.landwarderer.futon.R
 
 class ReaderMenuProvider(
 	private val viewModel: ReaderViewModel,
+	private val onInfoClicked: () -> Unit,
 ) : MenuProvider {
 
 	override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -17,7 +18,7 @@ class ReaderMenuProvider(
 	override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
 		return when (menuItem.itemId) {
 			R.id.action_info -> {
-				// TODO
+				onInfoClicked()
 				true
 			}
 
