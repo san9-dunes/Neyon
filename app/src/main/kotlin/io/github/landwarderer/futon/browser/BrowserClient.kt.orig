@@ -13,17 +13,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import io.github.landwarderer.futon.core.network.webview.adblock.AdBlock
 import java.io.ByteArrayInputStream
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
-
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 open class BrowserClient(
 	private val callback: BrowserCallback,
 	private val adBlock: AdBlock?,
 ) : WebViewClient() {
 
-	private val scope = CoroutineScope(Dispatchers.Main)
+	/**
+	 * https://stackoverflow.com/questions/57414530/illegalstateexception-reasonphrase-cant-be-empty-with-android-webview
+	 */
+
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+
+open class BrowserClient(
+	private val callback: BrowserCallback,
+	private val adBlock: AdBlock?,
+) : WebViewClient() {
 
 	/**
 	 * https://stackoverflow.com/questions/57414530/illegalstateexception-reasonphrase-cant-be-empty-with-android-webview
@@ -33,20 +38,17 @@ open class BrowserClient(
 		super.onPageFinished(webView, url)
 		callback.onLoadingStateChanged(isLoading = false)
 
-		scope.launch(Dispatchers.Default) {
-			val cssRules = adBlock?.getMatchingCssRules(url.toHttpUrlOrNull())
-			if (!cssRules.isNullOrEmpty()) {
-				val base64Css = android.util.Base64.encodeToString(cssRules.toByteArray(), android.util.Base64.NO_WRAP)
-				val js = """
-					(function() {
-						var style = document.createElement('style');
-						style.type = 'text/css';
-						style.innerHTML = window.atob('$base64Css');
-						document.head.appendChild(style);
-					})();
-				""".trimIndent()
-				launch(Dispatchers.Main) { webView.evaluateJavascript(js, null) }
-			}
+		val cssRules = adBlock?.getMatchingCssRules(url.toHttpUrlOrNull())
+		if (!cssRules.isNullOrEmpty()) {
+			val js = """
+				(function() {
+					var style = document.createElement('style');
+					style.type = 'text/css';
+					style.innerHTML = '$cssRules';
+					document.head.appendChild(style);
+				})();
+			""".trimIndent()
+			webView.evaluateJavascript(js, null)
 		}
 	}
 

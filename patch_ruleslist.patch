@@ -1,0 +1,46 @@
+--- app/src/main/kotlin/io/github/landwarderer/futon/core/network/webview/adblock/RulesList.kt
++++ app/src/main/kotlin/io/github/landwarderer/futon/core/network/webview/adblock/RulesList.kt
+@@ -14,6 +14,35 @@
+	private val blockRules = ArrayList<Rule>()
+	private val allowRules = ArrayList<Rule>()
+
++	private val cssRules = ArrayList<CssRule>()
++
++	data class CssRule(
++		val domains: List<String>,
++		val notDomains: List<String>,
++		val selector: String
++	) {
++		fun matches(baseUrl: HttpUrl?): Boolean {
++			if (baseUrl == null) {
++				return domains.isEmpty()
++			}
++			val host = baseUrl.host
++
++			if (notDomains.isNotEmpty()) {
++				if (notDomains.any { host == it || host.endsWith(".$it") }) {
++					return false
++				}
++			}
++
++			if (domains.isNotEmpty()) {
++				if (domains.none { host == it || host.endsWith(".$it") }) {
++					return false
++				}
++			}
++
++			return true
++		}
++	}
++
+	operator fun get(url: HttpUrl, baseUrl: HttpUrl?): Rule? {
+		val rule = blockRules.find { x -> x(url, baseUrl) }
+		return rule?.takeIf { allowRules.none { x -> x(url, baseUrl) } }
+@@ -28,6 +57,7 @@
+	fun trimToSize() {
+		blockRules.trimToSize()
+		allowRules.trimToSize()
++		cssRules.trimToSize()
+	}
+
+	private fun String.addImpl(isWhitelist: Boolean, modifiers: String?) {

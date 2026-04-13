@@ -58,6 +58,16 @@ class AdBlock @Inject constructor(
 	}
 
 	@WorkerThread
+	fun getMatchingCssRules(url: HttpUrl?): String? {
+		if (!settings.isAdBlockEnabled) {
+			return null
+		}
+		return synchronized(this) {
+			rules ?: parseRules().also { rules = it }
+		}?.getCssRules(url)
+	}
+
+	@WorkerThread
 	private fun parseRules() = runCatchingCancellable {
 		listFile(context).useLines { lines ->
 			val rules = RulesList()

@@ -15,6 +15,7 @@ class CSSRuleBuilder {
 			return@buildString
 		}
 
+		append("<style> ")
 		val iterator = selectors.iterator()
 		while (iterator.hasNext()) {
 			append(iterator.next())
@@ -22,7 +23,7 @@ class CSSRuleBuilder {
 				append(", ")
 			}
 		}
-		append(" { display: none !important; }")
+		append(" { display: none !important; }</style>")
 	}
 
 	fun isEmpty() = selectors.isEmpty()
