@@ -73,19 +73,36 @@ class RulesList {
 		}
 		var script: Boolean? = null
 		var thirdParty: Boolean? = null
+		var domains: Set<String>? = null
+		var domainsNot: Set<String>? = null
 		options.split(',').forEach {
 			val isNot = it.startsWith('~')
-			when (it.removePrefix("~")) {
-				"script" -> script = !isNot
-				"third-party" -> thirdParty = !isNot
+			val option = it.removePrefix("~")
+			when {
+				option == "script" -> script = !isNot
+				option == "third-party" -> thirdParty = !isNot
+				it.startsWith("domain=") -> {
+					val domainList = it.substringAfter("domain=").split('|')
+					val positiveDomains = mutableSetOf<String>()
+					val negativeDomains = mutableSetOf<String>()
+					for (domain in domainList) {
+						if (domain.startsWith('~')) {
+							negativeDomains.add(domain.substring(1))
+						} else {
+							positiveDomains.add(domain)
+						}
+					}
+					if (positiveDomains.isNotEmpty()) domains = positiveDomains
+					if (negativeDomains.isNotEmpty()) domainsNot = negativeDomains
+				}
 			}
 		}
 		return Rule.WithModifiers(
 			baseRule = this,
 			script = script,
 			thirdParty = thirdParty,
-			domains = null, //TODO
-			domainsNot = null, //TODO
+			domains = domains,
+			domainsNot = domainsNot,
 		)
 	}
 }
