@@ -32,7 +32,7 @@ import io.github.landwarderer.futon.core.util.ext.combine
 import io.github.landwarderer.futon.core.util.ext.requireValue
 import io.github.landwarderer.futon.core.util.ext.sortedWithSafe
 import io.github.landwarderer.futon.details.data.MangaDetails
-import io.github.landwarderer.futon.details.domain.DetailsInteractor
+import io.github.landwarderer.futon.core.prefs.observeAsFlow
 import io.github.landwarderer.futon.details.ui.DetailsActivity
 import io.github.landwarderer.futon.details.ui.DetailsViewModel
 import io.github.landwarderer.futon.details.ui.mapChapters
@@ -41,17 +41,21 @@ import io.github.landwarderer.futon.download.ui.worker.DownloadTask
 import io.github.landwarderer.futon.download.ui.worker.DownloadWorker
 import io.github.landwarderer.futon.history.data.HistoryRepository
 import io.github.landwarderer.futon.list.domain.ListFilterOption
+import io.github.landwarderer.futon.local.data.LocalMangaRepository
 import io.github.landwarderer.futon.local.domain.DeleteLocalMangaUseCase
 import io.github.landwarderer.futon.local.domain.model.LocalManga
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaState
+import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import io.github.landwarderer.futon.reader.ui.ReaderActivity
 import io.github.landwarderer.futon.reader.ui.ReaderState
 import io.github.landwarderer.futon.reader.ui.ReaderViewModel
+import io.github.landwarderer.futon.tracker.domain.TrackingRepository
 
 abstract class ChaptersPagesViewModel(
 	@JvmField protected val settings: AppSettings,
-	@JvmField protected val interactor: DetailsInteractor,
+	private val localMangaRepository: LocalMangaRepository,
+	private val trackingRepository: TrackingRepository,
 	private val bookmarksRepository: BookmarksRepository,
 	private val historyRepository: HistoryRepository,
 	private val downloadScheduler: DownloadWorker.Scheduler,
@@ -93,7 +97,14 @@ abstract class ChaptersPagesViewModel(
 
 	val newChaptersCount = mangaDetails.flatMapLatest { d ->
 		if (d?.isLocal == false) {
-			interactor.observeNewChapters(d.id)
+			settings.observeAsFlow(AppSettings.KEY_TRACKER_ENABLED) { isTrackerEnabled }
+				.flatMapLatest { isEnabled ->
+					if (isEnabled) {
+						trackingRepository.observeNewChaptersCount(d.id)
+					} else {
+						flowOf(0)
+					}
+				}
 		} else {
 			flowOf(0)
 		}
@@ -246,8 +257,25 @@ abstract class ChaptersPagesViewModel(
 
 	private suspend fun onDownloadComplete(downloadedManga: LocalManga?) {
 		downloadedManga ?: return
-		mangaDetails.update {
-			interactor.updateLocal(it, downloadedManga)
+		mangaDetails.update { subject ->
+			subject ?: return@update null
+			if (subject.id == downloadedManga.manga.id) {
+				if (subject.isLocal) {
+					subject.copy(
+						manga = downloadedManga.manga,
+					)
+				} else {
+					subject.copy(
+						localManga = runCatchingCancellable {
+							downloadedManga.copy(
+								manga = localMangaRepository.getDetails(downloadedManga.manga),
+							)
+						}.getOrNull() ?: subject.local,
+					)
+				}
+			} else {
+				subject
+			}
 		}
 	}
 

@@ -31,8 +31,8 @@ import io.github.landwarderer.futon.core.util.ext.computeSize
 import io.github.landwarderer.futon.core.util.ext.onEachWhile
 import io.github.landwarderer.futon.details.data.MangaDetails
 import io.github.landwarderer.futon.details.domain.BranchComparator
-import io.github.landwarderer.futon.details.domain.DetailsInteractor
 import io.github.landwarderer.futon.details.domain.DetailsLoadUseCase
+import io.github.landwarderer.futon.details.domain.ObserveIncognitoModeUseCase
 import io.github.landwarderer.futon.details.domain.ProgressUpdateUseCase
 import io.github.landwarderer.futon.details.domain.ReadingTimeUseCase
 import io.github.landwarderer.futon.details.domain.RelatedMangaUseCase
@@ -40,9 +40,11 @@ import io.github.landwarderer.futon.details.ui.model.HistoryInfo
 import io.github.landwarderer.futon.details.ui.model.MangaBranch
 import io.github.landwarderer.futon.details.ui.pager.ChaptersPagesViewModel
 import io.github.landwarderer.futon.download.ui.worker.DownloadWorker
+import io.github.landwarderer.futon.favourites.domain.FavouritesRepository
 import io.github.landwarderer.futon.history.data.HistoryRepository
 import io.github.landwarderer.futon.list.domain.MangaListMapper
 import io.github.landwarderer.futon.list.ui.model.MangaListModel
+import io.github.landwarderer.futon.local.data.LocalMangaRepository
 import io.github.landwarderer.futon.local.data.LocalStorageChanges
 import io.github.landwarderer.futon.local.domain.DeleteLocalMangaUseCase
 import io.github.landwarderer.futon.local.domain.model.LocalManga
@@ -54,6 +56,7 @@ import io.github.landwarderer.futon.scrobbling.common.domain.Scrobbler
 import io.github.landwarderer.futon.scrobbling.common.domain.model.ScrobblingInfo
 import io.github.landwarderer.futon.scrobbling.common.domain.model.ScrobblingStatus
 import io.github.landwarderer.futon.stats.data.StatsRepository
+import io.github.landwarderer.futon.tracker.domain.TrackingRepository
 import javax.inject.Inject
 import javax.inject.Provider
 
@@ -65,7 +68,10 @@ class DetailsViewModel @Inject constructor(
 	private val scrobblersProvider: Provider<Set<@JvmSuppressWildcards Scrobbler>>,
 	@LocalStorageChanges localStorageChanges: SharedFlow<LocalManga?>,
 	downloadScheduler: DownloadWorker.Scheduler,
-	interactor: DetailsInteractor,
+	private val favouritesRepository: FavouritesRepository,
+	private val observeIncognitoModeUseCase: ObserveIncognitoModeUseCase,
+	private val localMangaRepository: LocalMangaRepository,
+	private val trackingRepository: TrackingRepository,
 	savedStateHandle: SavedStateHandle,
 	deleteLocalMangaUseCase: DeleteLocalMangaUseCase,
 	private val relatedMangaUseCase: RelatedMangaUseCase,
@@ -76,7 +82,8 @@ class DetailsViewModel @Inject constructor(
 	statsRepository: StatsRepository,
 ) : ChaptersPagesViewModel(
 	settings = settings,
-	interactor = interactor,
+	localMangaRepository = localMangaRepository,
+	trackingRepository = trackingRepository,
 	bookmarksRepository = bookmarksRepository,
 	historyRepository = historyRepository,
 	downloadScheduler = downloadScheduler,
@@ -99,7 +106,7 @@ class DetailsViewModel @Inject constructor(
 		}.withErrorHandling()
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, null)
 
-	val favouriteCategories = interactor.observeFavourite(mangaId)
+	val favouriteCategories = favouritesRepository.observeCategories(mangaId)
 		.withErrorHandling()
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, emptySet())
 
@@ -113,7 +120,7 @@ class DetailsViewModel @Inject constructor(
 		mangaDetails,
 		selectedBranch,
 		history,
-		interactor.observeIncognitoMode(manga),
+		observeIncognitoModeUseCase(manga),
 	) { m, b, h, im ->
 		val estimatedTime = readingTimeUseCase.invoke(m, b, h)
 		HistoryInfo(m, b, h, im == TriStateOption.ENABLED, estimatedTime)
@@ -141,7 +148,15 @@ class DetailsViewModel @Inject constructor(
 	val isScrobblingAvailable: Boolean
 		get() = scrobblers.any { it.isEnabled }
 
-	val scrobblingInfo: StateFlow<List<ScrobblingInfo>> = interactor.observeScrobblingInfo(mangaId)
+	val scrobblingInfo: StateFlow<List<ScrobblingInfo>> = combine(
+		if (scrobblers.isEmpty()) {
+			listOf(kotlinx.coroutines.flow.flowOf(null))
+		} else {
+			scrobblers.map { it.observeScrobblingInfo(mangaId) }
+		},
+	) { scrobblingInfo ->
+		scrobblingInfo.filterNotNull()
+	}
 		.withErrorHandling()
 		.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, emptyList())
 
@@ -194,7 +209,7 @@ class DetailsViewModel @Inject constructor(
 		}
 		launchJob(Dispatchers.IO) {
 			val manga = mangaDetails.firstOrNull { it != null && it.isLocal } ?: return@launchJob
-			remoteManga.value = interactor.findRemote(manga.toManga())
+			remoteManga.value = localMangaRepository.getRemoteManga(manga.toManga())
 		}
 	}
 
