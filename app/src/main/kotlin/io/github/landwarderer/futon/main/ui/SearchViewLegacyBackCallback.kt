@@ -2,10 +2,9 @@ package io.github.landwarderer.futon.main.ui
 
 import android.os.Build
 import androidx.activity.OnBackPressedCallback
-import androidx.annotation.DeprecatedSinceApi
 import com.google.android.material.search.SearchView
 
-@DeprecatedSinceApi(Build.VERSION_CODES.TIRAMISU)
+@Deprecated("Use predictive back on TIRAMISU+")
 class SearchViewLegacyBackCallback(
 	private val searchView: SearchView
 ) : OnBackPressedCallback(searchView.isShowing), SearchView.TransitionListener {
