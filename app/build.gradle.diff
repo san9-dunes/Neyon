@@ -1,0 +1,10 @@
+<<<<<<< SEARCH
+    testImplementation libs.junit
+    testImplementation libs.json
+    testImplementation libs.kotlinx.coroutines.test
+=======
+    testImplementation libs.junit
+    testImplementation libs.json
+    testImplementation libs.kotlinx.coroutines.test
+    testImplementation "org.robolectric:robolectric:4.11.1"
+>>>>>>> REPLACE

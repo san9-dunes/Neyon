@@ -250,6 +250,7 @@ dependencies {
     testImplementation libs.junit
     testImplementation libs.json
     testImplementation libs.kotlinx.coroutines.test
+    testImplementation "io.mockk:mockk:1.13.10"
 
     androidTestImplementation libs.androidx.runner
     androidTestImplementation libs.androidx.rules
