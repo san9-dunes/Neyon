@@ -31,7 +31,8 @@ class FeedAggregator @Inject constructor(
 	private val appSettings: AppSettings,
 ) {
 
-        var cachedFeed: List<Manga>? = null
+        var memoryCache: List<Manga>? = null
+            private set
         private var cachedWhitelist: Set<String>? = null
         var cachedSortOrder: ListSortOrder? = null
 
@@ -39,15 +40,15 @@ class FeedAggregator @Inject constructor(
                 val whitelistNames = appSettings.suggestionSourcesWhitelist     
                 if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
 
-                if (cachedWhitelist != whitelistNames || cachedSortOrder != listSortOrder) {
-                        cachedFeed = null
-                        cachedWhitelist = whitelistNames
-                        cachedSortOrder = listSortOrder
+                // Check Singleton Memory Cache
+                if (!forceRefresh && forceGenreTag == null && !memoryCache.isNullOrEmpty() && 
+                    cachedWhitelist == whitelistNames && cachedSortOrder == listSortOrder) {
+                        return@supervisorScope memoryCache!!
                 }
 
-                if (!forceRefresh && forceGenreTag == null && !cachedFeed.isNullOrEmpty()) {
-                        return@supervisorScope cachedFeed!!
-                }
+                // If parameters changed or forced refresh, we must fetch
+                cachedWhitelist = whitelistNames
+                cachedSortOrder = listSortOrder
 
                 val allEnabled = sourcesRepository.getEnabledSources()
                 val sourcesToUse = allEnabled.filter { it.name in whitelistNames }.shuffled().take(8)
@@ -82,7 +83,7 @@ class FeedAggregator @Inject constructor(
 
                 val finalFeed = mergedList.distinctById()
                 if (forceGenreTag == null) {
-                        cachedFeed = finalFeed
+                        memoryCache = finalFeed
                 }
                 finalFeed
         }
