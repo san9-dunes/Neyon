@@ -315,7 +315,6 @@ class ReaderViewModel @Inject constructor(
             prevJob?.cancelAndJoin()
             content.value = ReaderContent(emptyList(), null)
             chaptersLoader.loadSingleChapter(id)
-            prefetchNextChapter(id)
             val newState = ReaderState(id, page, 0)
             content.value = ReaderContent(getFilteredSnapshot(), newState)
             saveCurrentState(newState)
@@ -340,7 +339,6 @@ class ReaderViewModel @Inject constructor(
             }
             content.value = ReaderContent(emptyList(), null)
             chaptersLoader.loadSingleChapter(newChapterId)
-            prefetchNextChapter(newChapterId)
             val newState = ReaderState(
                 chapterId = newChapterId,
                 page = if (delta == 0) prevState.page else 0,
@@ -384,6 +382,8 @@ class ReaderViewModel @Inject constructor(
             if (pageLoader.isPrefetchApplicable()) {
                 pageLoader.prefetch(pages.trySublist(upperPos + 1, upperPos + PREFETCH_LIMIT))
             }
+            
+            prefetchRollingWindow(upperPos)
             
             // Explicitly clear coil memory cache for pages left far behind (e.g. earlier than lowerPos - 4)
             val trailingEvictLimit = (lowerPos - 4).coerceAtLeast(0)
@@ -472,7 +472,6 @@ class ReaderViewModel @Inject constructor(
                             readerMode.value = mode
                             try {
                                 chaptersLoader.loadSingleChapter(newState.chapterId)
-                                prefetchNextChapter(newState.chapterId)
                             } catch (e: Exception) {
                                 readingState.value = null // try next time
                                 exception = e.mergeWith(exception)
@@ -531,11 +530,8 @@ class ReaderViewModel @Inject constructor(
         val prevJob = loadingJob
         loadingJob = launchLoadingJob(Dispatchers.IO) {
             prevJob?.join()
-            val loaded = chaptersLoader.loadPrevNextChapter(mangaDetails.requireValue(), currentId, isNext)
+            chaptersLoader.loadPrevNextChapter(mangaDetails.requireValue(), currentId, isNext)
             content.value = ReaderContent(getFilteredSnapshot(), null)
-            if (loaded && isNext) {
-                prefetchNextChapter(chaptersLoader.last().chapterId)
-            }
         }
     }
 
@@ -658,20 +654,45 @@ class ReaderViewModel @Inject constructor(
         return ReaderState(manga, preferredBranch)
     }
 
-    private fun prefetchNextChapter(currentChapterId: Long) {
+    private fun prefetchRollingWindow(currentIndex: Int) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val fullChapterList = mangaDetails.value?.allChapters
-                if (fullChapterList != null) {
-                    val currentIndex = fullChapterList.indexOfFirst { it.id == currentChapterId }
-                    if (currentIndex != -1 && currentIndex + 1 < fullChapterList.size) {
-                        val nextChapter = fullChapterList[currentIndex + 1]
+                val pages = content.value.pages
+                if (pages.isEmpty()) return@launch
+                
+                val windowSize = PREFETCH_LIMIT
+                val nextPagesInCurrentList = pages.trySublist(currentIndex + 1, currentIndex + 1 + windowSize)
+                val remainingToFetch = windowSize - nextPagesInCurrentList.size
+                
+                // Enqueue what we already have in the current pages list into Coil
+                nextPagesInCurrentList.forEach { readerPage ->
+                    val url = pageLoader.getPageUrl(readerPage.toMangaPage())
+                    if (!url.isNullOrEmpty()) {
+                        val request = ImageRequest.Builder(context)
+                            .data(url)
+                            .build()
+                        imageLoader.enqueue(request)
+                    }
+                }
+                
+                // If the next 5 pages cross the boundary into the next chapter, eagerly prefetch those as well
+                if (remainingToFetch > 0) {
+                    val fullChapterList = mangaDetails.value?.allChapters ?: return@launch
+                    val lastChapterInList = pages.last().chapterId
+                    val currentChapIdx = fullChapterList.indexOfFirst { it.id == lastChapterInList }
+                    
+                    // We check if there's a valid next chapter
+                    if (currentChapIdx != -1 && currentChapIdx + 1 < fullChapterList.size) {
+                        val nextChapter = fullChapterList[currentChapIdx + 1]
                         val repo = mangaRepositoryFactory.create(nextChapter.source)
+                        
+                        // Silently fetch the next chapter's pages
                         val newPages = repo.getPages(nextChapter)
                         
-                        for (pageModel in newPages) {
+                        // Take only what's needed to fill the rolling window slice
+                        newPages.take(remainingToFetch).forEach { pageModel ->
                             val url = pageLoader.getPageUrl(pageModel)
-                            if (url.isNotEmpty()) {
+                            if (!url.isNullOrEmpty()) {
                                 val request = ImageRequest.Builder(context)
                                     .data(url)
                                     .build()
@@ -681,7 +702,7 @@ class ReaderViewModel @Inject constructor(
                     }
                 }
             } catch (e: Exception) {
-                // Silently catch errors 
+                // Silently catch errors to avoid interrupting user reading sessions
             }
         }
     }
