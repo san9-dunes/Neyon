@@ -238,8 +238,8 @@ class TrackingRepository @Inject constructor(
 		}
 
 		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
+		if (ids.isNotEmpty()) {
+			dao.deleteAll(ids)
 		}
 		size - ids.size
 	}
