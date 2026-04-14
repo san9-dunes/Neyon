@@ -38,6 +38,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.dropWhile
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withTimeoutOrNull
@@ -64,6 +67,7 @@ class SearchViewModel @Inject constructor(
 	private val results = MutableStateFlow<List<SearchResultsListModel>>(emptyList())
 
 	private var searchJob: Job? = null
+	private val sourcesSemaphore = Semaphore(5)
 
 	val list: StateFlow<List<ListModel>> = combine(
 		results,
@@ -72,7 +76,7 @@ class SearchViewModel @Inject constructor(
 		hideEmpty,
 	) { list, loading, includeDisabled, hideEmptyVal ->
 		val filteredList = if (hideEmptyVal) {
-			list.filter { it.list.isNotEmpty() }
+			list.filter { it.list.isNotEmpty() || it.error != null || it.loading }
 		} else {
 			list
 		}
@@ -144,9 +148,22 @@ class SearchViewModel @Inject constructor(
 				sourcesRepository.getDisabledSources()
 					.sortedByDescending { it.priority() }
 			}
+			
+			// Map sources into UI State model with loading=true
+			val newLoaders = sources.map { source ->
+				SearchResultsListModel(0, source, null, null, emptyList(), null, true)
+			}
+			results.update { it + newLoaders }
+
 			sources.map { source ->
-				launch {
-					appendResult(searchSource(source))
+				launch(Dispatchers.IO) {
+					sourcesSemaphore.acquire()
+					try {
+						val result = searchSource(source)
+						updateResult(0, source, result)
+					} finally {
+						sourcesSemaphore.release()
+					}
 				}
 			}.joinAll()
 		}
@@ -154,22 +171,42 @@ class SearchViewModel @Inject constructor(
 
 	private fun doSearch() {
 		val prevJob = searchJob
+		prevJob?.cancel()
 		searchJob = launchLoadingJob(Dispatchers.IO) {
-			prevJob?.cancelAndJoin()
+			prevJob?.join()
 			val sources = if (pinnedOnly.value) {
 				sourcesRepository.getPinnedSources().toList()
 			} else {
 				sourcesRepository.getEnabledSources()
 			}
-			(listOf(
-				launch { appendResult(searchHistory()) },
-				launch { appendResult(searchFavorites()) },
-				launch { appendResult(searchLocal()) },
-			) + sources.map { source ->
-				launch {
-					appendResult(searchSource(source))
-				}
-			}).joinAll()
+			
+			// Map targets into UI State model with Loading indicator
+			val initialLoaders = mutableListOf<SearchResultsListModel>()
+			initialLoaders.add(SearchResultsListModel(R.string.history, UnknownMangaSource, null, null, emptyList(), null, true))
+			initialLoaders.add(SearchResultsListModel(R.string.favourites, UnknownMangaSource, null, null, emptyList(), null, true))
+			initialLoaders.add(SearchResultsListModel(0, LocalMangaSource, null, null, emptyList(), null, true))
+			sources.forEach { source ->
+				initialLoaders.add(SearchResultsListModel(0, source, null, null, emptyList(), null, true))
+			}
+			results.value = initialLoaders
+
+			val jobs = mutableListOf<Job>()
+			jobs.add(launch(Dispatchers.IO) { updateResult(R.string.history, UnknownMangaSource, searchHistory()) })
+			jobs.add(launch(Dispatchers.IO) { updateResult(R.string.favourites, UnknownMangaSource, searchFavorites()) })
+			jobs.add(launch(Dispatchers.IO) { updateResult(0, LocalMangaSource, searchLocal()) })
+
+			sources.forEach { source ->
+				jobs.add(launch(Dispatchers.IO) {
+					sourcesSemaphore.acquire()
+					try {
+						val result = searchSource(source)
+						updateResult(0, source, result)
+					} finally {
+						sourcesSemaphore.release()
+					}
+				})
+			}
+			jobs.joinAll()
 		}
 	}
 
@@ -304,9 +341,15 @@ class SearchViewModel @Inject constructor(
 		},
 	)
 
-	private fun appendResult(item: SearchResultsListModel?) {
-		if (item != null) {
-			results.append(item)
+	private fun updateResult(titleResId: Int, source: MangaSource, result: SearchResultsListModel?) {
+		results.update { currentList ->
+			currentList.mapNotNull { model ->
+				if (model.titleResId == titleResId && model.source == source) {
+					result?.copy(loading = false)
+				} else {
+					model
+				}
+			}
 		}
 	}
 

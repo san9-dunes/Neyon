@@ -60,6 +60,13 @@ class SuggestionsViewModel @Inject constructor(
 		) { forceRefresh, genre, sortOrder -> Triple(forceRefresh, genre, sortOrder) }
 		.flatMapLatest { (forceRefresh, genre, sortOrder) ->
 				flow<List<Manga>?> {
+						// Early Exit: If we already have a successfully fetched and cached feed for the current state, 
+						// emit it immediately without triggering loading or network calls.
+						if (!forceRefresh && genre == null && !feedAggregator.cachedFeed.isNullOrEmpty() && feedAggregator.cachedSortOrder == sortOrder) {
+								emit(feedAggregator.cachedFeed)
+								return@flow
+						}
+
 						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
 						// Only wipe the screen if we have no memory cache or explicitly requested a fresh fetch
 						// Added cachedSortOrder check to ensure UI blanks and resets properly when sort order changes

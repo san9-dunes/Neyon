@@ -49,5 +49,6 @@ fun searchResultsAD(
 		adapter.notifyDataSetChanged()
 		binding.recyclerView.isGone = item.list.isEmpty()
 		binding.textViewError.textAndVisible = item.error?.getDisplayMessage(context.resources)
+		binding.progressBar.isVisible = item.loading
 	}
 }

@@ -35,6 +35,17 @@
 		android:layout_marginEnd="@dimen/grid_spacing"
 		android:text="@string/show_all" />
 
+	<ProgressBar
+		android:id="@+id/progressBar"
+		style="?android:attr/progressBarStyle"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_below="@id/textView_title"
+		android:layout_centerHorizontal="true"
+		android:layout_marginTop="@dimen/grid_spacing"
+		android:visibility="gone"
+		tools:visibility="visible" />
+
 	<androidx.recyclerview.widget.RecyclerView
 		android:id="@+id/recyclerView"
 		android:layout_width="wrap_content"
