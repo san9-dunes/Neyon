@@ -55,10 +55,10 @@ Neyon is a multi-module Android application architected using the standard **MVV
 - **Android Studio** (recommended) or Android SDK command-line tools
 
 ### Building the Project
-
+#### Currently working on dev branch
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/AppNeyon/Neyon.git
+   git clone https://github.com/AppNeyon/Neyon.git -b dev
    cd Neyon
    ```
 
