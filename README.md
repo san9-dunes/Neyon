@@ -27,7 +27,7 @@ Neyon is a multi-module Android application architected using the standard **MVV
 
 ### Main Features
 
-* Online manga catalogues (with 1200+ manga sources)
+* Online manga catalogues (with 500+ manga sources)
 * Search manga by name, genres and more filters
 * **New:** Personalized "Smart" Suggestions feed powered by a client-side recommendation engine
 * **New:** "Find Similar" fallback in alternatives dialogue to instantly pivot to global search
