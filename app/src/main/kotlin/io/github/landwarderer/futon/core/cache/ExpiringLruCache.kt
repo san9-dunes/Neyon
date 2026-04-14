@@ -9,6 +9,7 @@ class ExpiringLruCache<T>(
 	val maxSize: Int,
 	private val lifetime: Long,
 	private val timeUnit: TimeUnit,
+	private val timeProvider: (() -> Long)? = null,
 ) {
 
 	private val cache = SynchronizedSieveCache<CacheKey, ExpiringValue<T>>(maxSize)
@@ -22,8 +23,12 @@ class ExpiringLruCache<T>(
 	}
 
 	operator fun set(key: CacheKey, value: T) {
-		val value = ExpiringValue(value, lifetime, timeUnit)
-		cache.put(key, value)
+		val expiringValue = if (timeProvider != null) {
+			ExpiringValue(value, lifetime, timeUnit, timeProvider)
+		} else {
+			ExpiringValue(value, lifetime, timeUnit)
+		}
+		cache.put(key, expiringValue)
 	}
 
 	fun clear() {
