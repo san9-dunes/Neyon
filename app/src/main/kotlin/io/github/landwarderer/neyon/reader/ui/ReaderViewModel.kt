@@ -77,11 +77,21 @@ import kotlinx.coroutines.withContext
 import java.time.Instant
 import javax.inject.Inject
 
+import coil3.ImageLoader
+import coil3.request.ImageRequest
+import android.content.Context
+import dagger.hilt.android.qualifiers.ApplicationContext
+
+import io.github.landwarderer.neyon.core.parser.MangaRepository
+
 private const val BOUNDS_PAGE_OFFSET = 2
 private const val PREFETCH_LIMIT = 5
 
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val imageLoader: ImageLoader,
+    private val mangaRepositoryFactory: MangaRepository.Factory,
     private val savedStateHandle: SavedStateHandle,
     private val dataRepository: MangaDataRepository,
     private val historyRepository: HistoryRepository,
@@ -305,6 +315,7 @@ class ReaderViewModel @Inject constructor(
             prevJob?.cancelAndJoin()
             content.value = ReaderContent(emptyList(), null)
             chaptersLoader.loadSingleChapter(id)
+            prefetchNextChapter(id)
             val newState = ReaderState(id, page, 0)
             content.value = ReaderContent(getFilteredSnapshot(), newState)
             saveCurrentState(newState)
@@ -329,6 +340,7 @@ class ReaderViewModel @Inject constructor(
             }
             content.value = ReaderContent(emptyList(), null)
             chaptersLoader.loadSingleChapter(newChapterId)
+            prefetchNextChapter(newChapterId)
             val newState = ReaderState(
                 chapterId = newChapterId,
                 page = if (delta == 0) prevState.page else 0,
@@ -460,6 +472,7 @@ class ReaderViewModel @Inject constructor(
                             readerMode.value = mode
                             try {
                                 chaptersLoader.loadSingleChapter(newState.chapterId)
+                                prefetchNextChapter(newState.chapterId)
                             } catch (e: Exception) {
                                 readingState.value = null // try next time
                                 exception = e.mergeWith(exception)
@@ -518,8 +531,11 @@ class ReaderViewModel @Inject constructor(
         val prevJob = loadingJob
         loadingJob = launchLoadingJob(Dispatchers.IO) {
             prevJob?.join()
-            chaptersLoader.loadPrevNextChapter(mangaDetails.requireValue(), currentId, isNext)
+            val loaded = chaptersLoader.loadPrevNextChapter(mangaDetails.requireValue(), currentId, isNext)
             content.value = ReaderContent(getFilteredSnapshot(), null)
+            if (loaded && isNext) {
+                prefetchNextChapter(chaptersLoader.last().chapterId)
+            }
         }
     }
 
@@ -640,6 +656,34 @@ class ReaderViewModel @Inject constructor(
         // start from beginning
         val preferredBranch = requestedBranch ?: manga.getPreferredBranch(null)
         return ReaderState(manga, preferredBranch)
+    }
+
+    private fun prefetchNextChapter(currentChapterId: Long) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val fullChapterList = mangaDetails.value?.allChapters
+                if (fullChapterList != null) {
+                    val currentIndex = fullChapterList.indexOfFirst { it.id == currentChapterId }
+                    if (currentIndex != -1 && currentIndex + 1 < fullChapterList.size) {
+                        val nextChapter = fullChapterList[currentIndex + 1]
+                        val repo = mangaRepositoryFactory.create(nextChapter.source)
+                        val newPages = repo.getPages(nextChapter)
+                        
+                        for (pageModel in newPages) {
+                            val url = pageLoader.getPageUrl(pageModel)
+                            if (url.isNotEmpty()) {
+                                val request = ImageRequest.Builder(context)
+                                    .data(url)
+                                    .build()
+                                imageLoader.enqueue(request)
+                            }
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                // Silently catch errors 
+            }
+        }
     }
 
     private fun getFilteredSnapshot(): List<ReaderPage> {

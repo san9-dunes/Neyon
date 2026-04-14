@@ -143,8 +143,8 @@ class DetailsLoadUseCase @Inject constructor(
 			if (e is kotlinx.coroutines.CancellationException) throw e
 			if (localManga != null) {
 				return@coroutineScope // Suppress refresh error if we've successfully emitted a local backup
-			} else if (!force && networkState.isOfflineOrRestricted()) {
-				// We don't have a downloaded copy, but we are offline. Suppress the error so the cached details are shown.
+			} else if (e is java.io.IOException || (!force && networkState.isOfflineOrRestricted())) {
+				// We don't have a downloaded copy, but we are offline or had a network error. Suppress the error so the cached details are shown.
 				emit(
 					MangaDetails(
 						manga = manga,
