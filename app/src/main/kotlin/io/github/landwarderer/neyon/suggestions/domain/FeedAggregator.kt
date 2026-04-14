@@ -18,6 +18,7 @@ import org.koitharu.kotatsu.parsers.model.MangaListFilter
 import org.koitharu.kotatsu.parsers.model.SortOrder
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import io.github.landwarderer.neyon.list.domain.ListSortOrder
+import io.github.landwarderer.neyon.suggestions.domain.MangaSuggestion
 import org.koitharu.kotatsu.parsers.util.almostEquals
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import kotlinx.coroutines.withContext
@@ -33,12 +34,12 @@ class FeedAggregator @Inject constructor(
 	private val getUserAffinityTagsUseCase: GetUserAffinityTagsUseCase,
 ) {
 
-        var memoryCache: List<Manga>? = null
+        var memoryCache: List<MangaSuggestion>? = null
             private set
         private var cachedWhitelist: Set<String>? = null
         var cachedSortOrder: ListSortOrder? = null
 
-        suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false, listSortOrder: ListSortOrder): List<Manga> = supervisorScope {
+        suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false, listSortOrder: ListSortOrder): List<MangaSuggestion> = supervisorScope {
                 val whitelistNames = appSettings.suggestionSourcesWhitelist     
                 if (whitelistNames.isEmpty()) return@supervisorScope emptyList()
 
@@ -59,40 +60,49 @@ class FeedAggregator @Inject constructor(
 
                 val tagsBlacklist = TagsBlacklist(appSettings.suggestionsTagsBlacklist, 0.4f)
 
+                val topTags = withContext(Dispatchers.IO) {
+                        getUserAffinityTagsUseCase()
+                }
+
                 val queries = sourcesToUse.map { source ->
                         async(Dispatchers.IO) {
-                                fetch(source, forceGenreTag, tagsBlacklist, listSortOrder)
+                                val computedSearchTag = if (forceGenreTag == null && topTags.isNotEmpty() && Math.random() > 0.5) {
+                                        topTags.random() 
+                                } else {
+                                        forceGenreTag
+                                }
+                                val resultList = fetch(source, computedSearchTag, tagsBlacklist, listSortOrder)
+                                Pair(resultList, computedSearchTag)
                         }
                 }
 
                 val results = queries.awaitAll()
 
-                val mergedList = mutableListOf<Manga>()
-                val iterators = results.map { it.iterator() }
+                val mergedList = mutableListOf<MangaSuggestion>()
+                val iterators = results.map { it.first.iterator() to it.second }
 
                 var hasMore = true
                 while (hasMore) {
                         hasMore = false
-                        for (it in iterators) {
+                        for ((it, tag) in iterators) {
                                 for (i in 0 until 5) {
                                         if (it.hasNext()) {
-                                                mergedList.add(it.next())
+                                                val manga = it.next()
+                                                val isSpecificTag = tag != null && tag in topTags
+                                                val reason = if (isSpecificTag) "Because you read $tag" else null
+                                                mergedList.add(MangaSuggestion(manga, 1.0f, reason))
                                                 hasMore = true
                                         }
                                 }
                         }
                 }
 
-                val finalFeed = mergedList.distinctById()
+                val finalFeed = mergedList.distinctBy { it.manga.id }
 
-                val topTags = withContext(Dispatchers.IO) {
-                        getUserAffinityTagsUseCase()
-                }
-
-                val sortedFeed = if (topTags.isNotEmpty()) {
+                val sortedFeed = if (topTags.isNotEmpty() && forceGenreTag == null) {
                         finalFeed.sortedWith(
-                                compareByDescending<Manga> { manga ->
-                                        manga.tags.count { it.title.lowercase() in topTags }
+                                compareByDescending<MangaSuggestion> { mangaSug ->
+                                        mangaSug.manga.tags.count { it.title.lowercase() in topTags }
                                 }
                         )
                 } else {

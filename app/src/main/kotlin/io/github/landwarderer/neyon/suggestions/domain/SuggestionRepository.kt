@@ -84,7 +84,8 @@ class SuggestionRepository @Inject constructor(
 				db.getSuggestionDao().upsert(
 					SuggestionEntity(
 						mangaId = manga.id,
-						relevance = relevance,
+						relevance = manga.relevance,
+						reason = manga.reason,
 						createdAt = System.currentTimeMillis(),
 					),
 				)

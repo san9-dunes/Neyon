@@ -20,6 +20,8 @@ import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import io.github.landwarderer.neyon.list.domain.MangaListMapper
 import io.github.landwarderer.neyon.list.domain.QuickFilterListener
 import io.github.landwarderer.neyon.list.ui.MangaListViewModel
+import io.github.landwarderer.neyon.list.ui.model.ListHeader
+import io.github.landwarderer.neyon.suggestions.domain.MangaSuggestion
 import io.github.landwarderer.neyon.list.ui.model.EmptyState
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
 import io.github.landwarderer.neyon.list.ui.model.toErrorState
@@ -59,7 +61,7 @@ class SuggestionsViewModel @Inject constructor(
 			settings.observeAsFlow(AppSettings.KEY_SUGGESTIONS_ORDER) { suggestionsSortOrder }
 		) { forceRefresh, genre, sortOrder -> Triple(forceRefresh, genre, sortOrder) }
 		.flatMapLatest { (forceRefresh, genre, sortOrder) ->
-				flow<List<Manga>?> {
+				flow<List<MangaSuggestion>?> {
 						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
 						// Only wipe the screen if explicitly requested a fresh fetch
 						if (forceRefresh || genre != null) {
@@ -108,9 +110,15 @@ class SuggestionsViewModel @Inject constructor(
 				)
 			}
 
-			else -> buildList(list.size + 1) {
+			else -> buildList(list.size + 5) {
 				quickFilter.filterItem(filters)?.let(::add)
-				mangaListMapper.toListModelList(this, list, mode)
+				val grouped = list.groupBy { it.reason }
+				for ((reason, items) in grouped) {
+					if (reason != null) {
+						add(ListHeader(reason))
+					}
+					mangaListMapper.toListModelList(this, items.map { it.manga }, mode)
+				}
 			}
 		}
 	}.catch {

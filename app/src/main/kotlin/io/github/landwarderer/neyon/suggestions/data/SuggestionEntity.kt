@@ -23,5 +23,6 @@ class SuggestionEntity(
 	@ColumnInfo(name = "manga_id", index = true) val mangaId: Long,
 	@FloatRange(from = 0.0, to = 1.0)
 	@ColumnInfo(name = "relevance") val relevance: Float,
+	@ColumnInfo(name = "reason") val reason: String? = null,
 	@ColumnInfo(name = "created_at") val createdAt: Long = System.currentTimeMillis(),
 )
