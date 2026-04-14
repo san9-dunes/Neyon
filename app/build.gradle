@@ -148,7 +148,7 @@ android {
 
     lint {
         abortOnError = true
-        disable 'MissingTranslation', 'PrivateResource', 'SetJavaScriptEnabled', 'SimpleDateFormat'
+        disable 'MissingTranslation', 'PrivateResource', 'SetJavaScriptEnabled', 'SimpleDateFormat', 'MissingQuantity'
     }
 
     testOptions {

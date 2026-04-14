@@ -210,6 +210,7 @@ fun Context.ensureRamAtLeast(requiredSize: Long) {
 fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	javaScriptEnabled = true
 	domStorageEnabled = true
+	allowFileAccess = false
 	mediaPlaybackRequiresUserGesture = false
 	if (WebViewFeature.isFeatureSupported(WebViewFeature.MUTE_AUDIO)) {
 		WebViewCompat.setAudioMuted(this@configureForParser, true)
