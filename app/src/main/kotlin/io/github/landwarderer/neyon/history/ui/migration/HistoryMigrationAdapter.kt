@@ -40,13 +40,9 @@ class HistoryMigrationAdapter(
             binding.textViewTitle.text = item.oldManga.title
             binding.textViewOldSource.text = "From: ${item.oldManga.source.name}"
             
-            if (item.isFetching || item.newManga == null) {
-                binding.progressLoading.visibility = if (item.isFetching) View.VISIBLE else View.GONE
-                binding.textViewNewSource.text = if (item.isFetching) "Finding match..." else "To: Not found"
-            } else {
-                binding.progressLoading.visibility = View.GONE
-                binding.textViewNewSource.text = "To: ${item.newManga.source.name} - ${item.newManga.title}"
-            }
+            binding.progressLoading.visibility = View.GONE
+            binding.textViewNewSource.text = "Click to find alternatives"
+            binding.textViewNewSource.visibility = View.VISIBLE
         }
     }
 

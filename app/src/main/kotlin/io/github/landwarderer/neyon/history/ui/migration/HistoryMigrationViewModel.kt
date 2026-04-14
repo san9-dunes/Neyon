@@ -70,32 +70,9 @@ class HistoryMigrationViewModel @Inject constructor(
 
                 // Initial state
                 val pairs = unavailableHistoryManga.map {
-                    MigrationPair(oldManga = it, newManga = null, isFetching = true, migrationSuccess = false)
+                    MigrationPair(oldManga = it, newManga = null, isFetching = false, migrationSuccess = false)
                 }
                 _items.value = pairs
-
-                // Incrementally fetch alternatives
-                pairs.forEachIndexed { index, pair ->
-                    launch {
-                        val bestMatch = try {
-                            alternativesUseCase(pair.oldManga, throughDisabledSources = false)
-                                .take(1)
-                                .toList()
-                                .firstOrNull()
-                        } catch (e: Exception) {
-                            null
-                        }
-                        
-                        mutex.withLock {
-                            val currentList = _items.value.toMutableList()
-                            val currentIndex = currentList.indexOfFirst { it.oldManga.id == pair.oldManga.id }
-                            if (currentIndex != -1) {
-                                currentList[currentIndex] = currentList[currentIndex].copy(newManga = bestMatch, isFetching = false)
-                                _items.value = currentList
-                            }
-                        }
-                    }
-                }
             } finally {
                 _isScanning.value = false
             }
@@ -103,30 +80,6 @@ class HistoryMigrationViewModel @Inject constructor(
     }
 
     fun migrateAll() {
-        if (_isMigrating.value || _isScanning.value) return
-        launchJob(Dispatchers.IO) {
-            _isMigrating.value = true
-            try {
-                val targets = _items.value.filter { it.newManga != null && !it.migrationSuccess }
-                
-                for (target in targets) {
-                    val newManga = target.newManga ?: continue
-                    migrateUseCase(target.oldManga, newManga)
-                    
-                    mutex.withLock {
-                        val currentList = _items.value.toMutableList()
-                        val currentIndex = currentList.indexOfFirst { it.oldManga.id == target.oldManga.id }
-                        if (currentIndex != -1) {
-                            currentList[currentIndex] = currentList[currentIndex].copy(migrationSuccess = true)
-                            _items.value = currentList
-                        }
-                    }
-                }
-            } finally {
-                _isMigrating.value = false
-                // Remove successfully migrated items from the view
-                _items.value = _items.value.filter { !it.migrationSuccess }
-            }
-        }
+        // Disabled per requirement: manual 1-by-1 migration only
     }
 }

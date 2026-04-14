@@ -35,9 +35,9 @@ class HistoryMigrationActivity : BaseActivity<ActivityHistoryMigrationBinding>()
         viewBinding.recyclerView.layoutManager = LinearLayoutManager(this)
         viewBinding.recyclerView.adapter = adapter
 
+        viewBinding.fabMigrateAll.visibility = View.GONE
         viewBinding.fabMigrateAll.setOnClickListener {
-            viewModel.migrateAll()
-            Snackbar.make(viewBinding.root, R.string.migration_completed, Snackbar.LENGTH_SHORT).show()
+            // Disabled
         }
 
         lifecycleScope.launch {
@@ -65,15 +65,11 @@ class HistoryMigrationActivity : BaseActivity<ActivityHistoryMigrationBinding>()
         if (!viewModel.isScanning.value && viewModel.items.value.isEmpty()) {
             viewBinding.emptyView.visibility = View.VISIBLE
             viewBinding.recyclerView.visibility = View.GONE
-            viewBinding.fabMigrateAll.hide()
+            viewBinding.fabMigrateAll.visibility = View.GONE
         } else {
             viewBinding.emptyView.visibility = View.GONE
             viewBinding.recyclerView.visibility = View.VISIBLE
-            if (viewModel.items.value.isNotEmpty()) {
-                viewBinding.fabMigrateAll.show()
-            } else {
-                viewBinding.fabMigrateAll.hide()
-            }
+            viewBinding.fabMigrateAll.visibility = View.GONE
         }
     }
 

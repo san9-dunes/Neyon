@@ -68,6 +68,12 @@ class HistoryListFragment : MangaListFragment() {
 				true
 			}
 
+			R.id.action_fix -> {
+				router.openHistoryMigration()
+				mode?.finish()
+				true
+			}
+
 			R.id.action_mark_current -> {
 				val itemsSnapshot = selectedItems
 				buildAlertDialog(context ?: return false, isCentered = true) {
