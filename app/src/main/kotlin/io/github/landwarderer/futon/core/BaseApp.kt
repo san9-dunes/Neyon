@@ -12,7 +12,7 @@ import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
-import okhttp3.internal.platform.PlatformRegistry
+import okhttp3.OkHttp
 
 import org.conscrypt.Conscrypt
 import io.github.landwarderer.futon.BuildConfig
@@ -69,7 +69,7 @@ open class BaseApp : Application(), Configuration.Provider {
 
 	override fun onCreate() {
 		super.onCreate()
-		PlatformRegistry.applicationContext = this // TODO replace with OkHttp.initialize
+		OkHttp.initialize(this)
 		AppCompatDelegate.setDefaultNightMode(settings.theme)
 		// Initialize Sentry only if user has opted in
 		if (settings.isCrashAnalyticsEnabled) {
