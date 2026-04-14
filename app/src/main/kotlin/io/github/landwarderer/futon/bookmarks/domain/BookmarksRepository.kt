@@ -73,12 +73,11 @@ class BookmarksRepository @Inject constructor(
 		val entities = ArrayList<BookmarkEntity>(ids.size)
 		db.withTransaction {
 			val dao = db.getBookmarksDao()
-			for (pageId in ids) {
-				val e = dao.find(pageId)
-				if (e != null) {
-					entities.add(e)
+			if (ids.isNotEmpty()) {
+				ids.chunked(900).forEach { chunk ->
+					entities.addAll(dao.find(chunk))
+					dao.delete(chunk)
 				}
-				dao.delete(pageId)
 			}
 		}
 		return BookmarksRestorer(entities)

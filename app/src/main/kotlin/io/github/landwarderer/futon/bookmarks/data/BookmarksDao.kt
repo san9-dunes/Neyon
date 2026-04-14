@@ -18,6 +18,9 @@ abstract class BookmarksDao {
 	@Query("SELECT * FROM bookmarks WHERE page_id = :pageId")
 	abstract suspend fun find(pageId: Long): BookmarkEntity?
 
+	@Query("SELECT * FROM bookmarks WHERE page_id IN (:pageIds)")
+	abstract suspend fun find(pageIds: Collection<Long>): List<BookmarkEntity>
+
 	@Transaction
 	@Query(
 		"SELECT * FROM manga JOIN bookmarks ON bookmarks.manga_id = manga.manga_id ORDER BY percent LIMIT :limit OFFSET :offset",
@@ -44,6 +47,9 @@ abstract class BookmarksDao {
 
 	@Query("DELETE FROM bookmarks WHERE page_id = :pageId")
 	abstract suspend fun delete(pageId: Long): Int
+
+	@Query("DELETE FROM bookmarks WHERE page_id IN (:pageIds)")
+	abstract suspend fun delete(pageIds: Collection<Long>): Int
 
 	@Query("DELETE FROM bookmarks WHERE manga_id = :mangaId AND chapter_id = :chapterId AND page = :page")
 	abstract suspend fun delete(mangaId: Long, chapterId: Long, page: Int): Int
