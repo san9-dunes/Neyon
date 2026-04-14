@@ -45,8 +45,8 @@ import io.github.landwarderer.futon.core.util.ext.call
 import io.github.landwarderer.futon.core.util.ext.firstNotNull
 import io.github.landwarderer.futon.core.util.ext.requireValue
 import io.github.landwarderer.futon.details.data.MangaDetails
-import io.github.landwarderer.futon.details.domain.DetailsInteractor
 import io.github.landwarderer.futon.details.domain.DetailsLoadUseCase
+import io.github.landwarderer.futon.details.domain.ObserveIncognitoModeUseCase
 import io.github.landwarderer.futon.details.domain.ProgressUpdateUseCase
 import io.github.landwarderer.futon.details.ui.pager.ChaptersPagesViewModel
 import io.github.landwarderer.futon.details.ui.pager.EmptyMangaReason
@@ -54,6 +54,7 @@ import io.github.landwarderer.futon.download.ui.worker.DownloadWorker
 import io.github.landwarderer.futon.history.data.HistoryRepository
 import io.github.landwarderer.futon.history.domain.HistoryUpdateUseCase
 import io.github.landwarderer.futon.list.domain.ReadingProgress.Companion.PROGRESS_NONE
+import io.github.landwarderer.futon.local.data.LocalMangaRepository
 import io.github.landwarderer.futon.local.data.LocalStorageChanges
 import io.github.landwarderer.futon.local.domain.DeleteLocalMangaUseCase
 import io.github.landwarderer.futon.local.domain.model.LocalManga
@@ -70,6 +71,7 @@ import io.github.landwarderer.futon.reader.ui.config.ReaderSettings
 import io.github.landwarderer.futon.reader.ui.pager.ReaderUiState
 import io.github.landwarderer.futon.scrobbling.discord.ui.DiscordRpc
 import io.github.landwarderer.futon.stats.domain.StatsCollector
+import io.github.landwarderer.futon.tracker.domain.TrackingRepository
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -96,13 +98,16 @@ class ReaderViewModel @Inject constructor(
     private val statsCollector: StatsCollector,
     private val discordRpc: DiscordRpc,
     @LocalStorageChanges localStorageChanges: SharedFlow<LocalManga?>,
-    interactor: DetailsInteractor,
+    private val localMangaRepository: LocalMangaRepository,
+    private val trackingRepository: TrackingRepository,
+    private val observeIncognitoModeUseCase: ObserveIncognitoModeUseCase,
     deleteLocalMangaUseCase: DeleteLocalMangaUseCase,
     downloadScheduler: DownloadWorker.Scheduler,
     readerSettingsProducerFactory: ReaderSettings.Producer.Factory,
 ) : ChaptersPagesViewModel(
     settings = settings,
-    interactor = interactor,
+    localMangaRepository = localMangaRepository,
+    trackingRepository = trackingRepository,
     bookmarksRepository = bookmarksRepository,
     historyRepository = historyRepository,
     downloadScheduler = downloadScheduler,
@@ -588,7 +593,7 @@ class ReaderViewModel @Inject constructor(
             return
         }
         launchJob(Dispatchers.IO) {
-            interactor.observeIncognitoMode(manga)
+            observeIncognitoModeUseCase(manga)
                 .collect {
                     when (it) {
                         TriStateOption.ENABLED -> isIncognitoMode.value = true
