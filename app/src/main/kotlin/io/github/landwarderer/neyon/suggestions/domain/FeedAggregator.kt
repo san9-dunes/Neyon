@@ -20,6 +20,7 @@ import org.koitharu.kotatsu.parsers.model.MangaSource
 import io.github.landwarderer.neyon.list.domain.ListSortOrder
 import org.koitharu.kotatsu.parsers.util.almostEquals
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,6 +30,7 @@ class FeedAggregator @Inject constructor(
 	private val historyRepository: HistoryRepository,
 	private val mangaRepositoryFactory: MangaRepository.Factory,
 	private val appSettings: AppSettings,
+	private val getUserAffinityTagsUseCase: GetUserAffinityTagsUseCase,
 ) {
 
         var memoryCache: List<Manga>? = null
@@ -82,10 +84,25 @@ class FeedAggregator @Inject constructor(
                 }
 
                 val finalFeed = mergedList.distinctById()
-                if (forceGenreTag == null) {
-                        memoryCache = finalFeed
+
+                val topTags = withContext(Dispatchers.IO) {
+                        getUserAffinityTagsUseCase()
                 }
-                finalFeed
+
+                val sortedFeed = if (topTags.isNotEmpty()) {
+                        finalFeed.sortedWith(
+                                compareByDescending<Manga> { manga ->
+                                        manga.tags.count { it.title.lowercase() in topTags }
+                                }
+                        )
+                } else {
+                        finalFeed
+                }
+
+                if (forceGenreTag == null) {
+                        memoryCache = sortedFeed
+                }
+                sortedFeed
         }
 
         private suspend fun fetch(
