@@ -83,6 +83,16 @@ abstract class TagsDao {
 	)
 	abstract suspend fun findRelatedTags(ids: Set<Long>): List<TagEntity>
 
+	@Query(
+		"""SELECT tags.* FROM tags
+		LEFT JOIN manga_tags ON tags.tag_id = manga_tags.tag_id
+		WHERE title LIKE :query
+		GROUP BY tags.title
+		ORDER BY COUNT(manga_id) DESC
+		LIMIT :limit""",
+	)
+	abstract suspend fun searchTagsGlobally(query: String, limit: Int): List<TagEntity>
+
 	@Upsert
 	abstract suspend fun upsert(tags: Iterable<TagEntity>)
 }
