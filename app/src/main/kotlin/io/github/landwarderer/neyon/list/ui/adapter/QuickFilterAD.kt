@@ -18,6 +18,11 @@ fun quickFilterAD(
 			listener.onFilterOptionClick(data)
 		}
 	}
+	binding.chipsTags.onChipCloseClickListener = ChipsView.OnChipCloseClickListener { chip, data ->
+		if (data is ListFilterOption) {
+			listener.onFilterOptionCloseClick(data)
+		}
+	}
 
 	bind {
 		binding.chipsTags.setChips(item.items)

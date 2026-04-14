@@ -26,6 +26,7 @@ import io.github.landwarderer.neyon.list.ui.adapter.ListStateHolderListener
 import io.github.landwarderer.neyon.list.ui.adapter.TypedListSpacingDecoration
 import io.github.landwarderer.neyon.list.ui.adapter.buttonFooterAD
 import io.github.landwarderer.neyon.list.ui.adapter.emptyStateListAD
+import io.github.landwarderer.neyon.list.ui.adapter.errorStateListAD
 import io.github.landwarderer.neyon.list.ui.adapter.loadingFooterAD
 import io.github.landwarderer.neyon.list.ui.adapter.loadingStateAD
 import io.github.landwarderer.neyon.list.ui.model.ListModel
@@ -51,7 +52,8 @@ class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
 		}
 		val listAdapter = BaseListAdapter<ListModel>()
 			.addDelegate(ListItemType.MANGA_LIST_DETAILED, alternativeAD(coil, this, this))
-			.addDelegate(ListItemType.STATE_EMPTY, emptyStateListAD(null))
+			.addDelegate(ListItemType.STATE_EMPTY, emptyStateListAD(this))
+			.addDelegate(ListItemType.STATE_ERROR, errorStateListAD(this))
 			.addDelegate(ListItemType.FOOTER_LOADING, loadingFooterAD())
 			.addDelegate(ListItemType.STATE_LOADING, loadingStateAD())
 			.addDelegate(ListItemType.FOOTER_BUTTON, buttonFooterAD(this))
@@ -98,7 +100,9 @@ class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
 
 	override fun onRetryClick(error: Throwable) = viewModel.retry()
 
-	override fun onEmptyActionClick() = Unit
+	override fun onEmptyActionClick() {
+		router.openSearch(viewModel.manga.title)
+	}
 
 	override fun onFooterButtonClick() = viewModel.continueSearch()
 

@@ -6,5 +6,7 @@ interface QuickFilterListener {
 
 	fun toggleFilterOption(option: ListFilterOption)
 
+	fun removeFilterOption(option: ListFilterOption) {}
+
 	fun clearFilter()
 }

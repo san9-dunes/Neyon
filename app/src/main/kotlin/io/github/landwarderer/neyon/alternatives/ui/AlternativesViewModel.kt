@@ -32,6 +32,7 @@ import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.LoadingFooter
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
 import io.github.landwarderer.neyon.list.ui.model.MangaGridModel
+import io.github.landwarderer.neyon.list.ui.model.toErrorState
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.util.suspendlazy.getOrDefault
 import org.koitharu.kotatsu.parsers.util.suspendlazy.suspendLazy
@@ -50,6 +51,7 @@ class AlternativesViewModel @Inject constructor(
 
 	private var includeDisabledSources = MutableStateFlow(false)
 	private val results = MutableStateFlow<List<MangaAlternativeModel>>(emptyList())
+	private val errorState = MutableStateFlow<Throwable?>(null)
 
 	private var migrationJob: Job? = null
 	private var searchJob: Job? = null
@@ -64,16 +66,18 @@ class AlternativesViewModel @Inject constructor(
 		results,
 		isLoading,
 		includeDisabledSources,
-	) { list, loading, includeDisabled ->
+		errorState,
+	) { list, loading, includeDisabled, error ->
 		when {
 			list.isEmpty() -> listOf(
 				when {
 					loading -> LoadingState
+					error != null -> error.toErrorState(canRetry = true)
 					else -> EmptyState(
 						icon = R.drawable.ic_empty_common,
 						textPrimary = R.string.nothing_found,
 						textSecondary = R.string.text_search_holder_secondary,
-						actionStringRes = 0,
+						actionStringRes = R.string.find_similar,
 					)
 				},
 			)
@@ -91,6 +95,7 @@ class AlternativesViewModel @Inject constructor(
 	fun retry() {
 		searchJob?.cancel()
 		results.value = emptyList()
+		errorState.value = null
 		includeDisabledSources.value = false
 		doSearch(throughDisabledSources = false)
 	}
@@ -120,17 +125,25 @@ class AlternativesViewModel @Inject constructor(
 	private fun doSearch(throughDisabledSources: Boolean) {
 		val prevJob = searchJob
 		searchJob = launchLoadingJob(Dispatchers.IO) {
+			errorState.value = null
 			prevJob?.cancelAndJoin()
-			val ref = mangaDetails.getOrDefault(manga)
-			val refCount = ref.chaptersCount()
-			alternativesUseCase.invoke(ref, throughDisabledSources)
-				.collect {
-					val model = MangaAlternativeModel(
-						mangaModel = mangaListMapper.toListModel(it, ListMode.GRID) as MangaGridModel,
-						referenceChapters = refCount,
-					)
-					results.append(model)
+			try {
+				val ref = mangaDetails.getOrDefault(manga)
+				val refCount = ref.chaptersCount()
+				alternativesUseCase.invoke(ref, throughDisabledSources)
+					.collect {
+						val model = MangaAlternativeModel(
+							mangaModel = mangaListMapper.toListModel(it, ListMode.GRID) as MangaGridModel,
+							referenceChapters = refCount,
+						)
+						results.append(model)
+					}
+			} catch (e: Exception) {
+				if (e !is kotlinx.coroutines.CancellationException) {
+					errorState.value = e
 				}
+				throw e
+			}
 		}
 	}
 }

@@ -10,5 +10,6 @@ fun ListFilterOption.toChipModel(isChecked: Boolean) = ChipsView.ChipModel(
 	iconData = getIconData(),
 	isChecked = isChecked,
 	counter = if (this is ListFilterOption.Branch) chaptersCount else 0,
+	isCloseable = if (this is ListFilterOption.Tag) isRemovable else false,
 	data = this,
 )

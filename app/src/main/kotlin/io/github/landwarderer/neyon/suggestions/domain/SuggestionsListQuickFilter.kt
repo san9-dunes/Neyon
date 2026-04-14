@@ -21,7 +21,7 @@ class SuggestionsListQuickFilter @Inject constructor(
                 val pinnedTags = settings.suggestionsPinnedTags
 
                 pinnedTags.forEach { title ->
-                        add(ListFilterOption.Tag(MangaTag("📌 $title", title, UnknownMangaSource)))
+                        add(ListFilterOption.Tag(MangaTag("📌 $title", title, UnknownMangaSource), isRemovable = true))
                 }
 
                 val randomTags = historyRepository.getList(0, 50).distinctById()
@@ -42,6 +42,17 @@ class SuggestionsListQuickFilter @Inject constructor(
                 }
                 suggestionRepository.getTopSources(3).mapTo(this) {
                         ListFilterOption.Source(it)
+                }
+        }
+
+        override fun removeFilterOption(option: ListFilterOption) {
+                super.removeFilterOption(option)
+                if (option is ListFilterOption.Tag && option.isRemovable) {
+                        val currentPinned = settings.suggestionsPinnedTags.toMutableSet()
+                        val unpinnedTitle = option.tag.title.removePrefix("📌 ")
+                        if (currentPinned.remove(unpinnedTitle)) {
+                                settings.suggestionsPinnedTags = currentPinned
+                        }
                 }
         }
 }

@@ -17,6 +17,8 @@ abstract class MangaListQuickFilter(
 	private val availableFilterOptions = suspendLazy {
 		getAvailableFilterOptions()
 	}
+	@Volatile
+	private var removedOptions = emptySet<ListFilterOption>()
 
 	val appliedOptions
 		get() = appliedFilter.asStateFlow()
@@ -41,6 +43,11 @@ abstract class MangaListQuickFilter(
 		}
 	}
 
+	override fun removeFilterOption(option: ListFilterOption) {
+		removedOptions = removedOptions + option
+		setFilterOption(option, false)
+	}
+
 	override fun clearFilter() {
 		appliedFilter.value = emptySet()
 	}
@@ -51,7 +58,7 @@ abstract class MangaListQuickFilter(
 		if (!settings.isQuickFilterEnabled) {
 			return null
 		}
-		val availableOptions = availableFilterOptions.getOrNull()?.map { option ->
+		val availableOptions = availableFilterOptions.getOrNull()?.filter { it !in removedOptions }?.map { option ->
 			option.toChipModel(isChecked = option in selectedOptions)
 		}.orEmpty()
 		return if (availableOptions.isNotEmpty()) {

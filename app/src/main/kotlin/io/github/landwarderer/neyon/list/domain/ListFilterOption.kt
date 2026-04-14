@@ -77,7 +77,8 @@ sealed interface ListFilterOption {
 	}
 
 	data class Tag(
-		val tag: MangaTag
+		val tag: MangaTag,
+		val isRemovable: Boolean = false,
 	) : ListFilterOption {
 
 		val tagId: Long = tag.toEntity().id

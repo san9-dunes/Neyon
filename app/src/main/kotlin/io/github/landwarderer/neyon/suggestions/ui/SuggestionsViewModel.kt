@@ -147,5 +147,17 @@ class SuggestionsViewModel @Inject constructor(
 			refreshSignal.tryEmit(true)
 		}
 	}
+
+	override fun removeFilterOption(option: ListFilterOption) {
+		quickFilter.removeFilterOption(option)
+		if (option is ListFilterOption.Tag) {
+			val applied = quickFilter.appliedOptions.value
+			val newOverride = if (applied.filterIsInstance<ListFilterOption.Tag>().isNotEmpty()) applied.filterIsInstance<ListFilterOption.Tag>().first().tag.title else null
+			if (genreOverride.replayCache.firstOrNull() == option.tag.title) {
+				genreOverride.tryEmit(newOverride)
+				refreshSignal.tryEmit(true)
+			}
+		}
+	}
 }
 
