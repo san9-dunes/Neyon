@@ -384,6 +384,9 @@
     <string name="got_it">Got it</string>
     <string name="sources_reorder_tip">Tap and hold on an item to reorder them</string>
     <string name="user_agent">UserAgent header</string>
+    <string name="user_agent_summary">Changing user agent sometimes can help for some sources</string>
+    <string name="pref_global_user_agent_title">Global User-Agent</string>
+    <string name="pref_global_user_agent_summary">Changing user agent can help bypass Cloudflare for some sources</string>
     <string name="settings_apply_restart_required">Please restart the application to apply these changes</string>
     <string name="comics_archive_import_description">You can select one or more .cbz or .zip files, each file will be recognized as a separate manga.</string>
     <string name="folder_with_images_import_description">You can select a directory with archives or images. Each archive (or subdirectory) will be recognized as a chapter.</string>

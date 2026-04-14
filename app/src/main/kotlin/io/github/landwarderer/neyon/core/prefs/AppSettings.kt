@@ -175,6 +175,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val isOfflineCheckDisabled: Boolean
 		get() = prefs.getBoolean(KEY_OFFLINE_DISABLED, false)
 
+	val userAgent: String
+		get() = prefs.getString("pref_global_user_agent", "") ?: ""
+
 	var isAllFavouritesVisible: Boolean
 		get() = prefs.getBoolean(KEY_ALL_FAVOURITES_VISIBLE, true)
 		set(value) = prefs.edit { putBoolean(KEY_ALL_FAVOURITES_VISIBLE, value) }
@@ -689,6 +692,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_COLOR_THEME = "color_theme"
 		const val KEY_THEME_AMOLED = "amoled_theme"
 		const val KEY_OFFLINE_DISABLED = "no_offline"
+		const val KEY_USER_AGENT = "user_agent"
 		const val KEY_PAGES_CACHE_CLEAR = "pages_cache_clear"
 		const val KEY_HTTP_CACHE_CLEAR = "http_cache_clear"
 		const val KEY_COOKIES_CLEAR = "cookies_clear"

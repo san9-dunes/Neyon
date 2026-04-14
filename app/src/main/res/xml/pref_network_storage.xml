@@ -35,6 +35,15 @@
         tools:isPreferenceVisible="true" />
 
     <ListPreference
+        android:defaultValue=""
+        android:entries="@array/pref_user_agent_entries"
+        android:entryValues="@array/pref_user_agent_values"
+        android:key="pref_global_user_agent"
+        android:title="@string/pref_global_user_agent_title"
+        android:summary="@string/pref_global_user_agent_summary"
+        app:allowDividerAbove="true" />
+
+    <ListPreference
         android:defaultValue="2"
         android:entries="@array/network_policy"
         android:entryValues="@array/values_network_policy"

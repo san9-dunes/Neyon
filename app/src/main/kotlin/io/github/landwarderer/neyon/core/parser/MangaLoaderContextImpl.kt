@@ -46,6 +46,7 @@ class MangaLoaderContextImpl @Inject constructor(
     @ApplicationContext private val androidContext: Context,
     private val webViewExecutor: WebViewExecutor,
     private val webViewRequestInterceptorExecutor: WebViewRequestInterceptorExecutor,
+    private val appSettings: io.github.landwarderer.neyon.core.prefs.AppSettings,
 ) : MangaLoaderContext() {
 
     private val webViewUserAgent by lazy { obtainWebViewUserAgent() }
@@ -57,7 +58,8 @@ class MangaLoaderContextImpl @Inject constructor(
     override suspend fun evaluateJs(baseUrl: String, script: String, timeout: Long): String? =
         webViewExecutor.evaluateJs(baseUrl, script, timeoutMs = timeout)
 
-    override fun getDefaultUserAgent(): String = webViewUserAgent
+    override fun getDefaultUserAgent(): String =
+        appSettings.userAgent.takeIf { it.isNotEmpty() } ?: webViewUserAgent
 
     override fun getConfig(source: MangaSource): MangaSourceConfig {
         return SourceSettings(androidContext, source)

@@ -55,11 +55,15 @@ private fun PreferenceFragmentCompat.addPreferencesFromParserRepository(reposito
 
 			is ConfigKey.UserAgent -> {
 				AutoCompleteTextViewPreference(screen.context).apply {
+					val userAgents = screen.context.resources.getStringArray(R.array.pref_user_agent_values)
+						.filter { it.isNotBlank() }
+						.toTypedArray()
 					entries = arrayOf(
 						UserAgents.FIREFOX_MOBILE,
 						UserAgents.CHROME_MOBILE,
 						UserAgents.FIREFOX_DESKTOP,
 						UserAgents.CHROME_DESKTOP,
+						*userAgents
 					)
 					summaryProvider = EditTextDefaultSummaryProvider(key.defaultValue)
 					setOnBindEditTextListener(

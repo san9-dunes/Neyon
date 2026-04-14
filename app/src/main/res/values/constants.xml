@@ -90,4 +90,10 @@
 		<item>8000</item>
 		<item>-1</item>
 	</string-array>
-</resources>
+        <string-array name="user_agent_values" translatable="false">
+                <item></item>
+                <item>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/147.0.3912.60</item>
+                <item>Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36 Edg/147.0.3912.60</item>
+                <item>Mozilla/5.0 (Linux; Android 10; HD1913) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.7680.178 Mobile Safari/537.36 EdgA/146.0.3856.97</item>
+                <item>Mozilla/5.0 (iPhone; CPU iPhone OS 18_7_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.0 EdgiOS/147.3912.60 Mobile/15E148 Safari/605.1.15</item>
+        </string-array>
