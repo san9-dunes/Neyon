@@ -85,7 +85,6 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 
 private const val BOUNDS_PAGE_OFFSET = 2
-private const val PREFETCH_LIMIT = 5
 
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
@@ -127,6 +126,7 @@ class ReaderViewModel @Inject constructor(
     private var pageSaveJob: Job? = null
     private var bookmarkJob: Job? = null
     private var stateChangeJob: Job? = null
+    private val activePrefetchRequests = mutableMapOf<String, coil3.request.Disposable>()
 
     init {
         mangaDetails.value = intent.manga?.let { MangaDetails(it) }
@@ -138,6 +138,9 @@ class ReaderViewModel @Inject constructor(
     val onShowToast = MutableEventFlow<Int>()
     val onAskNsfwIncognito = MutableEventFlow<Unit>()
     val uiState = MutableStateFlow<ReaderUiState?>(null)
+
+    val pagePreloadLimit: Int
+        get() = settings.pagePreloadLimit
 
     val isIncognitoMode = MutableStateFlow(savedStateHandle.get<Boolean>(ReaderIntent.EXTRA_INCOGNITO))
 
@@ -380,7 +383,7 @@ class ReaderViewModel @Inject constructor(
                 }
             }
             if (pageLoader.isPrefetchApplicable()) {
-                pageLoader.prefetch(pages.trySublist(upperPos + 1, upperPos + PREFETCH_LIMIT))
+                pageLoader.prefetch(pages.trySublist(upperPos + 1, upperPos + pagePreloadLimit))
             }
             
             prefetchRollingWindow(upperPos)
@@ -660,46 +663,60 @@ class ReaderViewModel @Inject constructor(
                 val pages = content.value.pages
                 if (pages.isEmpty()) return@launch
                 
-                val windowSize = PREFETCH_LIMIT
-                val nextPagesInCurrentList = pages.trySublist(currentIndex + 1, currentIndex + 1 + windowSize)
-                val remainingToFetch = windowSize - nextPagesInCurrentList.size
+                val windowSize = pagePreloadLimit
+                val validUrls = mutableSetOf<String>()
                 
-                // Enqueue what we already have in the current pages list into Coil
-                nextPagesInCurrentList.forEach { readerPage ->
-                    val url = pageLoader.getPageUrl(readerPage.toMangaPage())
+                // Keep current and next `windowSize` pages active
+                val startIndex = (currentIndex - 1).coerceAtLeast(0)
+                val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
+                
+                // Fetch URLs in range
+                for (i in startIndex..endIndex) {
+                    val url = pageLoader.getPageUrl(pages[i].toMangaPage())
                     if (!url.isNullOrEmpty()) {
-                        val request = ImageRequest.Builder(context)
-                            .data(url)
-                            .build()
-                        imageLoader.enqueue(request)
+                        validUrls.add(url)
+                        if (!activePrefetchRequests.containsKey(url)) {
+                            val request = ImageRequest.Builder(context)
+                                .data(url)
+                                .build()
+                            activePrefetchRequests[url] = imageLoader.enqueue(request)
+                        }
                     }
                 }
                 
-                // If the next 5 pages cross the boundary into the next chapter, eagerly prefetch those as well
+                val remainingToFetch = windowSize - (endIndex - currentIndex)
+                
+                // Eagerly prefetch if crossing boundary to the next chapter
                 if (remainingToFetch > 0) {
                     val fullChapterList = mangaDetails.value?.allChapters ?: return@launch
                     val lastChapterInList = pages.last().chapterId
                     val currentChapIdx = fullChapterList.indexOfFirst { it.id == lastChapterInList }
                     
-                    // We check if there's a valid next chapter
                     if (currentChapIdx != -1 && currentChapIdx + 1 < fullChapterList.size) {
                         val nextChapter = fullChapterList[currentChapIdx + 1]
                         val repo = mangaRepositoryFactory.create(nextChapter.source)
                         
-                        // Silently fetch the next chapter's pages
                         val newPages = repo.getPages(nextChapter)
                         
-                        // Take only what's needed to fill the rolling window slice
                         newPages.take(remainingToFetch).forEach { pageModel ->
                             val url = pageLoader.getPageUrl(pageModel)
                             if (!url.isNullOrEmpty()) {
-                                val request = ImageRequest.Builder(context)
-                                    .data(url)
-                                    .build()
-                                imageLoader.enqueue(request)
+                                validUrls.add(url)
+                                if (!activePrefetchRequests.containsKey(url)) {
+                                    val request = ImageRequest.Builder(context)
+                                        .data(url)
+                                        .build()
+                                    activePrefetchRequests[url] = imageLoader.enqueue(request)
+                                }
                             }
                         }
                     }
+                }
+                
+                // Cancel pending requests outside our sliding window
+                val toCancel = activePrefetchRequests.keys - validUrls
+                toCancel.forEach { url ->
+                    activePrefetchRequests.remove(url)?.dispose()
                 }
             } catch (e: Exception) {
                 // Silently catch errors to avoid interrupting user reading sessions

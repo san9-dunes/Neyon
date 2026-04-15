@@ -224,6 +224,8 @@
     <string name="only_using_wifi">Only on Wi-Fi</string>
     <string name="always">Always</string>
     <string name="preload_pages">Preload pages</string>
+    <string name="pref_preload_page_limit">Page preload limit</string>
+    <string name="pref_preload_page_limit_summary">Limits the number of pages loaded in memory ahead of the current reading position</string>
     <string name="logged_in_as">Logged in as %s</string>
     <string name="nsfw">18+</string>
     <string name="nsfw_16">16+</string>

@@ -177,4 +177,14 @@
 		android:title="@string/preload_pages"
 		app:useSimpleSummaryProvider="true" />
 
+	<io.github.landwarderer.neyon.settings.utils.SliderPreference
+		android:key="pref_preload_page_limit"
+		android:stepSize="1"
+		android:title="@string/pref_preload_page_limit"
+		android:summary="@string/pref_preload_page_limit_summary"
+		android:valueFrom="1"
+		android:valueTo="10"
+		app:defaultValue="3"
+		app:tickVisible="true" />
+
 </PreferenceScreen>
