@@ -18,7 +18,7 @@ Neyon is a multi-module Android application architected using the standard **MVV
 - **Dependency Injection:** [Hilt](https://dagger.dev/hilt/)
 - **Local Persistence & ORM:** Room
 - **Asynchronous Programming:** Kotlin Coroutines & Flow
-- **Network & Parsing:** OkHttp3, Retrofit, and [Kotatsu-Parsers-Redo](https://github.com/clquwu/kotatsu-parsers-redo)
+- **Network & Parsing:** OkHttp3, Retrofit, and [futon-parsers](https://github.com/clquwu/futon-parsers)
 - **Image Loading:** Coil 3 (Network, GIF, SVG, AVIF support)
 - **Background Processing:** AndroidX WorkManager (powered by Hilt-Work)
 - **UI:** ViewBinding, Fragment-KTX, ViewPager2, Material Design Components
@@ -27,7 +27,7 @@ Neyon is a multi-module Android application architected using the standard **MVV
 
 ### Main Features
 
-* Online manga catalogues (with 1200+ manga sources)
+* Online manga catalogues (with 500+ manga sources)
 * Search manga by name, genres and more filters
 * **New:** Personalized "Smart" Suggestions feed powered by a client-side recommendation engine
 * **New:** "Find Similar" fallback in alternatives dialogue to instantly pivot to global search
@@ -55,10 +55,10 @@ Neyon is a multi-module Android application architected using the standard **MVV
 - **Android Studio** (recommended) or Android SDK command-line tools
 
 ### Building the Project
-
+#### Currently working on dev branch
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/AppNeyon/Neyon.git
+   git clone https://github.com/AppNeyon/Neyon.git -b dev
    cd Neyon
    ```
 
