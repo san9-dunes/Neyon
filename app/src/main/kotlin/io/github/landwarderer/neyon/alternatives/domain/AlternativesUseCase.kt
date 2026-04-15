@@ -28,13 +28,17 @@ class AlternativesUseCase @Inject constructor(
 		if (sources.isEmpty()) {
 			return emptyFlow()
 		}
+		
+		val cleanTitle = manga.title.replace(Regex("\\[.*?\\]|\\(.*?\\)"), "").replace(Regex("[^\\p{L}\\p{N}\\s]+"), " ").trim()
+		if (cleanTitle.isBlank()) return emptyFlow()
+
 		return channelFlow {
 			for (source in sources) {
 				launch {
 					val searchHelper = searchHelperFactory.create(source)
 					val list = runCatchingCancellable {
 						withTimeoutOrNull(15000L) {
-							searchHelper(manga.title, SearchKind.TITLE)?.manga
+							searchHelper(cleanTitle, SearchKind.TITLE)?.manga
 						}
 					}.getOrNull()
 					list?.forEach { m ->
@@ -52,11 +56,14 @@ class AlternativesUseCase @Inject constructor(
 		}
 	}
 
-	private suspend fun getSources(ref: MangaSource, disabled: Boolean): List<MangaSource> = if (disabled) {
-		sourcesRepository.getDisabledSources()
-	} else {
-		sourcesRepository.getEnabledSources()
-	}.sortedByDescending { it.priority(ref) }
+	private suspend fun getSources(ref: MangaSource, disabled: Boolean): List<MangaSource> {
+		val sources = if (disabled) {
+			sourcesRepository.getEnabledSources() + sourcesRepository.getDisabledSources()
+		} else {
+			sourcesRepository.getEnabledSources()
+		}
+		return sources.distinctBy { it.id }.sortedByDescending { it.priority(ref) }
+	}
 
 	private fun MangaSource.priority(ref: MangaSource): Int {
 		var res = 0
