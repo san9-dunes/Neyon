@@ -17,7 +17,7 @@ fun searchSuggestionTagsAD(
 		listener.onTagClick(data as? MangaTag ?: return@OnChipClickListener)
 	}
 
-	bind {
+	bind { payloads ->
 		binding.chipsGenres.setChips(item.tags)
 	}
 }
