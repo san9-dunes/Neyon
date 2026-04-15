@@ -26,20 +26,16 @@
 		android:clipToPadding="false"
 		android:orientation="vertical">
 
-		<LinearLayout
+		<RelativeLayout
 			android:layout_width="match_parent"
-			android:orientation="horizontal"
-			android:baselineAligned="true"
-			android:baselineAlignedChildIndex="0"
 			android:layout_height="wrap_content">
 
 			<TextView
 				android:id="@android:id/title"
-				android:layout_width="0dp"
-				android:layout_weight="1"
+				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:ellipsize="marquee"
-				android:labelFor="@id/seekbar"
+				android:labelFor="@id/slider"
 				android:singleLine="true"
 				android:textAppearance="?android:attr/textAppearanceListItem"
 				tools:ignore="LabelFor" />
@@ -49,11 +45,12 @@
 				style="@style/PreferenceSummaryTextStyle"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:singleLine="true"
+				android:layout_below="@android:id/title"
+				android:layout_alignStart="@android:id/title"
 				android:textAlignment="viewStart"
 				android:textColor="?android:attr/textColorSecondary" />
 
-		</LinearLayout>
+		</RelativeLayout>
 
 		<com.google.android.material.slider.Slider
 			android:id="@+id/slider"
