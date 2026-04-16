@@ -54,6 +54,9 @@ abstract class MangaDao {
 	@Insert(onConflict = OnConflictStrategy.IGNORE)
 	abstract suspend fun insertTagRelation(tag: MangaTagsEntity): Long
 
+	@Insert(onConflict = OnConflictStrategy.IGNORE)
+	abstract suspend fun insertTagRelations(tags: Collection<MangaTagsEntity>)
+
 	@Query("DELETE FROM manga_tags WHERE manga_id = :mangaId")
 	abstract suspend fun clearTagRelation(mangaId: Long)
 
@@ -79,11 +82,9 @@ abstract class MangaDao {
 		upsert(manga)
 		if (tags != null) {
 			clearTagRelation(manga.id)
-			tags.map {
+			insertTagRelations(tags.map {
 				MangaTagsEntity(manga.id, it.id)
-			}.forEach {
-				insertTagRelation(it)
-			}
+			})
 		}
 	}
 }
