@@ -137,6 +137,11 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 				checkBox.text = sourceTitles[actualIndex]
 				checkBox.isChecked = currentSelection.contains(sourceNames[actualIndex])
 
+
+				checkBox.setOnCheckedChangeListener(null)
+				checkBox.text = sourceTitles[actualIndex]
+				checkBox.isChecked = currentSelection.contains(sourceNames[actualIndex])
+
 				checkBox.setOnCheckedChangeListener { _, isChecked ->
 					if (isChecked) {
 						currentSelection.add(sourceNames[actualIndex])
@@ -182,6 +187,7 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 			.create()
 
 
+
 		val updateJob = lifecycleScope.launch {
 			combine(
 				settings.observeChanges()
@@ -205,6 +211,10 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 				sourceNames = allSources.map { it.name }
 				sourceTitles = allSources.map { it.getTitle(context) }
 
+
+				sourceNames = allSources.map { it.name }
+				sourceTitles = allSources.map { it.getTitle(context) }
+
 				val query = searchField.text?.toString()?.lowercase() ?: ""
 				filteredIndices = if (query.isEmpty()) {
 					sourceTitles.indices.toList()
@@ -214,6 +224,7 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 				adapter.notifyDataSetChanged()
 			}
 		}
+
 
 
 			dialog.setOnDismissListener { updateJob.cancel() }

@@ -101,10 +101,12 @@ abstract class BasePreferenceFragment(@StringRes private val titleId: Int) :
 		}
 
 
+
 		if (pref.fragment != null || pref.intent != null) {
 			onPreferenceTreeClick(pref)
 			return
 		}
+
 
 
 		scrollToPreference(pref)

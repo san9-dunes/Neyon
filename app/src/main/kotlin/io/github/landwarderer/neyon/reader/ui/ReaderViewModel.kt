@@ -669,6 +669,11 @@ class ReaderViewModel @Inject constructor(
                 // Keep current and next `windowSize` pages active
                 val startIndex = (currentIndex - 1).coerceAtLeast(0)
                 val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
+
+
+                // Keep current and next `windowSize` pages active
+                val startIndex = (currentIndex - 1).coerceAtLeast(0)
+                val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
                 
 
                 // Keep current and next `windowSize` pages active
@@ -690,6 +695,7 @@ class ReaderViewModel @Inject constructor(
                 }
                 
                 val remainingToFetch = windowSize - (endIndex - currentIndex)
+
 
 
                 // Eagerly prefetch if crossing boundary to the next chapter
@@ -718,6 +724,7 @@ class ReaderViewModel @Inject constructor(
                         }
                     }
                 }
+
 
 
                 // Cancel pending requests outside our sliding window

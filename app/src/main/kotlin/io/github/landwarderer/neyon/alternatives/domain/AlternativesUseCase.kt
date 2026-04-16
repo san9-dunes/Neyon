@@ -30,6 +30,7 @@ class AlternativesUseCase @Inject constructor(
 		}
 
 
+
 		val cleanTitle = manga.title.replace(Regex("\\[.*?\\]|\\(.*?\\)"), "").replace(Regex("[^\\p{L}\\p{N}\\s]+"), " ").trim()
 		if (cleanTitle.isBlank()) return emptyFlow()
 
