@@ -670,6 +670,11 @@ class ReaderViewModel @Inject constructor(
                 val startIndex = (currentIndex - 1).coerceAtLeast(0)
                 val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
                 
+
+                // Keep current and next `windowSize` pages active
+                val startIndex = (currentIndex - 1).coerceAtLeast(0)
+                val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
+
                 // Fetch URLs in range
                 for (i in startIndex..endIndex) {
                     val url = pageLoader.getPageUrl(pages[i].toMangaPage())
@@ -685,6 +690,7 @@ class ReaderViewModel @Inject constructor(
                 }
                 
                 val remainingToFetch = windowSize - (endIndex - currentIndex)
+
 
                 // Eagerly prefetch if crossing boundary to the next chapter
                 if (remainingToFetch > 0) {
@@ -712,6 +718,7 @@ class ReaderViewModel @Inject constructor(
                         }
                     }
                 }
+
 
                 // Cancel pending requests outside our sliding window
                 val toCancel = activePrefetchRequests.keys - validUrls
