@@ -60,6 +60,7 @@
 		android:layout_height="wrap_content"
 		android:background="?selectableItemBackgroundBorderless"
 		android:contentDescription="@string/show_all"
+		android:tooltipText="@string/show_all"
 		android:padding="@dimen/margin_normal"
 		android:src="@drawable/ic_eye"
 		app:layout_constraintBottom_toBottomOf="parent"
