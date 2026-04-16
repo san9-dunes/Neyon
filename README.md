@@ -18,7 +18,7 @@ Neyon is a multi-module Android application architected using the standard **MVV
 - **Dependency Injection:** [Hilt](https://dagger.dev/hilt/)
 - **Local Persistence & ORM:** Room
 - **Asynchronous Programming:** Kotlin Coroutines & Flow
-- **Network & Parsing:** OkHttp3, Retrofit, and [futon-parsers](https://github.com/clquwu/futon-parsers)
+- **Network & Parsing:** OkHttp3, Retrofit, and [neyon-parsers-redo](https://github.com/san9-dunes/neyon-parsers-redo)
 - **Image Loading:** Coil 3 (Network, GIF, SVG, AVIF support)
 - **Background Processing:** AndroidX WorkManager (powered by Hilt-Work)
 - **UI:** ViewBinding, Fragment-KTX, ViewPager2, Material Design Components
