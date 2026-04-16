@@ -216,6 +216,7 @@ fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	}
 	databaseEnabled = true
 	allowContentAccess = false
+	allowFileAccess = false
 	if (userAgentOverride != null) {
 		userAgentString = userAgentOverride
 	}

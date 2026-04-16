@@ -14,6 +14,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import io.github.landwarderer.neyon.R
@@ -77,105 +82,131 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 	}
 
 	private fun showSearchableSourcePicker() {
-		lifecycleScope.launch {
-			val allSources = withContext(Dispatchers.IO) { sourcesRepository.getEnabledSources() }
-			val currentSelection = settings.suggestionSourcesWhitelist.toMutableSet()
-			// Parallel arrays for display
-			val sourceNames = allSources.map { it.name }
-			val sourceTitles = allSources.map { it.getTitle(requireContext()) }
-			var filteredIndices = sourceTitles.indices.toList()
+		val context = requireContext()
+		val currentSelection = settings.suggestionSourcesWhitelist.toMutableSet()
+		var sourceNames = listOf<String>()
+		var sourceTitles = listOf<String>()
+		var filteredIndices = listOf<Int>()
 
-			// Build checklist with search bar programmatically
-			val context = requireContext()
-			val container = LinearLayout(context).apply {
-				orientation = LinearLayout.VERTICAL
-				val dp8 = (8 * resources.displayMetrics.density).toInt()
-				setPadding(dp8 * 2, dp8, dp8 * 2, 0)
-			}
-
-			val searchField = EditText(context).apply {
-				hint = getString(R.string.search)
-				isSingleLine = true
-				val dp8 = (8 * resources.displayMetrics.density).toInt()
-				setPadding(0, dp8, 0, dp8)
-			}
-			container.addView(searchField)
-
-			val recyclerView = androidx.recyclerview.widget.RecyclerView(context).apply {
-				layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
-			}
-			container.addView(recyclerView, LinearLayout.LayoutParams(
-				LinearLayout.LayoutParams.MATCH_PARENT,
-				LinearLayout.LayoutParams.WRAP_CONTENT,
-				1f
-			))
-
-			val adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
-				override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
-					val checkBox = CheckBox(context).apply {
-						layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(
-							android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-							android.view.ViewGroup.LayoutParams.WRAP_CONTENT
-						)
-						val dp4 = (4 * resources.displayMetrics.density).toInt()
-						setPadding(0, dp4, 0, dp4)
-					}
-					return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(checkBox) {}
-				}
-
-				override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
-					val actualIndex = filteredIndices[position]
-					val checkBox = holder.itemView as CheckBox
-					
-					checkBox.setOnCheckedChangeListener(null)
-					checkBox.text = sourceTitles[actualIndex]
-					checkBox.isChecked = currentSelection.contains(sourceNames[actualIndex])
-					
-					checkBox.setOnCheckedChangeListener { _, isChecked ->
-						if (isChecked) {
-							currentSelection.add(sourceNames[actualIndex])
-						} else {
-							currentSelection.remove(sourceNames[actualIndex])
-						}
-					}
-				}
-
-				override fun getItemCount(): Int = filteredIndices.size
-			}
-			recyclerView.adapter = adapter
-
-			// Live search filtering with debounce
-			var searchJob: kotlinx.coroutines.Job? = null
-			searchField.addTextChangedListener(object : TextWatcher {
-				override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) = Unit
-				override fun onTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) = Unit
-				override fun afterTextChanged(editable: Editable) {
-					searchJob?.cancel()
-					searchJob = lifecycleScope.launch {
-						kotlinx.coroutines.delay(300) // Debounce time
-						val query = editable.toString().lowercase()
-						filteredIndices = if (query.isEmpty()) {
-							sourceTitles.indices.toList()
-						} else {
-							sourceTitles.indices.filter { sourceTitles[it].lowercase().contains(query) }
-						}
-						adapter.notifyDataSetChanged()
-					}
-				}
-			})
-
-			AlertDialog.Builder(context)
-				.setTitle(R.string.suggestions_manage_sources)
-				.setView(container)
-				.setPositiveButton(android.R.string.ok) { _, _ ->
-					settings.suggestionSourcesWhitelist = currentSelection.toSet()
-					findPreference<Preference>(AppSettings.KEY_SUGGESTION_SOURCES_WHITELIST)?.let {
-						updateSourceSummary(it)
-					}
-				}
-				.setNegativeButton(android.R.string.cancel, null)
-				.show()
+		val container = LinearLayout(context).apply {
+			orientation = LinearLayout.VERTICAL
+			val dp8 = (8 * resources.displayMetrics.density).toInt()
+			setPadding(dp8 * 2, dp8, dp8 * 2, 0)
 		}
+
+		val searchField = EditText(context).apply {
+			hint = getString(R.string.search)
+			isSingleLine = true
+			val dp8 = (8 * resources.displayMetrics.density).toInt()
+			setPadding(0, dp8, 0, dp8)
+		}
+		container.addView(searchField)
+
+		val recyclerView = androidx.recyclerview.widget.RecyclerView(context).apply {
+			layoutManager = androidx.recyclerview.widget.LinearLayoutManager(context)
+		}
+		container.addView(recyclerView, LinearLayout.LayoutParams(
+			LinearLayout.LayoutParams.MATCH_PARENT,
+			LinearLayout.LayoutParams.WRAP_CONTENT,
+			1f
+		))
+
+		val adapter = object : androidx.recyclerview.widget.RecyclerView.Adapter<androidx.recyclerview.widget.RecyclerView.ViewHolder>() {
+			override fun onCreateViewHolder(parent: android.view.ViewGroup, viewType: Int): androidx.recyclerview.widget.RecyclerView.ViewHolder {
+				val checkBox = CheckBox(context).apply {
+					layoutParams = androidx.recyclerview.widget.RecyclerView.LayoutParams(
+						android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+						android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+					)
+					val dp4 = (4 * resources.displayMetrics.density).toInt()
+					setPadding(0, dp4, 0, dp4)
+				}
+				return object : androidx.recyclerview.widget.RecyclerView.ViewHolder(checkBox) {}
+			}
+
+			override fun onBindViewHolder(holder: androidx.recyclerview.widget.RecyclerView.ViewHolder, position: Int) {
+				val actualIndex = filteredIndices[position]
+				val checkBox = holder.itemView as CheckBox
+
+				checkBox.setOnCheckedChangeListener(null)
+				checkBox.text = sourceTitles[actualIndex]
+				checkBox.isChecked = currentSelection.contains(sourceNames[actualIndex])
+
+				checkBox.setOnCheckedChangeListener { _, isChecked ->
+					if (isChecked) {
+						currentSelection.add(sourceNames[actualIndex])
+					} else {
+						currentSelection.remove(sourceNames[actualIndex])
+					}
+				}
+			}
+
+			override fun getItemCount(): Int = filteredIndices.size
+		}
+		recyclerView.adapter = adapter
+
+		var searchJob: kotlinx.coroutines.Job? = null
+		searchField.addTextChangedListener(object : TextWatcher {
+			override fun beforeTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) = Unit
+			override fun onTextChanged(s: CharSequence?, st: Int, c: Int, a: Int) = Unit
+			override fun afterTextChanged(editable: Editable) {
+				searchJob?.cancel()
+				searchJob = lifecycleScope.launch {
+					kotlinx.coroutines.delay(300)
+					val query = editable.toString().lowercase()
+					filteredIndices = if (query.isEmpty()) {
+						sourceTitles.indices.toList()
+					} else {
+						sourceTitles.indices.filter { sourceTitles[it].lowercase().contains(query) }
+					}
+					adapter.notifyDataSetChanged()
+				}
+			}
+		})
+
+		val dialog = AlertDialog.Builder(context)
+			.setTitle(R.string.suggestions_manage_sources)
+			.setView(container)
+			.setPositiveButton(android.R.string.ok) { _, _ ->
+				settings.suggestionSourcesWhitelist = currentSelection.toSet()
+				findPreference<Preference>(AppSettings.KEY_SUGGESTION_SOURCES_WHITELIST)?.let {
+					updateSourceSummary(it)
+				}
+			}
+			.setNegativeButton(android.R.string.cancel, null)
+			.create()
+
+		val updateJob = lifecycleScope.launch {
+			combine(
+				settings.observeChanges()
+					.filter { it == AppSettings.KEY_SUGGESTIONS_DISABLED_SOURCES }
+					.onStart { emit("") }
+					.map { settings.isSuggestionsIncludeDisabledSources }
+					.distinctUntilChanged(),
+				sourcesRepository.observeEnabledSourcesCount().onStart { emit(0) }
+			) { includeDisabled, _ ->
+				includeDisabled
+			}.collect { includeDisabled ->
+				val allSources = withContext(Dispatchers.IO) {
+					val enabled = sourcesRepository.getEnabledSources()
+					if (includeDisabled) enabled + sourcesRepository.getDisabledSources() else enabled
+				}
+
+				sourceNames = allSources.map { it.name }
+				sourceTitles = allSources.map { it.getTitle(context) }
+
+				val query = searchField.text?.toString()?.lowercase() ?: ""
+				filteredIndices = if (query.isEmpty()) {
+					sourceTitles.indices.toList()
+				} else {
+					sourceTitles.indices.filter { sourceTitles[it].lowercase().contains(query) }
+				}
+				adapter.notifyDataSetChanged()
+			}
+		}
+
+			dialog.setOnDismissListener { updateJob.cancel() }
+		dialog.show()
 	}
 
 	override fun onDestroy() {

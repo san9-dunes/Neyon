@@ -179,7 +179,7 @@ abstract class BasePagerReaderFragment : BaseReaderFragment<FragmentReaderPagerB
 	protected open fun onCreateAdvancedTransformer(): PageTransformer = PageAnimTransformer()
 
 	protected open fun onInitPager(pager: ViewPager2) {
-		pager.offscreenPageLimit = 3
+		pager.offscreenPageLimit = viewModel.pagePreloadLimit
 	}
 
 	protected open fun notifyPageChanged(page: Int) {

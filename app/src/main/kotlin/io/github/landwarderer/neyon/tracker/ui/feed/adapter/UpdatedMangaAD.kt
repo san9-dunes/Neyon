@@ -32,7 +32,7 @@ fun updatedMangaAD(
 	binding.textViewTitle.setText(R.string.updates)
 	binding.buttonMore.setText(R.string.more)
 
-	bind {
-		adapter.items = item.list
+	bind { payloads ->
+		adapter.setItems(item.list, null)
 	}
 }

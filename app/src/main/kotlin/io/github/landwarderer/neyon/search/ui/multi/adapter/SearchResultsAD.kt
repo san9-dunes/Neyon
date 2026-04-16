@@ -42,7 +42,7 @@ fun searchResultsAD(
 	val eventListener = AdapterDelegateClickListenerAdapter(this, itemClickListener)
 	binding.buttonMore.setOnClickListener(eventListener)
 
-	bind {
+	bind { payloads ->
 		binding.textViewTitle.text = item.getTitle(context)
 		binding.buttonMore.isVisible = item.source !== UnknownMangaSource
 		adapter.items = item.list

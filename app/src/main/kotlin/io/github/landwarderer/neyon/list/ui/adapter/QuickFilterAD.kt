@@ -24,7 +24,7 @@ fun quickFilterAD(
 		}
 	}
 
-	bind {
+	bind { payloads ->
 		binding.chipsTags.setChips(item.items)
 	}
 }

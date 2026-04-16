@@ -56,6 +56,11 @@ class WebtoonReaderFragment : BaseReaderFragment<FragmentReaderWebtoonBinding>()
 		super.onViewBindingCreated(binding, savedInstanceState)
 		with(binding.recyclerView) {
 			setHasFixedSize(true)
+			setItemViewCacheSize(viewModel.pagePreloadLimit)
+			(layoutManager as? androidx.recyclerview.widget.LinearLayoutManager)?.apply {
+				isItemPrefetchEnabled = true
+				initialPrefetchItemCount = viewModel.pagePreloadLimit
+			}
 			adapter = readerAdapter
 			addOnPageScrollListener(this@WebtoonReaderFragment)
 			recyclerLifecycleDispatcher = RecyclerViewLifecycleDispatcher().also {
