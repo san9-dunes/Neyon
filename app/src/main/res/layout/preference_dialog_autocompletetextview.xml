@@ -48,10 +48,11 @@
 				android:layout_height="48dp"
 				android:layout_gravity="center_vertical|end"
 				android:background="?selectableItemBackgroundBorderless"
+				android:contentDescription="@string/expand"
 				android:paddingBottom="2dp"
 				android:scaleType="center"
 				android:src="@drawable/ic_expand_more"
-				tools:ignore="ContentDescription" />
+				android:tooltipText="@string/expand" />
 
 		</FrameLayout>
 

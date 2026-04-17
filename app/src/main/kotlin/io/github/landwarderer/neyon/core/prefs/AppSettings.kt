@@ -184,6 +184,9 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val pagePreloadLimit: Int
 		get() = prefs.getInt(KEY_PRELOAD_PAGE_LIMIT, 3)
 
+	val pagePreloadLimit: Int
+		get() = prefs.getInt(KEY_PRELOAD_PAGE_LIMIT, 3)
+
 	val userAgent: String
 		get() = prefs.getString("pref_global_user_agent", "") ?: ""
 
