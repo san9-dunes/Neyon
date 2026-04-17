@@ -1,0 +1,3 @@
+## 2024-05-14 - Missing a11y on Android `ImageButton` elements with `tools:ignore`
+**Learning:** Found several `ImageButton`s across the application layout XML files that explicitly ignored accessibility warnings using `tools:ignore="ContentDescription"`, which is a bad UX pattern. When an `ImageButton` performs an action (e.g., expanding a dropdown or submitting a search suggestion), it needs `android:contentDescription` for screen readers and `android:tooltipText` for mouse/long-press feedback.
+**Action:** Replaced the `tools:ignore` tag with appropriate `@string` resources for `android:contentDescription` and `android:tooltipText` to improve usability for all users while keeping changes minimal.
