@@ -29,33 +29,27 @@ class ScreenshotPolicyHelper @Inject constructor(
 
 	private fun ContentContainer.setupScreenshotPolicy(activity: Activity) =
 		lifecycleScope.launch(Dispatchers.IO) {
-			kotlinx.coroutines.flow.combine(
-				settings.observeAsFlow(AppSettings.KEY_SCREENSHOTS_POLICY) { screenshotsPolicy }
-					.flatMapLatest { policy ->
-						when (policy) {
-							ScreenshotsPolicy.ALLOW -> flowOf(false)
-							ScreenshotsPolicy.BLOCK_NSFW -> withContext(Dispatchers.Main) {
-								isNsfwContent()
-							}.distinctUntilChanged()
-
-							ScreenshotsPolicy.BLOCK_ALL -> flowOf(true)
-							ScreenshotsPolicy.BLOCK_INCOGNITO -> settings.observeAsFlow(AppSettings.KEY_INCOGNITO_MODE) {
-								isIncognitoModeEnabled
-							}
+			settings.observeAsFlow(AppSettings.KEY_SCREENSHOTS_POLICY) { screenshotsPolicy }
+				.flatMapLatest { policy ->
+					when (policy) {
+						ScreenshotsPolicy.ALLOW -> flowOf(false)
+						ScreenshotsPolicy.BLOCK_NSFW -> withContext(Dispatchers.Main) {
+							isNsfwContent()
+						}.distinctUntilChanged()
+						ScreenshotsPolicy.BLOCK_ALL -> flowOf(true)
+						ScreenshotsPolicy.BLOCK_INCOGNITO -> settings.observeAsFlow(AppSettings.KEY_INCOGNITO_MODE) {
+							isIncognitoModeEnabled
 						}
-					},
-				settings.observeAsFlow(AppSettings.KEY_PROTECT_APP) { isProtectAppEnabled }
-			) { policySecured, appProtected ->
-				policySecured || appProtected
-			}.collect { isSecure ->
-				withContext(Dispatchers.Main) {
-					if (isSecure) {
-						activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
-					} else {
-						activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+					}
+				}.collect { isSecure ->
+					withContext(Dispatchers.Main) {
+						if (isSecure) {
+							activity.window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+						} else {
+							activity.window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+						}
 					}
 				}
-			}
 		}
 
 	interface ContentContainer : LifecycleOwner {

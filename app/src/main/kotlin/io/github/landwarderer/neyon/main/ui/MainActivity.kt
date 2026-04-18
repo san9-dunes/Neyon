@@ -117,7 +117,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), AppBarOwner, BottomNav
 
 		navigationDelegate = MainNavigationDelegate(
 			navBar = checkNotNull(bottomNav ?: viewBinding.navRail),
-			viewPager = viewBinding.container,
+			viewPager = viewBinding.container as androidx.viewpager2.widget.ViewPager2,
 			fragmentManager = supportFragmentManager,
 			lifecycle = lifecycle,
 			settings = settings,
