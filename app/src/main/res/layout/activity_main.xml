@@ -7,12 +7,11 @@
 	android:layout_height="match_parent"
 	tools:context=".main.ui.MainActivity">
 
-	<androidx.fragment.app.FragmentContainerView
+	<androidx.viewpager2.widget.ViewPager2
 		android:id="@id/container"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent"
-		app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior"
-		tools:layout="@layout/fragment_list" />
+		app:layout_behavior="com.google.android.material.appbar.AppBarLayout$ScrollingViewBehavior" />
 
 	<com.google.android.material.appbar.AppBarLayout
 		android:id="@+id/appbar"

@@ -34,10 +34,10 @@ class FeedAggregator @Inject constructor(
 	private val getUserAffinityTagsUseCase: GetUserAffinityTagsUseCase,
 ) {
 
-        var memoryCache: List<MangaSuggestion>? = null
+        @Volatile var memoryCache: List<MangaSuggestion>? = null
             private set
-        private var cachedWhitelist: Set<String>? = null
-        var cachedSortOrder: ListSortOrder? = null
+        @Volatile private var cachedWhitelist: Set<String>? = null
+        @Volatile private var cachedSortOrder: ListSortOrder? = null
 
         suspend fun mixFeed(forceGenreTag: String? = null, forceRefresh: Boolean = false, listSortOrder: ListSortOrder): List<MangaSuggestion> = supervisorScope {
                 val whitelistNames = appSettings.suggestionSourcesWhitelist     
@@ -97,7 +97,7 @@ class FeedAggregator @Inject constructor(
                         }
                 }
 
-                val finalFeed = mergedList.distinctBy { it.manga.id }
+                val finalFeed = mergedList.distinctBy { it.manga.url to it.manga.source }
 
                 val sortedFeed = if (topTags.isNotEmpty() && forceGenreTag == null) {
                         finalFeed.sortedWith(

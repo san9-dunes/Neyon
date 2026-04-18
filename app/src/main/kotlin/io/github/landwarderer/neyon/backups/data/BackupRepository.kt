@@ -278,9 +278,11 @@ class BackupRepository @Inject constructor(
     private fun dumpSettings(): String {
         val map = settings.getAllValues().toMutableMap()
         map.remove(AppSettings.KEY_APP_PASSWORD)
+        map.remove(AppSettings.KEY_APP_PASSWORD_NUMERIC)
         map.remove(AppSettings.KEY_PROXY_PASSWORD)
         map.remove(AppSettings.KEY_PROXY_LOGIN)
         map.remove(AppSettings.KEY_INCOGNITO_MODE)
+        map.remove(AppSettings.KEY_DISCORD_TOKEN)
         return JSONObject(map).toString()
     }
 

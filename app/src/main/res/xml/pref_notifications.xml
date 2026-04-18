@@ -15,13 +15,13 @@
 		android:key="notifications_sound"
 		android:title="@string/notification_sound" />
 
-	<CheckBoxPreference
+	<SwitchPreferenceCompat
 		android:defaultValue="false"
 		android:dependency="tracker_notifications"
 		android:key="notifications_vibrate"
 		android:title="@string/vibration" />
 
-	<CheckBoxPreference
+	<SwitchPreferenceCompat
 		android:defaultValue="true"
 		android:dependency="tracker_notifications"
 		android:key="notifications_light"

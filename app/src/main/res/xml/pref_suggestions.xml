@@ -20,13 +20,6 @@
 	<SwitchPreferenceCompat
 		android:defaultValue="false"
 		android:dependency="suggestions"
-		android:key="suggestions_disabled_sources"
-		android:summary="@string/suggestions_disabled_sources_summary"
-		android:title="@string/include_disabled_sources" />
-
-	<SwitchPreferenceCompat
-		android:defaultValue="false"
-		android:dependency="suggestions"
 		android:key="suggestions_notifications"
 		android:summary="@string/suggestions_notifications_summary"
 		android:title="@string/notifications_enable" />
@@ -54,7 +47,7 @@
 
 	<Preference
 		android:icon="@drawable/ic_info_outline"
-		android:key="track_warning"
+		android:key="suggestions_info"
 		android:persistent="false"
 		android:selectable="false"
 		android:summary="@string/suggestions_info"

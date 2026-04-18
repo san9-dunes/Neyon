@@ -71,7 +71,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.sync.withPermit
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okio.source
+
 import okio.use
 import org.jetbrains.annotations.Blocking
 import java.io.File
@@ -137,6 +137,9 @@ class PageLoader @Inject constructor(
 	fun evictFromMemoryCache(pages: List<MangaPage>) {
 		coil.memoryCache?.let { cache ->
 			for (page in pages) {
+				// Evict by full-resolution URL (covers any Coil-cached full page images)
+				cache.remove(MemoryCache.Key(page.url))
+				// Evict preview thumbnail if present
 				page.preview?.let { preview ->
 					cache.remove(MemoryCache.Key(preview))
 				}
@@ -353,13 +356,7 @@ class PageLoader @Inject constructor(
 		mimeType: io.github.landwarderer.neyon.core.util.ext.MimeType?,
 	): File {
 		val stableKey = page.cacheKey()
-		val file = cache.set(stableKey, source, mimeType)
-		if (stableKey != resolvedPageUrl) {
-			file.source().use {
-				cache.set(resolvedPageUrl, it, mimeType)
-			}
-		}
-		return file
+		return cache.set(stableKey, source, mimeType)
 	}
 
 	private fun MangaPage.cacheKey(): String {

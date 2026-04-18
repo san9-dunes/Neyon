@@ -2,12 +2,10 @@ package io.github.landwarderer.neyon.suggestions.data
 
 import android.database.DatabaseUtils.sqlEscapeString
 import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room.Upsert
 import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 import io.github.landwarderer.neyon.core.db.MangaQueryBuilder
@@ -55,21 +53,11 @@ abstract class SuggestionDao : MangaQueryBuilder.ConditionCallback {
 	@Query("SELECT manga.source AS count FROM suggestions LEFT JOIN manga ON manga.manga_id = suggestions.manga_id GROUP BY manga.source ORDER BY COUNT(manga.source) DESC LIMIT :limit")
 	abstract suspend fun getTopSources(limit: Int): List<String>
 
-	@Insert(onConflict = OnConflictStrategy.IGNORE)
-	abstract suspend fun insert(entity: SuggestionEntity): Long
-
-	@Update
-	abstract suspend fun update(entity: SuggestionEntity): Int
+	@Upsert
+	abstract suspend fun upsert(entity: SuggestionEntity)
 
 	@Query("DELETE FROM suggestions")
 	abstract suspend fun deleteAll()
-
-	@Transaction
-	open suspend fun upsert(entity: SuggestionEntity) {
-		if (update(entity) == 0) {
-			insert(entity)
-		}
-	}
 
 	@Query("SELECT * FROM manga WHERE manga_id IN (:ids)")
 	protected abstract suspend fun getByIds(ids: LongArray): List<MangaWithTags>

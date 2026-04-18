@@ -36,6 +36,7 @@
 		app:allowDividerAbove="true" />
 
 	<Preference
+		android:dependency="tracker_enabled"
 		android:key="track_categories"
 		android:title="@string/favourites_categories" />
 
@@ -53,6 +54,7 @@
 		android:title="@string/disable_nsfw_notifications" />
 
 	<ListPreference
+		android:defaultValue="DISABLED"
 		android:dependency="tracker_enabled"
 		android:entries="@array/tracker_download_strategies"
 		android:key="tracker_download"
@@ -70,7 +72,7 @@
 
 		<Preference
 			android:dependency="tracker_enabled"
-			android:key="ignore_dose"
+			android:key="ignore_doze"
 			android:persistent="false"
 			android:summary="@string/disable_battery_optimization_summary"
 			android:title="@string/disable_battery_optimization"

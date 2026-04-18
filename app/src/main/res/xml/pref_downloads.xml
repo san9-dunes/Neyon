@@ -28,13 +28,13 @@
 
 	<Preference
 		android:icon="@drawable/ic_info_outline"
-		android:key="tracker_notifications_info"
+		android:key="downloads_info"
 		android:persistent="false"
 		android:selectable="false"
 		android:summary="@string/downloads_settings_info" />
 
 	<Preference
-		android:key="ignore_dose"
+		android:key="ignore_doze"
 		android:persistent="false"
 		android:summary="@string/disable_battery_optimization_summary_downloads"
 		android:title="@string/disable_battery_optimization"

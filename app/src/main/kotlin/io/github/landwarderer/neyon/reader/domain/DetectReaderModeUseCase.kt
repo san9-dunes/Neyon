@@ -33,7 +33,7 @@ class DetectReaderModeUseCase @Inject constructor(
 	private val imageProxyInterceptor: ImageProxyInterceptor,
 ) {
 
-	suspend operator fun invoke(manga: Manga, state: ReaderState?): ReaderMode {
+	suspend operator fun invoke(manga: Manga, state: ReaderState?, preloadedPages: List<MangaPage>? = null): ReaderMode {
 		dataRepository.getReaderMode(manga.id)?.let { return it }
 		val defaultMode = settings.defaultReaderMode
 		if (!settings.isReaderModeDetectionEnabled || defaultMode == ReaderMode.WEBTOON) {
@@ -43,7 +43,8 @@ class DetectReaderModeUseCase @Inject constructor(
 			?: manga.chapters?.firstOrNull()
 			?: error("There are no chapters in this manga")
 		val repo = mangaRepositoryFactory.create(manga.source)
-		val pages = repo.getPages(chapter)
+		// Reuse pages that are already loaded by the caller to avoid a redundant network call.
+		val pages = preloadedPages?.takeIf { it.isNotEmpty() } ?: repo.getPages(chapter)
 		return runCatchingCancellable {
 			val isWebtoon = guessMangaIsWebtoon(repo, pages)
 			if (isWebtoon) ReaderMode.WEBTOON else defaultMode

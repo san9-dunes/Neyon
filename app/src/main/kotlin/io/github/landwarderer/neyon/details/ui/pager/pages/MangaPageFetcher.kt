@@ -32,7 +32,6 @@ import org.koitharu.kotatsu.parsers.util.requireBody
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
 import io.github.landwarderer.neyon.reader.domain.PageLoader
 import javax.inject.Inject
-import okio.source
 
 class MangaPageFetcher(
 	private val okHttpClient: OkHttpClient,
@@ -109,13 +108,7 @@ class MangaPageFetcher(
 
 	private suspend fun cachePage(pageUrl: String, source: okio.Source, mimeType: io.github.landwarderer.neyon.core.util.ext.MimeType?): java.io.File {
 		val stableKey = page.cacheKey()
-		val file = pagesCache.set(stableKey, source, mimeType)
-		if (stableKey != pageUrl) {
-			file.source().use {
-				pagesCache.set(pageUrl, it, mimeType)
-			}
-		}
-		return file
+		return pagesCache.set(stableKey, source, mimeType)
 	}
 
 	private fun MangaPage.cacheKey(): String {

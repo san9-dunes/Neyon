@@ -30,6 +30,8 @@ class ChapterPages private constructor(private val pages: ArrayDeque<ReaderPage>
 	fun removeLast() {
 		val chapterId = pages.last().chapterId
 		indices.remove(chapterId)
+		// NOTE: Removing from the tail does not affect earlier page indices, so no shiftIndices() call
+		// is needed here — unlike removeFirst() which shifts everything down.
 		while (pages.last().chapterId == chapterId) {
 			pages.removeLast()
 		}
@@ -62,13 +64,16 @@ class ChapterPages private constructor(private val pages: ArrayDeque<ReaderPage>
 		pages.clear()
 	}
 
+	@Synchronized
 	fun size(id: Long) = indices[id]?.run {
 		endInclusive - start + 1
 	} ?: 0
 
+	@Synchronized
 	fun subList(id: Long): List<ReaderPage> {
 		val range = indices[id] ?: return emptyList()
-		return pages.subList(range.first, range.last + 1)
+		// Return a copy so callers don’t hold a live view into the mutable deque
+		return ArrayList(pages.subList(range.first, range.last + 1))
 	}
 
 	operator fun contains(chapterId: Long) = chapterId in indices

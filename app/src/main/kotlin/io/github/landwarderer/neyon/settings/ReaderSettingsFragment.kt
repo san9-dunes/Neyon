@@ -66,6 +66,7 @@ class ReaderSettingsFragment :
 		}
 		findPreference<SliderPreference>(AppSettings.KEY_WEBTOON_ZOOM_OUT)?.summaryProvider = PercentSummaryProvider()
 		updateReaderModeDependency()
+		updatePreloadLimitEnabled()
 	}
 
 	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -92,6 +93,7 @@ class ReaderSettingsFragment :
 	override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
 		when (key) {
 			AppSettings.KEY_READER_MODE -> updateReaderModeDependency()
+			AppSettings.KEY_PAGES_PRELOAD -> updatePreloadLimitEnabled()
 		}
 	}
 
@@ -99,5 +101,10 @@ class ReaderSettingsFragment :
 		findPreference<Preference>(AppSettings.KEY_READER_MODE_DETECT)?.run {
 			isEnabled = settings.defaultReaderMode != ReaderMode.WEBTOON
 		}
+	}
+
+	private fun updatePreloadLimitEnabled() {
+		findPreference<Preference>(AppSettings.KEY_PRELOAD_PAGE_LIMIT)?.isEnabled =
+			preferenceManager.sharedPreferences?.getString(AppSettings.KEY_PAGES_PRELOAD, "2") != "0"
 	}
 }

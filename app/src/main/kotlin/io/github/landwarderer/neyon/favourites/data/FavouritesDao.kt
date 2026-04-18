@@ -76,7 +76,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	): Flow<List<FavouriteManga>> = observeAllImpl(
 		MangaQueryBuilder(TABLE_FAVOURITES, this)
 			.join("LEFT JOIN manga ON favourites.manga_id = manga.manga_id")
-			.where("deleted_at = 0")
+			.join("LEFT JOIN history ON history.manga_id = favourites.manga_id")
+			.join("LEFT JOIN tracks ON tracks.manga_id = favourites.manga_id")
+			.where("favourites.deleted_at = 0")
 			.where(
 				if (categoryId != 0L) {
 					"category_id = $categoryId"
@@ -98,7 +100,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		val query = SimpleSQLiteQuery(
 			"SELECT manga.cover_url AS url, manga.source AS source FROM favourites " +
 				"LEFT JOIN manga ON favourites.manga_id = manga.manga_id " +
-				"WHERE favourites.category_id = ? AND deleted_at = 0 ORDER BY $orderBy",
+				"LEFT JOIN history ON history.manga_id = favourites.manga_id " +
+				"LEFT JOIN tracks ON tracks.manga_id = favourites.manga_id " +
+				"WHERE favourites.category_id = ? AND favourites.deleted_at = 0 ORDER BY $orderBy",
 			arrayOf<Any>(categoryId),
 		)
 		return findCoversImpl(query)
@@ -111,7 +115,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		val query = SimpleSQLiteQuery(
 			"SELECT manga.cover_url AS url, manga.source AS source FROM favourites " +
 				"LEFT JOIN manga ON favourites.manga_id = manga.manga_id " +
-				"WHERE deleted_at = 0 AND " +
+				"LEFT JOIN history ON history.manga_id = favourites.manga_id " +
+				"LEFT JOIN tracks ON tracks.manga_id = favourites.manga_id " +
+				"WHERE favourites.deleted_at = 0 AND " +
 				"(SELECT show_in_lib FROM favourite_categories WHERE favourite_categories.category_id = favourites.category_id) = 1 " +
 				"GROUP BY manga.manga_id ORDER BY $orderBy LIMIT ?",
 			arrayOf<Any>(limit),
@@ -220,19 +226,19 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 		ListSortOrder.OLDEST -> "favourites.created_at ASC"
 		ListSortOrder.ALPHABETIC -> "manga.title ASC"
 		ListSortOrder.ALPHABETIC_REVERSE -> "manga.title DESC"
-		ListSortOrder.NEW_CHAPTERS -> "IFNULL((SELECT chapters_new FROM tracks WHERE tracks.manga_id = manga.manga_id), 0) DESC"
-		ListSortOrder.PROGRESS -> "IFNULL((SELECT percent FROM history WHERE history.manga_id = manga.manga_id), 0) DESC"
-		ListSortOrder.UNREAD -> "IFNULL((SELECT percent FROM history WHERE history.manga_id = manga.manga_id), 0) ASC"
-		ListSortOrder.LAST_READ -> "IFNULL((SELECT updated_at FROM history WHERE history.manga_id = manga.manga_id), 0) DESC"
-		ListSortOrder.LONG_AGO_READ -> "IFNULL((SELECT updated_at FROM history WHERE history.manga_id = manga.manga_id), 0) ASC"
-		ListSortOrder.UPDATED -> "IFNULL((SELECT last_chapter_date FROM tracks WHERE tracks.manga_id = manga.manga_id), 0) DESC"
+		ListSortOrder.NEW_CHAPTERS -> "IFNULL(tracks.chapters_new, 0) DESC"
+		ListSortOrder.PROGRESS -> "IFNULL(history.percent, 0) DESC"
+		ListSortOrder.UNREAD -> "IFNULL(history.percent, 0) ASC"
+		ListSortOrder.LAST_READ -> "IFNULL(history.updated_at, 0) DESC"
+		ListSortOrder.LONG_AGO_READ -> "IFNULL(history.updated_at, 0) ASC"
+		ListSortOrder.UPDATED -> "IFNULL(tracks.last_chapter_date, 0) DESC"
 
 		else -> throw IllegalArgumentException("Sort order $sortOrder is not supported")
 	}
 
 	override fun getCondition(option: ListFilterOption): String? = when (option) {
-		ListFilterOption.Macro.COMPLETED -> "EXISTS(SELECT * FROM history WHERE history.manga_id = favourites.manga_id AND history.percent >= $PROGRESS_COMPLETED)"
-		ListFilterOption.Macro.NEW_CHAPTERS -> "(SELECT chapters_new FROM tracks WHERE tracks.manga_id = favourites.manga_id) > 0"
+		ListFilterOption.Macro.COMPLETED -> "history.percent >= $PROGRESS_COMPLETED"
+		ListFilterOption.Macro.NEW_CHAPTERS -> "tracks.chapters_new > 0"
 		ListFilterOption.Macro.NSFW -> "manga.nsfw = 1"
 		is ListFilterOption.Tag -> "EXISTS(SELECT * FROM manga_tags WHERE favourites.manga_id = manga_tags.manga_id AND tag_id = ${option.tagId})"
 		ListFilterOption.Downloaded -> "EXISTS(SELECT * FROM local_index WHERE local_index.manga_id = favourites.manga_id)"

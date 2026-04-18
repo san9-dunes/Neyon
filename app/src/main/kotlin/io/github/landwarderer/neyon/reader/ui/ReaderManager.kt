@@ -25,8 +25,10 @@ class ReaderManager(
 	private val modeMap = EnumMap<ReaderMode, Class<out BaseReaderFragment<*>>>(ReaderMode::class.java)
 
 	init {
-		val useDoublePages = isLandscape() && settings.isReaderDoubleOnLandscape
-		invalidateTypesMap(useDoublePages)
+		// Default to single-page mode. The correct initial state (considering landscape +
+		// foldable settings) is set by applyDoubleModeAuto() in ReaderActivity.onCreate(),
+		// which is called immediately after this ReaderManager is constructed.
+		invalidateTypesMap(useDoublePages = false)
 	}
 
 	val currentReader: BaseReaderFragment<*>?

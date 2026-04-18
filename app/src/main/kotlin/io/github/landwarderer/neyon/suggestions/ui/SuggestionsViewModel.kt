@@ -3,19 +3,18 @@ package io.github.landwarderer.neyon.suggestions.ui
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import org.koitharu.kotatsu.parsers.model.Manga
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.plus
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.observeAsFlow
-import io.github.landwarderer.neyon.core.util.ext.onFirst
 import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import io.github.landwarderer.neyon.list.domain.MangaListMapper
 import io.github.landwarderer.neyon.list.domain.QuickFilterListener
@@ -33,11 +32,13 @@ import io.github.landwarderer.neyon.local.domain.model.LocalManga
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.flow.flow
 import io.github.landwarderer.neyon.list.domain.ListSortOrder
+import android.app.Application
+import kotlinx.coroutines.Dispatchers
 
 @HiltViewModel
 class SuggestionsViewModel @Inject constructor(
+	private val app: Application,
 	private val feedAggregator: FeedAggregator,
 	private val settings: AppSettings,
 	private val mangaListMapper: MangaListMapper,
@@ -60,17 +61,16 @@ class SuggestionsViewModel @Inject constructor(
 			genreOverride,
 			settings.observeAsFlow(AppSettings.KEY_SUGGESTIONS_ORDER) { suggestionsSortOrder }
 		) { forceRefresh, genre, sortOrder -> Triple(forceRefresh, genre, sortOrder) }
+		.debounce(100L)
 		.flatMapLatest { (forceRefresh, genre, sortOrder) ->
-				flow<List<MangaSuggestion>?> {
-						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.increment() }
-						// Only wipe the screen if explicitly requested a fresh fetch
-						if (forceRefresh || genre != null) {
-								emit(null)
-						}
-						val effectiveSortOrder = if (genre != null) ListSortOrder.POPULARITY else sortOrder
-						emit(feedAggregator.mixFeed(genre, forceRefresh, effectiveSortOrder))
-						kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
+			flow<List<MangaSuggestion>?> {
+				// Only wipe the screen if explicitly requested a fresh fetch
+				if (forceRefresh || genre != null) {
+					emit(null)
 				}
+				val effectiveSortOrder = if (genre != null) ListSortOrder.POPULARITY else sortOrder
+				emit(feedAggregator.mixFeed(genre, forceRefresh, effectiveSortOrder))
+			}.withLoading()
 		},
 		quickFilter.appliedOptions,
 		observeListModeWithTriggers(),
@@ -115,15 +115,19 @@ class SuggestionsViewModel @Inject constructor(
 				val grouped = list.groupBy { it.reason }
 				for ((reason, items) in grouped) {
 					if (reason != null) {
-						add(ListHeader(reason))
+						val localizedReason = if (reason.startsWith("Because you read ")) {
+							app.getString(R.string.suggestion_reason_tag, reason.removePrefix("Because you read "))
+						} else {
+							reason
+						}
+						add(ListHeader(localizedReason))
 					}
 					mangaListMapper.toListModelList(this, items.map { it.manga }, mode)
 				}
 			}
 		}
 	}.catch {
-                kotlinx.coroutines.withContext(Dispatchers.Main) { loadingCounter.decrement() }
-                emit(listOf(it.toErrorState(canRetry = false)))
+                emit(listOf(it.toErrorState(canRetry = true)))
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, listOf(LoadingState))
 
 	// Wire swipe-to-refresh: no rate limit — user explicitly pulled
@@ -160,8 +164,9 @@ class SuggestionsViewModel @Inject constructor(
 		quickFilter.removeFilterOption(option)
 		if (option is ListFilterOption.Tag) {
 			val applied = quickFilter.appliedOptions.value
-			val newOverride = if (applied.filterIsInstance<ListFilterOption.Tag>().isNotEmpty()) applied.filterIsInstance<ListFilterOption.Tag>().first().tag.title else null
+			// Only react if this specific tag was the active genre override
 			if (genreOverride.replayCache.firstOrNull() == option.tag.title) {
+				val newOverride = applied.filterIsInstance<ListFilterOption.Tag>().firstOrNull()?.tag?.title
 				genreOverride.tryEmit(newOverride)
 				refreshSignal.tryEmit(true)
 			}

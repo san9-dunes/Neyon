@@ -78,7 +78,7 @@ class ChaptersLoader @Inject constructor(
 		return chapterId in chapterPages
 	}
 
-	fun getPages(chapterId: Long): List<MangaPage> = synchronized(chapterPages) {
+	fun getPages(chapterId: Long): List<MangaPage> {
 		return chapterPages.subList(chapterId).map { it.toMangaPage() }
 	}
 

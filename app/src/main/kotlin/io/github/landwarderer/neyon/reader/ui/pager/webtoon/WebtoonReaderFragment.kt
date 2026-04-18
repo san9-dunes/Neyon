@@ -108,10 +108,10 @@ class WebtoonReaderFragment : BaseReaderFragment<FragmentReaderWebtoonBinding>()
 		val offsetInsets = insets.getInsets(WindowInsetsCompat.Type.systemBars())
 		viewBinding?.apply {
 			feedbackTop.updateLayoutParams<MarginLayoutParams> {
-				topMargin = bottomMargin + offsetInsets.top
+				topMargin = offsetInsets.top
 			}
 			feedbackBottom.updateLayoutParams<MarginLayoutParams> {
-				bottomMargin = topMargin + offsetInsets.bottom
+				bottomMargin = offsetInsets.bottom
 			}
 		}
 		return super.onApplyWindowInsets(v, insets)

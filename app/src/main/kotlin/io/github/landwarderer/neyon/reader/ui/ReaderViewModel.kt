@@ -71,26 +71,13 @@ import io.github.landwarderer.neyon.reader.ui.pager.ReaderUiState
 import io.github.landwarderer.neyon.reader.ui.pager.ReaderPage
 import io.github.landwarderer.neyon.scrobbling.discord.ui.DiscordRpc
 import io.github.landwarderer.neyon.stats.domain.StatsCollector
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Instant
 import javax.inject.Inject
-
-import coil3.ImageLoader
-import coil3.request.ImageRequest
-import android.content.Context
-import dagger.hilt.android.qualifiers.ApplicationContext
-
-import io.github.landwarderer.neyon.core.parser.MangaRepository
 
 private const val BOUNDS_PAGE_OFFSET = 2
 
 @HiltViewModel
 class ReaderViewModel @Inject constructor(
-    @ApplicationContext private val context: Context,
-    private val imageLoader: ImageLoader,
-    private val mangaRepositoryFactory: MangaRepository.Factory,
     private val savedStateHandle: SavedStateHandle,
     private val dataRepository: MangaDataRepository,
     private val historyRepository: HistoryRepository,
@@ -126,10 +113,18 @@ class ReaderViewModel @Inject constructor(
     private var pageSaveJob: Job? = null
     private var bookmarkJob: Job? = null
     private var stateChangeJob: Job? = null
-    private val activePrefetchRequests = mutableMapOf<String, coil3.request.Disposable>()
 
+    // Single merged init — order matters: details must be set before loadImpl() runs
     init {
         mangaDetails.value = intent.manga?.let { MangaDetails(it) }
+        initIncognitoMode()
+        loadImpl()
+        launchJob(Dispatchers.IO) {
+            val mangaId = manga.filterNotNull().first().id
+            if (!isIncognitoMode.firstNotNull()) {
+                appShortcutManager.notifyMangaOpened(mangaId)
+            }
+        }
     }
 
     val readerMode = MutableStateFlow<ReaderMode?>(null)
@@ -219,16 +214,7 @@ class ReaderViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, false)
 
-    init {
-        initIncognitoMode()
-        loadImpl()
-        launchJob(Dispatchers.IO) {
-            val mangaId = manga.filterNotNull().first().id
-            if (!isIncognitoMode.firstNotNull()) {
-                appShortcutManager.notifyMangaOpened(mangaId)
-            }
-        }
-    }
+
 
     fun reload() {
         loadingJob?.cancel()
@@ -355,43 +341,46 @@ class ReaderViewModel @Inject constructor(
     @MainThread
     fun onCurrentPageChanged(lowerPos: Int, upperPos: Int) {
         val prevJob = stateChangeJob
-        val pages = content.value.pages // capture immediately
+        val pages = content.value.pages // capture immediately on main thread
         stateChangeJob = launchJob(Dispatchers.IO) {
             prevJob?.cancelAndJoin()
             loadingJob?.join()
-            if (pages.size != content.value.pages.size) {
-                return@launchJob // TODO
+            // If pages changed mid-flight (chapter boundary load completed while we waited),
+            // fall back to the latest snapshot so state/history/stats are never silently dropped.
+            val effectivePages = if (pages.size != content.value.pages.size) {
+                content.value.pages
+            } else {
+                pages
             }
             val centerPos = (lowerPos + upperPos) / 2
-            pages.getOrNull(centerPos)?.let { page ->
+            effectivePages.getOrNull(centerPos)?.let { page ->
                 readingState.update { cs ->
                     cs?.copy(chapterId = page.chapterId, page = page.index)
                 }
             }
             notifyStateChanged()
-            if (pages.isEmpty() || loadingJob?.isActive == true) {
+            if (effectivePages.isEmpty() || loadingJob?.isActive == true) {
                 return@launchJob
             }
             ensureActive()
             val autoLoadAllowed = readerMode.value != ReaderMode.WEBTOON || !isWebtoonPullGestureEnabled.value
             if (autoLoadAllowed) {
-                if (upperPos >= pages.lastIndex - BOUNDS_PAGE_OFFSET) {
-                    loadPrevNextChapter(pages.last().chapterId, isNext = true)
+                if (upperPos >= effectivePages.lastIndex - BOUNDS_PAGE_OFFSET) {
+                    loadPrevNextChapter(effectivePages.last().chapterId, isNext = true)
                 }
                 if (lowerPos <= BOUNDS_PAGE_OFFSET) {
-                    loadPrevNextChapter(pages.first().chapterId, isNext = false)
+                    loadPrevNextChapter(effectivePages.first().chapterId, isNext = false)
                 }
             }
+            // Single prefetch path — uses PageLoader which handles disk cache, rate-limiting,
+            // and per-source authentication headers correctly.
             if (pageLoader.isPrefetchApplicable()) {
-                pageLoader.prefetch(pages.trySublist(upperPos + 1, upperPos + pagePreloadLimit))
+                pageLoader.prefetch(effectivePages.trySublist(upperPos + 1, upperPos + pagePreloadLimit))
             }
-            
-            prefetchRollingWindow(upperPos)
-            
-            // Explicitly clear coil memory cache for pages left far behind (e.g. earlier than lowerPos - 4)
+            // Evict preview thumbnails for pages far behind from Coil's memory cache.
             val trailingEvictLimit = (lowerPos - 4).coerceAtLeast(0)
             if (trailingEvictLimit > 0) {
-                val pagesToEvict = pages.trySublist(0, trailingEvictLimit)
+                val pagesToEvict = effectivePages.trySublist(0, trailingEvictLimit)
                 pageLoader.evictFromMemoryCache(pagesToEvict.map { it.toMangaPage() })
             }
         }
@@ -434,16 +423,13 @@ class ReaderViewModel @Inject constructor(
     }
 
     fun updateReadingProgress() {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                manga.collectLatest {
-                    if (it != null) {
-                        progressUpdateUseCase(it)
-                    }
-                }
-
-                pageLoader.updateCache(getCurrentPage()!!)
-            }
+        // Update disk cache for current page and record final reading progress.
+        // Called from onDestroy — use launchJob so it's scoped to viewModelScope.
+        val page = getCurrentPage() ?: return
+        val currentManga = getMangaOrNull() ?: return
+        launchJob(Dispatchers.IO) {
+            runCatchingCancellable { pageLoader.updateCache(page) }
+            progressUpdateUseCase(currentManga)
         }
     }
 
@@ -467,12 +453,10 @@ class ReaderViewModel @Inject constructor(
                                 return@collect // manga not loaded yet if cannot get state
                             }
                             readingState.value = newState
-                            val mode = runCatchingCancellable {
-                                detectReaderModeUseCase(manga, newState)
-                            }.getOrDefault(settings.defaultReaderMode)
                             val branch = chaptersLoader.peekChapter(newState.chapterId)?.branch
                             selectedBranch.value = branch
-                            readerMode.value = mode
+                            // Load the chapter first so its pages can be reused by detectReaderModeUseCase,
+                            // eliminating the redundant double getPages() network call on first open.
                             try {
                                 chaptersLoader.loadSingleChapter(newState.chapterId)
                             } catch (e: Exception) {
@@ -480,6 +464,11 @@ class ReaderViewModel @Inject constructor(
                                 exception = e.mergeWith(exception)
                                 return@collect
                             }
+                            val loadedPages = chaptersLoader.getPages(newState.chapterId)
+                            val mode = runCatchingCancellable {
+                                detectReaderModeUseCase(manga, newState, loadedPages.ifEmpty { null })
+                            }.getOrDefault(settings.defaultReaderMode)
+                            readerMode.value = mode
                         }
                         mangaDetails.value = details.filterChapters(selectedBranch.value)
 
@@ -657,72 +646,6 @@ class ReaderViewModel @Inject constructor(
         return ReaderState(manga, preferredBranch)
     }
 
-    private fun prefetchRollingWindow(currentIndex: Int) {
-        viewModelScope.launch(Dispatchers.IO) {
-            try {
-                val pages = content.value.pages
-                if (pages.isEmpty()) return@launch
-                
-                val windowSize = pagePreloadLimit
-                val validUrls = mutableSetOf<String>()
-                
-                // Keep current and next `windowSize` pages active
-                val startIndex = (currentIndex - 1).coerceAtLeast(0)
-                val endIndex = (currentIndex + windowSize).coerceAtMost(pages.size - 1)
-                
-                // Fetch URLs in range
-                for (i in startIndex..endIndex) {
-                    val url = pageLoader.getPageUrl(pages[i].toMangaPage())
-                    if (!url.isNullOrEmpty()) {
-                        validUrls.add(url)
-                        if (!activePrefetchRequests.containsKey(url)) {
-                            val request = ImageRequest.Builder(context)
-                                .data(url)
-                                .build()
-                            activePrefetchRequests[url] = imageLoader.enqueue(request)
-                        }
-                    }
-                }
-                
-                val remainingToFetch = windowSize - (endIndex - currentIndex)
-                
-                // Eagerly prefetch if crossing boundary to the next chapter
-                if (remainingToFetch > 0) {
-                    val fullChapterList = mangaDetails.value?.allChapters ?: return@launch
-                    val lastChapterInList = pages.last().chapterId
-                    val currentChapIdx = fullChapterList.indexOfFirst { it.id == lastChapterInList }
-                    
-                    if (currentChapIdx != -1 && currentChapIdx + 1 < fullChapterList.size) {
-                        val nextChapter = fullChapterList[currentChapIdx + 1]
-                        val repo = mangaRepositoryFactory.create(nextChapter.source)
-                        
-                        val newPages = repo.getPages(nextChapter)
-                        
-                        newPages.take(remainingToFetch).forEach { pageModel ->
-                            val url = pageLoader.getPageUrl(pageModel)
-                            if (!url.isNullOrEmpty()) {
-                                validUrls.add(url)
-                                if (!activePrefetchRequests.containsKey(url)) {
-                                    val request = ImageRequest.Builder(context)
-                                        .data(url)
-                                        .build()
-                                    activePrefetchRequests[url] = imageLoader.enqueue(request)
-                                }
-                            }
-                        }
-                    }
-                }
-                
-                // Cancel pending requests outside our sliding window
-                val toCancel = activePrefetchRequests.keys - validUrls
-                toCancel.forEach { url ->
-                    activePrefetchRequests.remove(url)?.dispose()
-                }
-            } catch (e: Exception) {
-                // Silently catch errors to avoid interrupting user reading sessions
-            }
-        }
-    }
 
     private fun getFilteredSnapshot(): List<ReaderPage> {
         val snapshot = chaptersLoader.snapshot()

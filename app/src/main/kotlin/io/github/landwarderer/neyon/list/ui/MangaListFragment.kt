@@ -111,6 +111,10 @@ abstract class MangaListFragment :
 		paginationListener = PaginationScrollListener(4, this)
 		with(binding.recyclerView) {
 			setHasFixedSize(true)
+			layoutManager = FitHeightGridLayoutManager(context, checkNotNull(spanResolver).spanCount).also {
+				it.spanSizeLookup = spanSizeLookup
+			}
+			addOnLayoutChangeListener(spanResolver)
 			adapter = listAdapter
 			checkNotNull(selectionController).attachToRecyclerView(this)
 			addItemDecoration(TypedListSpacingDecoration(context, false))
@@ -255,25 +259,6 @@ abstract class MangaListFragment :
 
 	private fun onListModeChanged(mode: ListMode) {
 		spanSizeLookup.invalidateCache()
-		with(requireViewBinding().recyclerView) {
-			removeOnLayoutChangeListener(spanResolver)
-			when (mode) {
-				ListMode.LIST -> {
-					layoutManager = FitHeightLinearLayoutManager(context)
-				}
-
-				ListMode.DETAILED_LIST -> {
-					layoutManager = FitHeightLinearLayoutManager(context)
-				}
-
-				ListMode.GRID -> {
-					layoutManager = FitHeightGridLayoutManager(context, checkNotNull(spanResolver).spanCount).also {
-						it.spanSizeLookup = spanSizeLookup
-					}
-					addOnLayoutChangeListener(spanResolver)
-				}
-			}
-		}
 	}
 
 	@CallSuper

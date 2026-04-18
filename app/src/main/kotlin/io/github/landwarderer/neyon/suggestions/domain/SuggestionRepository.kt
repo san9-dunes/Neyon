@@ -6,6 +6,7 @@ import io.github.landwarderer.neyon.core.db.MangaDatabase
 import io.github.landwarderer.neyon.core.db.entity.toEntities
 import io.github.landwarderer.neyon.core.db.entity.toEntity
 import io.github.landwarderer.neyon.core.db.entity.toManga
+import io.github.landwarderer.neyon.core.db.entity.toMangaTags
 import io.github.landwarderer.neyon.core.db.entity.toMangaTagsList
 import io.github.landwarderer.neyon.core.model.toMangaSources
 import io.github.landwarderer.neyon.core.util.ext.mapItems
@@ -23,8 +24,6 @@ class SuggestionRepository @Inject constructor(
 	private val db: MangaDatabase,
 ) {
 
-	private var memoryCache: List<Manga>? = null
-
 	fun observeAll(): Flow<List<Manga>> {
 		return db.getSuggestionDao().observeAll().mapItems {
 			it.toManga()
@@ -38,22 +37,7 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun getRandomList(limit: Int, forceRefresh: Boolean = false): List<Manga> {
-		if (!forceRefresh && !memoryCache.isNullOrEmpty()) {
-			// If cached list is bigger or equal to the limit, slice it. Otherwise return all.
-			return if (memoryCache!!.size >= limit) {
-				memoryCache!!.shuffled().take(limit)
-			} else {
-				memoryCache!!
-			}
-		}
-		
-		val result = db.getSuggestionDao().getRandom(limit).map {
-			it.toManga()
-		}
-		
-		// Update our memory cache with the new fetch
-		memoryCache = result
-		return result
+		return db.getSuggestionDao().getRandom(limit).map { it.toManga() }
 	}
 
 	suspend fun clear() {
@@ -94,5 +78,5 @@ class SuggestionRepository @Inject constructor(
 		}
 	}
 
-	private fun SuggestionWithManga.toManga() = manga.toManga(emptySet(), null)
+	private fun SuggestionWithManga.toManga() = manga.toManga(tags.toMangaTags(), null)
 }

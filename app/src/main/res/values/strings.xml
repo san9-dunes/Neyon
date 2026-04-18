@@ -212,6 +212,7 @@
     <string name="suggestions_manage_sources_summary">Select which sources to pull suggestions from (Max 5)</string>
     <string name="suggestions_info">All data is only analyzed locally on this device and never sent anywhere.</string>
     <string name="text_suggestion_holder">Start reading manga and you will get personalized suggestions</string>
+    <string name="suggestion_reason_tag">Because you read %1$s</string>
     <string name="exclude_nsfw_from_suggestions">Do not suggest NSFW manga</string>
     <string name="enabled">Enabled</string>
     <string name="disabled">Disabled</string>
@@ -390,6 +391,7 @@
     <string name="pref_global_user_agent_title">Global User-Agent</string>
     <string name="pref_global_user_agent_summary">Changing user agent can help bypass Cloudflare for some sources</string>
     <string name="settings_apply_restart_required">Please restart the application to apply these changes</string>
+    <string name="restart">Restart</string>
     <string name="comics_archive_import_description">You can select one or more .cbz or .zip files, each file will be recognized as a separate manga.</string>
     <string name="folder_with_images_import_description">You can select a directory with archives or images. Each archive (or subdirectory) will be recognized as a chapter.</string>
     <string name="speed">Speed</string>

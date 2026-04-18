@@ -160,9 +160,6 @@ class CoverImageView @JvmOverloads constructor(
 		if (trimImage) {
 			transformations(listOf(TrimTransformation()))
 		}
-		if (hasAspectRatio) {
-			size(CoverSizeResolver(this@CoverImageView))
-		}
 	}
 
 	private inner class ErrorForegroundListener : ImageRequest.Listener {
@@ -212,95 +209,5 @@ class CoverImageView @JvmOverloads constructor(
 		}
 	}
 
-	private class CoverSizeResolver(
-		override val view: CoverImageView,
-	) : ViewSizeResolver<CoverImageView> {
 
-		override suspend fun size(): Size {
-			// Fast path: the view is already measured.
-			getSize()?.let { return it }
-
-			// Slow path: wait for the view to be measured.
-			return suspendCancellableCoroutine { continuation ->
-				val viewTreeObserver = view.viewTreeObserver
-
-				val preDrawListener = object : OnPreDrawListener {
-					private var isResumed = false
-
-					override fun onPreDraw(): Boolean {
-						val size = getSize()
-						if (size != null) {
-							viewTreeObserver.removePreDrawListenerSafe(this)
-
-							if (!isResumed) {
-								isResumed = true
-								continuation.resume(size)
-							}
-						}
-						return true
-					}
-				}
-
-				viewTreeObserver.addOnPreDrawListener(preDrawListener)
-
-				continuation.invokeOnCancellation {
-					viewTreeObserver.removePreDrawListenerSafe(preDrawListener)
-				}
-			}
-		}
-
-		private fun getSize(): Size? {
-			var width = getWidth()
-			var height = getHeight()
-			when {
-				width == null && height == null -> {
-					return null
-				}
-
-				height == null -> {
-					height = Dimension(width!!.px * view.aspectRationHeight / view.aspectRationWidth)
-				}
-
-				width == null -> {
-					width = Dimension(height.px * view.aspectRationWidth / view.aspectRationHeight)
-				}
-			}
-			return Size(width, height)
-		}
-
-		private fun getWidth() = getDimension(
-			paramSize = view.layoutParams?.width ?: -1,
-			viewSize = view.width,
-			paddingSize = if (subtractPadding) view.paddingLeft + view.paddingRight else 0,
-		)
-
-		private fun getHeight() = getDimension(
-			paramSize = view.layoutParams?.height ?: -1,
-			viewSize = view.height,
-			paddingSize = if (subtractPadding) view.paddingTop + view.paddingBottom else 0,
-		)
-
-		private fun getDimension(paramSize: Int, viewSize: Int, paddingSize: Int): Dimension.Pixels? {
-			if (paramSize == ViewGroup.LayoutParams.WRAP_CONTENT) {
-				return null
-			}
-			val insetParamSize = paramSize - paddingSize
-			if (insetParamSize > 0) {
-				return Dimension(insetParamSize)
-			}
-			val insetViewSize = viewSize - paddingSize
-			if (insetViewSize > 0) {
-				return Dimension(insetViewSize)
-			}
-			return null
-		}
-
-		private fun ViewTreeObserver.removePreDrawListenerSafe(victim: OnPreDrawListener) {
-			if (isAlive) {
-				removeOnPreDrawListener(victim)
-			} else {
-				view.viewTreeObserver.removeOnPreDrawListener(victim)
-			}
-		}
-	}
 }

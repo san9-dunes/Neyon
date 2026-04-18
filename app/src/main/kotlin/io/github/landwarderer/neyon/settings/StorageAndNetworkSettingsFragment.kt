@@ -7,6 +7,7 @@ import androidx.fragment.app.viewModels
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.exceptions.resolve.SnackbarErrorObserver
 import io.github.landwarderer.neyon.core.network.DoHProvider
@@ -14,11 +15,13 @@ import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BasePreferenceFragment
 import io.github.landwarderer.neyon.core.util.ext.observe
 import io.github.landwarderer.neyon.core.util.ext.observeEvent
+import io.github.landwarderer.neyon.core.util.ext.restartApplication
 import io.github.landwarderer.neyon.core.util.ext.setDefaultValueCompat
 import org.koitharu.kotatsu.parsers.util.names
 import io.github.landwarderer.neyon.settings.userdata.storage.StorageUsagePreference
 import java.net.Proxy
 
+@AndroidEntryPoint
 class StorageAndNetworkSettingsFragment :
     BasePreferenceFragment(R.string.storage_and_network),
     SharedPreferences.OnSharedPreferenceChangeListener {
@@ -52,7 +55,11 @@ class StorageAndNetworkSettingsFragment :
         when (key) {
             AppSettings.KEY_SSL_BYPASS,
             AppSettings.KEY_PAGES_CACHE_SIZE -> {
-                Snackbar.make(listView, R.string.settings_apply_restart_required, Snackbar.LENGTH_INDEFINITE).show()
+                Snackbar.make(listView, R.string.settings_apply_restart_required, Snackbar.LENGTH_LONG)
+                    .setAction(R.string.restart) {
+                        requireContext().restartApplication()
+                    }
+                    .show()
             }
 
             AppSettings.KEY_PROXY_TYPE,

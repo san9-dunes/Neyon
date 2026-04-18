@@ -15,11 +15,13 @@ import androidx.core.view.size
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.navigation.NavigationBarView
 import com.google.android.material.navigationrail.NavigationRailView
-import com.google.android.material.transition.MaterialFadeThrough
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.channels.trySendBlocking
 import kotlinx.coroutines.flow.callbackFlow
@@ -47,11 +49,11 @@ import io.github.landwarderer.neyon.tracker.ui.updates.UpdatesFragment
 import java.util.LinkedList
 import com.google.android.material.R as materialR
 
-private const val TAG_PRIMARY = "primary"
-
 class MainNavigationDelegate(
 	private val navBar: NavigationBarView,
+	private val viewPager: ViewPager2,
 	private val fragmentManager: FragmentManager,
+	private val lifecycle: Lifecycle,
 	private val settings: AppSettings,
 ) : OnBackPressedCallback(false),
 	NavigationBarView.OnItemSelectedListener,
@@ -62,10 +64,52 @@ class MainNavigationDelegate(
 		NavigationRailFabBinding.bind(it)
 	}
 
+	private var currentNavItems = emptyList<NavItem>()
+
+	private val pagerAdapter = object : FragmentStateAdapter(fragmentManager, lifecycle) {
+		override fun getItemCount() = currentNavItems.size
+
+		override fun createFragment(position: Int): Fragment {
+			val itemId = currentNavItems[position].id
+			val fragmentClass = getFragmentClass(itemId)
+			val fragment = instantiateFragment(fragmentClass)
+			val args = buildBundle(1) {
+				putBoolean(AppRouter.KEY_IS_BOTTOMTAB, true)
+			}
+			fragment.arguments = args
+			return fragment
+		}
+
+		override fun getItemId(position: Int): Long = currentNavItems[position].id.toLong()
+		override fun containsItem(itemId: Long): Boolean = currentNavItems.any { it.id.toLong() == itemId }
+	}
+
 	val primaryFragment: Fragment?
-		get() = fragmentManager.findFragmentByTag(TAG_PRIMARY)
+		get() {
+			val position = viewPager.currentItem
+			if (currentNavItems.isEmpty() || position !in currentNavItems.indices) return null
+			val itemId = currentNavItems[position].id
+			return fragmentManager.findFragmentByTag("f$itemId")
+		}
 
 	init {
+		viewPager.adapter = pagerAdapter
+		viewPager.offscreenPageLimit = MAX_ITEM_COUNT
+		viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+			override fun onPageSelected(position: Int) {
+				if (currentNavItems.isNotEmpty() && position in currentNavItems.indices) {
+					val itemId = currentNavItems[position].id
+					if (navBar.selectedItemId != itemId) {
+						navBar.selectedItemId = itemId
+					}
+					val fragment = primaryFragment
+					if (fragment != null) {
+						onFragmentChanged(fragment, fromUser = true)
+					}
+				}
+			}
+		})
+
 		navBar.setOnItemSelectedListener(this)
 		navBar.setOnItemReselectedListener(this)
 		navRailHeader?.run {
@@ -82,12 +126,16 @@ class MainNavigationDelegate(
 	}
 
 	override fun onNavigationItemSelected(item: MenuItem): Boolean {
-		return if (onNavigationItemSelected(item.itemId)) {
-			item.isChecked = true
-			true
-		} else {
-			false
+		val index = currentNavItems.indexOfFirst { it.id == item.itemId }
+		if (index != -1) {
+			if (viewPager.currentItem != index) {
+				viewPager.setCurrentItem(index, true)
+			} else {
+				onNavigationItemReselected()
+			}
+			return true
 		}
+		return false
 	}
 
 	override fun onNavigationItemReselected(item: MenuItem) {
@@ -105,29 +153,26 @@ class MainNavigationDelegate(
 	}
 
 	override fun handleOnBackPressed() {
-		navBar.selectedItemId = firstItem()?.itemId ?: return
+		val firstVisibleItem = currentNavItems.firstOrNull() ?: return
+		if (navBar.selectedItemId != firstVisibleItem.id) {
+			navBar.selectedItemId = firstVisibleItem.id
+		}
 	}
 
 	fun onCreate(lifecycleOwner: LifecycleOwner, savedInstanceState: Bundle?) {
+		currentNavItems = settings.mainNavItems.filter { it.isAvailable(settings) }.take(MAX_ITEM_COUNT)
 		if (navBar.menu.isEmpty()) {
 			createMenu(settings.mainNavItems, navBar.menu)
 		}
 		observeSettings(lifecycleOwner)
-		val fragment = primaryFragment
-		if (fragment != null) {
-			onFragmentChanged(fragment, fromUser = false)
-			val itemId = getItemId(fragment)
-			if (navBar.selectedItemId != itemId) {
-				navBar.selectedItemId = itemId
+		
+		if (savedInstanceState == null) {
+			val firstItem = currentNavItems.firstOrNull()
+			if (firstItem != null && navBar.selectedItemId != firstItem.id) {
+				navBar.selectedItemId = firstItem.id
 			}
-		} else {
-			val itemId = if (savedInstanceState == null) {
-				firstItem()?.itemId ?: navBar.selectedItemId
-			} else {
-				navBar.selectedItemId
-			}
-			onNavigationItemSelected(itemId)
 		}
+		syncSelectedItem()
 	}
 
 	fun observeTitle() = callbackFlow {
@@ -171,7 +216,8 @@ class MainNavigationDelegate(
 		val item = navBar.menu.findItem(itemId) ?: return
 		item.isVisible = isVisible
 		if (item.isChecked && !isVisible) {
-			navBar.selectedItemId = firstItem()?.itemId ?: return
+			val firstItem = currentNavItems.firstOrNull() ?: return
+			navBar.selectedItemId = firstItem.id
 		}
 	}
 
@@ -183,23 +229,16 @@ class MainNavigationDelegate(
 		listeners.remove(listener)
 	}
 
-	private fun onNavigationItemSelected(@IdRes itemId: Int): Boolean {
-		val newFragment = when (itemId) {
-			R.id.nav_history -> HistoryListFragment::class.java
-			R.id.nav_favorites -> FavouritesContainerFragment::class.java
-			R.id.nav_explore -> ExploreFragment::class.java
-			R.id.nav_feed -> FeedFragment::class.java
-			R.id.nav_local -> LocalListFragment::class.java
-			R.id.nav_suggestions -> SuggestionsFragment::class.java
-			R.id.nav_bookmarks -> AllBookmarksFragment::class.java
-			R.id.nav_updated -> UpdatesFragment::class.java
-			else -> return false
-		}
-		if (!setPrimaryFragment(newFragment)) {
-			// probably already selected
-			onNavigationItemReselected()
-		}
-		return true
+	private fun getFragmentClass(@IdRes itemId: Int): Class<out Fragment> = when (itemId) {
+		R.id.nav_history -> HistoryListFragment::class.java
+		R.id.nav_favorites -> FavouritesContainerFragment::class.java
+		R.id.nav_explore -> ExploreFragment::class.java
+		R.id.nav_feed -> FeedFragment::class.java
+		R.id.nav_local -> LocalListFragment::class.java
+		R.id.nav_suggestions -> SuggestionsFragment::class.java
+		R.id.nav_bookmarks -> AllBookmarksFragment::class.java
+		R.id.nav_updated -> UpdatesFragment::class.java
+		else -> ExploreFragment::class.java
 	}
 
 	private fun getItemId(fragment: Fragment) = when (fragment) {
@@ -214,30 +253,14 @@ class MainNavigationDelegate(
 		else -> 0
 	}
 
-	private fun setPrimaryFragment(fragmentClass: Class<out Fragment>): Boolean {
-		if (fragmentManager.isStateSaved || fragmentClass.isInstance(primaryFragment)) {
-			return false
-		}
-		val fragment = instantiateFragment(fragmentClass)
-		val args = buildBundle(1) {
-			putBoolean(AppRouter.KEY_IS_BOTTOMTAB, true)
-		}
-		fragment.enterTransition = MaterialFadeThrough()
-		fragmentManager.beginTransaction()
-			.setReorderingAllowed(true)
-			.replace(R.id.container, fragmentClass, args, TAG_PRIMARY)
-			.runOnCommit { onFragmentChanged(fragment, fromUser = true) }
-			.commit()
-		return true
-	}
-
 	private fun onNavigationItemReselected() {
 		val recyclerView = (primaryFragment as? RecyclerViewOwner)?.recyclerView ?: return
 		recyclerView.smoothScrollToTop()
 	}
 
 	private fun onFragmentChanged(fragment: Fragment, fromUser: Boolean) {
-		isEnabled = getItemId(fragment) != firstItem()?.itemId
+		val firstVisibleItem = currentNavItems.firstOrNull()
+		isEnabled = getItemId(fragment) != firstVisibleItem?.id
 		listeners.forEach { it.onFragmentChanged(fragment, fromUser) }
 	}
 
@@ -245,7 +268,7 @@ class MainNavigationDelegate(
 		for (item in items) {
 			menu.add(Menu.NONE, item.id, Menu.NONE, item.title)
 				.setIcon(item.icon)
-			if (menu.size >= navBar.maxItemCount) {
+			if (menu.size >= MAX_ITEM_COUNT) {
 				break
 			}
 		}
@@ -259,18 +282,20 @@ class MainNavigationDelegate(
 	private fun observeSettings(lifecycleOwner: LifecycleOwner) {
 		settings.observe(AppSettings.KEY_TRACKER_ENABLED, AppSettings.KEY_SUGGESTIONS, AppSettings.KEY_NAV_LABELS)
 			.onEach {
+				val oldItems = currentNavItems
+				currentNavItems = settings.mainNavItems.filter { item -> item.isAvailable(settings) }.take(MAX_ITEM_COUNT)
+				
 				setItemVisibility(R.id.nav_suggestions, settings.isSuggestionsEnabled)
 				setItemVisibility(R.id.nav_feed, settings.isTrackerEnabled)
 				setNavbarIsLabeled(settings.isNavLabelsVisible)
+				
+				if (oldItems != currentNavItems) {
+					pagerAdapter.notifyDataSetChanged()
+					if (viewPager.currentItem >= currentNavItems.size) {
+						viewPager.setCurrentItem(currentNavItems.size - 1, false)
+					}
+				}
 			}.launchIn(lifecycleOwner.lifecycleScope)
-	}
-
-	private fun firstItem(): MenuItem? {
-		val menu = navBar.menu
-		for (item in menu) {
-			if (item.isVisible) return item
-		}
-		return null
 	}
 
 	private fun setNavbarIsLabeled(value: Boolean) {
@@ -326,12 +351,10 @@ class MainNavigationDelegate(
 	}
 
 	fun interface OnFragmentChangedListener {
-
 		fun onFragmentChanged(fragment: Fragment, fromUser: Boolean)
 	}
 
 	companion object {
-
 		const val MAX_ITEM_COUNT = 6
 	}
 }

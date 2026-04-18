@@ -12,7 +12,8 @@
 		android:dependency="discord_rpc"
 		android:key="discord_token"
 		android:summary="@string/discord_token_summary"
-		android:title="@string/discord_token" />
+		android:title="@string/discord_token"
+		app:useSimpleSummaryProvider="true" />
 
 	<SwitchPreferenceCompat
 		android:dependency="discord_rpc"

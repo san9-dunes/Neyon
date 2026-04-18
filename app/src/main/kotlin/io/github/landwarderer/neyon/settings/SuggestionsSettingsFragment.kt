@@ -9,18 +9,13 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.view.LayoutInflater
+import android.view.View
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import androidx.preference.Preference
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.model.getTitle
 import io.github.landwarderer.neyon.core.prefs.AppSettings
@@ -45,8 +40,8 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 	@Inject
 	lateinit var sourcesRepository: MangaSourcesRepository
 
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
+	override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+		super.onViewCreated(view, savedInstanceState)
 		settings.subscribe(this)
 	}
 
@@ -177,41 +172,22 @@ class SuggestionsSettingsFragment : BasePreferenceFragment(R.string.suggestions)
 			.create()
 			
 		val updateJob = lifecycleScope.launch {
-			combine(
-				settings.observeChanges()
-					.filter { it == AppSettings.KEY_SUGGESTIONS_DISABLED_SOURCES }
-					.onStart { emit("") }
-					.map { settings.isSuggestionsIncludeDisabledSources }
-					.distinctUntilChanged(),
-				sourcesRepository.observeEnabledSourcesCount().onStart { emit(0) }
-			) { includeDisabled, _ ->
-				includeDisabled
-			}.collect { includeDisabled ->
-				val allSources = withContext(Dispatchers.IO) {
-					val enabled = sourcesRepository.getEnabledSources()
-					if (includeDisabled) enabled + sourcesRepository.getDisabledSources() else enabled
-				}
-				
-				sourceNames = allSources.map { it.name }
-				sourceTitles = allSources.map { it.getTitle(context) }
-				
-				val query = searchField.text?.toString()?.lowercase() ?: ""
-				filteredIndices = if (query.isEmpty()) {
-					sourceTitles.indices.toList()
-				} else {
-					sourceTitles.indices.filter { sourceTitles[it].lowercase().contains(query) }
-				}
-				adapter.notifyDataSetChanged()
+			val allSources = kotlinx.coroutines.withContext(Dispatchers.IO) {
+				sourcesRepository.getEnabledSources()
 			}
+			sourceNames = allSources.map { it.name }
+			sourceTitles = allSources.map { it.getTitle(context) }
+			filteredIndices = sourceTitles.indices.toList()
+			adapter.notifyDataSetChanged()
 		}
-		
-			dialog.setOnDismissListener { updateJob.cancel() }
+
+		dialog.setOnDismissListener { updateJob.cancel() }
 		dialog.show()
 	}
 
-	override fun onDestroy() {
-		super.onDestroy()
+	override fun onDestroyView() {
 		settings.unsubscribe(this)
+		super.onDestroyView()
 	}
 
 	override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {

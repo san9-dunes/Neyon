@@ -178,12 +178,25 @@ abstract class ChaptersPagesViewModel(
 			list.map { item ->
 				val state = states[item.chapter.id]
 				if (state != null) {
-					item.copy(downloadPercent = state.first, isDownloadPaused = state.second)
+					if (item.downloadPercent == state.first && item.isDownloadPaused == state.second) {
+						item
+					} else {
+						item.copy(downloadPercent = state.first, isDownloadPaused = state.second)
+					}
 				} else {
-					item.copy(downloadPercent = null, isDownloadPaused = false)
+					if (item.downloadPercent == null && !item.isDownloadPaused) {
+						item
+					} else {
+						item.copy(downloadPercent = null, isDownloadPaused = false)
+					}
 				}
 			}
-		} else list
+		} else {
+			list.map { item ->
+				if (item.downloadPercent == null && !item.isDownloadPaused) item
+				else item.copy(downloadPercent = null, isDownloadPaused = false)
+			}
+		}
 		(if (reversed) processedList.asReversed() else processedList).filterSearch(query)
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, emptyList())
 

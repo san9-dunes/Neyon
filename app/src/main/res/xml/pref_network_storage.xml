@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:title="@string/network">
+    android:title="@string/storage_and_network">
 
     <PreferenceCategory android:title="@string/storage_usage">
 
@@ -40,15 +40,7 @@
         android:entryValues="@array/pref_user_agent_values"
         android:key="pref_global_user_agent"
         android:title="@string/pref_global_user_agent_title"
-        android:summary="@string/pref_global_user_agent_summary"
-        app:allowDividerAbove="true" />
-
-    <ListPreference
-        android:defaultValue="2"
-        android:entries="@array/network_policy"
-        android:entryValues="@array/values_network_policy"
-        android:key="pages_preload"
-        android:title="@string/preload_pages"
+        app:allowDividerAbove="true"
         app:useSimpleSummaryProvider="true" />
 
     <PreferenceScreen
@@ -58,6 +50,7 @@
         app:allowDividerAbove="true" />
 
     <ListPreference
+        android:defaultValue="NONE"
         android:entries="@array/doh_providers"
         android:key="doh"
         android:title="@string/dns_over_https"

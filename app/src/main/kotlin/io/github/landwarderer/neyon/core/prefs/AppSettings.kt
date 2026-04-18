@@ -179,7 +179,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		get() = prefs.getInt(KEY_PRELOAD_PAGE_LIMIT, 3)
 
 	val userAgent: String
-		get() = prefs.getString("pref_global_user_agent", "") ?: ""
+		get() = prefs.getString(KEY_USER_AGENT, "") ?: ""
 
 	var isAllFavouritesVisible: Boolean
 		get() = prefs.getBoolean(KEY_ALL_FAVOURITES_VISIBLE, true)
@@ -396,8 +396,6 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 	val isSuggestionsExcludeNsfw: Boolean
 		get() = prefs.getBoolean(KEY_SUGGESTIONS_EXCLUDE_NSFW, false)
 
-	val isSuggestionsIncludeDisabledSources: Boolean
-		get() = prefs.getBoolean(KEY_SUGGESTIONS_DISABLED_SOURCES, false)
 
 	val isSuggestionsNotificationAvailable: Boolean
 		get() = prefs.getBoolean(KEY_SUGGESTIONS_NOTIFICATIONS, false)
@@ -696,7 +694,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_THEME_AMOLED = "amoled_theme"
 		const val KEY_OFFLINE_DISABLED = "no_offline"
 		const val KEY_PRELOAD_PAGE_LIMIT = "pref_preload_page_limit"
-		const val KEY_USER_AGENT = "user_agent"
+		const val KEY_USER_AGENT = "pref_global_user_agent"
 		const val KEY_PAGES_CACHE_CLEAR = "pages_cache_clear"
 		const val KEY_HTTP_CACHE_CLEAR = "http_cache_clear"
 		const val KEY_COOKIES_CLEAR = "cookies_clear"
@@ -766,7 +764,6 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_SUGGESTIONS_EXCLUDE_TAGS = "suggestions_exclude_tags"
 		const val KEY_SUGGESTIONS_PINNED_TAGS = "suggestions_pinned_tags"
 		const val KEY_SUGGESTION_SOURCES_WHITELIST = "suggestion_sources_whitelist"
-		const val KEY_SUGGESTIONS_DISABLED_SOURCES = "suggestions_disabled_sources"
 		const val KEY_SUGGESTIONS_NOTIFICATIONS = "suggestions_notifications"
 		const val KEY_SHIKIMORI = "shikimori"
 		const val KEY_ANILIST = "anilist"
@@ -852,7 +849,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 
 		// keys for non-persistent preferences
 		const val KEY_APP_VERSION = "app_version"
-		const val KEY_IGNORE_DOZE = "ignore_dose"
+		const val KEY_IGNORE_DOZE = "ignore_doze"
 		const val KEY_TRACKER_DEBUG = "tracker_debug"
 		const val KEY_LINK_WEBLATE = "about_app_translation"
 		const val KEY_LINK_TELEGRAM = "about_telegram"

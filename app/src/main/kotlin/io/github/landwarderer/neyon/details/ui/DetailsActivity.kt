@@ -352,7 +352,7 @@ class DetailsActivity :
 			viewBinding.appbar.updatePaddingRelative(
 				start = barsInsets.start(v),
 			)
-			return insets.consume(v, typeMask, bottom = true, end = true)
+			return insets
 		} else {
 			viewBinding.navbarDim?.updateLayoutParams {
 				height = barsInsets.bottom

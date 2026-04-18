@@ -60,9 +60,9 @@ class BookmarksRepository @Inject constructor(
 	}
 
 	suspend fun removeBookmark(mangaId: Long, chapterId: Long, page: Int) {
-		check(db.getBookmarksDao().delete(mangaId, chapterId, page) != 0) {
-			"Bookmark not found"
-		}
+		// Idempotent: if the bookmark was already removed (e.g., via rapid double-tap),
+		// silently succeed rather than throwing IllegalStateException.
+		db.getBookmarksDao().delete(mangaId, chapterId, page)
 	}
 
 	suspend fun removeBookmark(bookmark: Bookmark) {

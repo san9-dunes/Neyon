@@ -117,7 +117,9 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), AppBarOwner, BottomNav
 
 		navigationDelegate = MainNavigationDelegate(
 			navBar = checkNotNull(bottomNav ?: viewBinding.navRail),
+			viewPager = viewBinding.container,
 			fragmentManager = supportFragmentManager,
+			lifecycle = lifecycle,
 			settings = settings,
 		)
 		navigationDelegate.addOnFragmentChangedListener(this)
@@ -295,23 +297,25 @@ class MainActivity : BaseActivity<ActivityMainBinding>(), AppBarOwner, BottomNav
 		adjustFabVisibility(isResumeEnabled = isEnabled)
 	}
 
-	private fun onFirstStart() = try {
+	private fun onFirstStart() {
 		lifecycleScope.launch(Dispatchers.Main) { // not a default `Main.immediate` dispatcher
 			withContext(Dispatchers.IO) {
 				LocalStorageCleanupWorker.enqueue(applicationContext)
 			}
 			withResumed {
-				MangaPrefetchService.prefetchLast(this@MainActivity)
-				requestNotificationsPermission()
-				startService(Intent(this@MainActivity, LocalIndexUpdateService::class.java))
-				startService(Intent(this@MainActivity, PeriodicalBackupService::class.java))
-				if (settings.isAdBlockEnabled) {
-					startService(Intent(this@MainActivity, AdListUpdateService::class.java))
+				try {
+					MangaPrefetchService.prefetchLast(this@MainActivity)
+					requestNotificationsPermission()
+					startService(Intent(this@MainActivity, LocalIndexUpdateService::class.java))
+					startService(Intent(this@MainActivity, PeriodicalBackupService::class.java))
+					if (settings.isAdBlockEnabled) {
+						startService(Intent(this@MainActivity, AdListUpdateService::class.java))
+					}
+				} catch (e: IllegalStateException) {
+					e.printStackTraceDebug("MainActivity::onFirstStart")
 				}
 			}
 		}
-	} catch (e: IllegalStateException) {
-		e.printStackTraceDebug("MainActivity::onFirstStart")
 	}
 
 	private fun adjustAppbar(topFragment: Fragment) {

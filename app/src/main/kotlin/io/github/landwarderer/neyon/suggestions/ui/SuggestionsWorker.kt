@@ -46,7 +46,6 @@ import io.github.landwarderer.neyon.core.nav.AppRouter
 import io.github.landwarderer.neyon.core.nav.ReaderIntent
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
-import io.github.landwarderer.neyon.core.util.LocaleComparator
 import io.github.landwarderer.neyon.core.util.ext.asArrayList
 import io.github.landwarderer.neyon.core.util.ext.awaitUniqueWorkInfoByName
 import io.github.landwarderer.neyon.core.util.ext.awaitWorkInfosByTag
@@ -217,7 +216,7 @@ class SuggestionsWorker @AssistedInject constructor(
 		if (appSettings.isSuggestionsNotificationAvailable
 			&& applicationContext.checkNotificationPermission(MANGA_CHANNEL_ID)
 		) {
-			for (i in 0..3) {
+			if (suggestions.size >= 3) for (i in 0..3) {
 				try {
 					val manga = suggestions[Random.nextInt(0, suggestions.size / 3)]
 					val details = mangaRepositoryFactory.create(manga.manga.source)
@@ -247,15 +246,7 @@ class SuggestionsWorker @AssistedInject constructor(
 	}
 
 	private suspend fun getSources(): List<MangaSource> {
-		if (appSettings.isSuggestionsIncludeDisabledSources) {
-			val result = sourcesRepository.allMangaSources.toMutableList<MangaSource>()
-			result.addAll(sourcesRepository.getExternalSources())
-			result.shuffle()
-			result.sortWith(compareBy(nullsLast(LocaleComparator())) { it.getLocale() })
-			return result
-		} else {
-			return sourcesRepository.getEnabledSources().shuffled()
-		}
+		return sourcesRepository.getEnabledSources().shuffled()
 	}
 
 	private suspend fun getList(
