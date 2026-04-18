@@ -75,6 +75,11 @@ class WelcomeSheet : BaseAdaptiveSheet<SheetWelcomeBinding>(), ChipsView.OnChipC
 	}
 
 	override fun onChipClick(chip: Chip, data: Any?) {
+		if (data == "SHOW_MORE") {
+			isLocalesExpanded = true
+			viewModel.locales.value?.let { onLocalesChanged(it) }
+			return
+		}
 		when (data) {
 			is ContentType -> viewModel.setTypeChecked(data, !chip.isChecked)
 			is Locale -> viewModel.setLocaleChecked(data, !chip.isChecked)
@@ -109,17 +114,43 @@ class WelcomeSheet : BaseAdaptiveSheet<SheetWelcomeBinding>(), ChipsView.OnChipC
 		}
 	}
 
+	private var isLocalesExpanded = false
+
 	private fun onLocalesChanged(value: FilterProperty<Locale>) {
 		val chips = viewBinding?.chipsLocales ?: return
-		chips.setChips(
-			value.availableItems.map {
-				ChipsView.ChipModel(
-					title = it.getDisplayName(chips.context),
-					isChecked = it in value.selectedItems,
-					data = it,
+		val items = value.availableItems
+		val chipModels = mutableListOf<ChipsView.ChipModel>()
+		val limit = 6
+        
+		if (!isLocalesExpanded && items.size > limit) {
+			items.take(limit).forEach {
+				chipModels.add(
+					ChipsView.ChipModel(
+						title = it.getDisplayName(chips.context),
+						isChecked = it in value.selectedItems,
+						data = it,
+					)
 				)
-			},
-		)
+			}
+			chipModels.add(
+				ChipsView.ChipModel(
+					titleResId = R.string.show_all,
+					data = "SHOW_MORE",
+				)
+			)
+		} else {
+			items.forEach {
+				chipModels.add(
+					ChipsView.ChipModel(
+						title = it.getDisplayName(chips.context),
+						isChecked = it in value.selectedItems,
+						data = it,
+					)
+				)
+			}
+		}
+
+		chips.setChips(chipModels)
 	}
 
 	private fun onTypesChanged(value: FilterProperty<ContentType>) {

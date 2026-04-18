@@ -13,7 +13,7 @@ class MangaQueryBuilder(
 	private var whereConditions = LinkedList<String>()
 	private var orderBy: String? = null
 	private var groupBy: String? = null
-	private var extraJoins: String? = null
+	private var extraJoins = LinkedList<String>()
 	private var limit: Int = 0
 
 	fun filters(options: Collection<ListFilterOption>) = apply {
@@ -37,15 +37,20 @@ class MangaQueryBuilder(
 	}
 
 	fun join(join: String?) = apply {
-		extraJoins = join
+		if (join != null) {
+			extraJoins.add(join)
+		}
 	}
 
 	fun build() = buildString {
 		append("SELECT * FROM ")
 		append(table)
-		extraJoins?.let {
-			append(' ')
-			append(it)
+		if (extraJoins.isNotEmpty()) {
+			extraJoins.joinTo(
+				buffer = this,
+				separator = " ",
+				prefix = " "
+			)
 		}
 		if (whereConditions.isNotEmpty()) {
 			whereConditions.joinTo(
