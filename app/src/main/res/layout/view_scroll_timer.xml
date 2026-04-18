@@ -29,6 +29,7 @@
 		android:layout_height="wrap_content"
 		android:background="?selectableItemBackgroundBorderless"
 		android:contentDescription="@string/close"
+		android:tooltipText="@string/close"
 		android:minWidth="?minTouchTargetSize"
 		android:minHeight="?minTouchTargetSize"
 		android:src="?actionModeCloseDrawable"
