@@ -694,9 +694,15 @@ class ReaderViewModel @Inject constructor(
                     
                     if (currentChapIdx != -1 && currentChapIdx + 1 < fullChapterList.size) {
                         val nextChapter = fullChapterList[currentChapIdx + 1]
-                        val repo = mangaRepositoryFactory.create(nextChapter.source)
                         
-                        val newPages = repo.getPages(nextChapter)
+                        // 🔌 Nexus: Use chaptersLoader which deduplicates and caches to prevent
+                        // hammering the source network on every scroll event
+                        val newPages = if (chaptersLoader.hasPages(nextChapter.id)) {
+                            chaptersLoader.getPages(nextChapter.id)
+                        } else {
+                            chaptersLoader.loadSingleChapter(nextChapter.id)
+                            chaptersLoader.getPages(nextChapter.id)
+                        }
                         
                         newPages.take(remainingToFetch).forEach { pageModel ->
                             val url = pageLoader.getPageUrl(pageModel)
