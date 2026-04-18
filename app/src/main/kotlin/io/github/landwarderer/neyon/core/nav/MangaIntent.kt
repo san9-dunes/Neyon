@@ -36,8 +36,7 @@ class MangaIntent private constructor(
 	)
 
 	val mangaId: Long
-		get() = if (id != ID_NONE) id else manga?.id ?: uri?.lastPathSegment?.toLongOrNull() ?: ID_NONE
-
+                get() = if (id != ID_NONE) id else manga?.id ?: uri?.getQueryParameter("id")?.toLongOrNull() ?: uri?.lastPathSegment?.toLongOrNull() ?: ID_NONE
 	companion object {
 
 		const val ID_NONE = 0L

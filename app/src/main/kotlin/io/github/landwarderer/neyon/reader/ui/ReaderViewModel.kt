@@ -114,19 +114,6 @@ class ReaderViewModel @Inject constructor(
     private var bookmarkJob: Job? = null
     private var stateChangeJob: Job? = null
 
-    // Single merged init — order matters: details must be set before loadImpl() runs
-    init {
-        mangaDetails.value = intent.manga?.let { MangaDetails(it) }
-        initIncognitoMode()
-        loadImpl()
-        launchJob(Dispatchers.IO) {
-            val mangaId = manga.filterNotNull().first().id
-            if (!isIncognitoMode.firstNotNull()) {
-                appShortcutManager.notifyMangaOpened(mangaId)
-            }
-        }
-    }
-
     val readerMode = MutableStateFlow<ReaderMode?>(null)
     val onPageSaved = MutableEventFlow<Collection<Uri>>()
     val onLoadingError = MutableEventFlow<Throwable>()
@@ -140,6 +127,19 @@ class ReaderViewModel @Inject constructor(
     val isIncognitoMode = MutableStateFlow(savedStateHandle.get<Boolean>(ReaderIntent.EXTRA_INCOGNITO))
 
     val content = MutableStateFlow(ReaderContent(emptyList(), null))
+
+    // Single merged init — order matters: details must be set before loadImpl() runs
+    init {
+        mangaDetails.value = intent.manga?.let { MangaDetails(it) }
+        initIncognitoMode()
+        loadImpl()
+        launchJob(Dispatchers.IO) {
+            val mangaId = manga.filterNotNull().first().id
+            if (!isIncognitoMode.firstNotNull()) {
+                appShortcutManager.notifyMangaOpened(mangaId)
+            }
+        }
+    }
 
     val pageAnimation = settings.observeAsStateFlow(
         scope = viewModelScope + Dispatchers.IO,
