@@ -16,6 +16,7 @@
 		android:layout_height="56dp"
 		android:background="?selectableItemBackgroundBorderless"
 		android:contentDescription="@string/expand"
+		android:tooltipText="@string/expand"
 		android:scaleType="center"
 		android:src="@drawable/ic_drawer_menu" />
 
