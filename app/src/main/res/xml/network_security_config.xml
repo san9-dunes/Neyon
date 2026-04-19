@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config
 	xmlns:tools="http://schemas.android.com/tools">
-	<!-- Need to allow cleartext traffic for some sources -->
+	<!-- Disable cleartext traffic by default for production -->
 	<base-config
-		cleartextTrafficPermitted="true"
-		tools:ignore="InsecureBaseConfiguration">
+		cleartextTrafficPermitted="false">
 		<trust-anchors>
 			<!-- Trust preinstalled CAs -->
 			<certificates src="system" />
+		</trust-anchors>
+	</base-config>
 
-			<!-- Additionally, trust user added CAs -->
+	<!-- Allow cleartext traffic for specific required sources -->
+	<domain-config cleartextTrafficPermitted="true">
+		<domain includeSubdomains="true">neverssl.com</domain>
+		<domain includeSubdomains="true">54.254.71.100</domain>
+		<domain includeSubdomains="true">86.57.183.214</domain>
+	</domain-config>
+
+	<!-- Allow user added CAs only in debug builds -->
+	<debug-overrides>
+		<trust-anchors>
 			<certificates
 				src="user"
 				tools:ignore="AcceptsUserCertificates" />
 		</trust-anchors>
-	</base-config>
+	</debug-overrides>
 </network-security-config>
