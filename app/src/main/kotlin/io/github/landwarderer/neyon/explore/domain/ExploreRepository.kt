@@ -71,14 +71,15 @@ class ExploreRepository @Inject constructor(
 		val repository = mangaRepositoryFactory.create(source)
 		val order = repository.sortOrders.random()
 		val availableTags = repository.getFilterOptions().availableTags
-		val tag = tags.firstNotNullOfOrNull { title ->
-			availableTags.find { x -> x.title.almostEquals(title, 0.4f) }
-		}
-		val list = repository.getList(
-			offset = 0,
-			order = order,
-			filter = MangaListFilter(tags = setOfNotNull(tag)),
-		).asArrayList()
+val tag = tags.firstNotNullOfOrNull { title ->
+availableTags.find { x -> x.title.almostEquals(title, 0.4f) }
+}
+val excludedTags = availableTags.filter { it in blacklist }.toSet()
+val list = repository.getList(
+offset = 0,
+order = order,
+filter = MangaListFilter(tags = setOfNotNull(tag), tagsExclude = excludedTags),
+).asArrayList()
 		if (settings.isSuggestionsExcludeNsfw) {
 			list.removeAll { it.isNsfw() }
 		}
@@ -91,3 +92,4 @@ class ExploreRepository @Inject constructor(
 		it.printStackTraceDebug("ExploreRepository::getList")
 	}.getOrDefault(emptyList())
 }
+

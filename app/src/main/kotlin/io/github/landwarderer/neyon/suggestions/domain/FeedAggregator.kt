@@ -151,17 +151,20 @@ class FeedAggregator @Inject constructor(
                         val repository = mangaRepositoryFactory.create(source)  
                         val availableOrders = repository.sortOrders
                         
+val availableTags = repository.getFilterOptions().availableTags
+                        val excludedTags = availableTags.filter { it in tagsBlacklist }.toSet()
+
                         val filter = if (forceGenreTag != null) {
-                                val matchedTag = repository.getFilterOptions().availableTags.find { x ->
+                                val matchedTag = availableTags.find { x ->
                                         x.title.almostEquals(forceGenreTag, 0.7f)
                                 }
                                 if (matchedTag != null) {
-                                        MangaListFilter(tags = setOf(matchedTag))
+                                        MangaListFilter(tags = setOf(matchedTag), tagsExclude = excludedTags)
                                 } else {
-                                        MangaListFilter(query = forceGenreTag)
+                                        MangaListFilter(query = forceGenreTag, tagsExclude = excludedTags)
                                 }
                         } else {
-                                MangaListFilter() 
+                                MangaListFilter(tagsExclude = excludedTags)
                         }
 
                         val targetPrimarySort = if (listSortOrder == ListSortOrder.POPULARITY) SortOrder.POPULARITY else SortOrder.UPDATED
