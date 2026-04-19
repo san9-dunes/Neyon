@@ -62,7 +62,7 @@ class SyncHelper @AssistedInject constructor(
 	private val authorityFavourites = context.getString(R.string.sync_authority_favourites)
 	private val mediaTypeJson = "application/json".toMediaType()
 	private val httpClient = baseHttpClient.newBuilder()
-		.authenticator(SyncAuthenticator(context, account, settings, SyncAuthApi(OkHttpClient())))
+		.authenticator(SyncAuthenticator(context, account, settings, SyncAuthApi(baseHttpClient)))
 		.addInterceptor(SyncInterceptor(context, account))
 		.build()
 	private val baseUrl: String by lazy {
