@@ -99,12 +99,38 @@ class FeedAggregator @Inject constructor(
 
                 val finalFeed = mergedList.distinctBy { it.manga.url to it.manga.source }
 
+                // ── Affinity re-ranking ────────────────────────────────────────────────
+                // Early-exit for new users: skip all scoring work when there are no tags.
                 val sortedFeed = if (topTags.isNotEmpty() && forceGenreTag == null) {
-                        finalFeed.sortedWith(
-                                compareByDescending<MangaSuggestion> { mangaSug ->
-                                        mangaSug.manga.tags.count { it.title.lowercase() in topTags }
-                                }
-                        )
+                        withContext(Dispatchers.IO) {
+                                // Build the tag set once for O(1) lookups inside the inner loop.
+                                val topTagSet: Set<String> = topTags.toHashSet()
+
+                                // Stable Scoring Wrapper: preserves originalIndex so ties in
+                                // relevanceScore resolve deterministically by provider order
+                                // (popularity/date), not by JVM sort instability.
+                                data class ScoredSuggestion(
+                                        val item: MangaSuggestion,
+                                        val relevanceScore: Int,
+                                        val originalIndex: Int,
+                                )
+
+                                finalFeed
+                                        .mapIndexed { index, mangaSug ->
+                                                // Null-safe: manga.tags may be null from some sources.
+                                                val score = mangaSug.manga.tags
+                                                        ?.count { tag -> tag.title.trim().lowercase() in topTagSet }
+                                                        ?: 0
+                                                ScoredSuggestion(mangaSug, score, index)
+                                        }
+                                        // Primary key: highest relevance first.
+                                        // Secondary key: lower originalIndex first → stable tie-breaker.
+                                        .sortedWith(
+                                                compareByDescending<ScoredSuggestion> { it.relevanceScore }
+                                                        .thenBy { it.originalIndex }
+                                        )
+                                        .map { it.item }
+                        }
                 } else {
                         finalFeed
                 }

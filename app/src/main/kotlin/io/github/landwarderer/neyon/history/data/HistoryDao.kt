@@ -79,6 +79,9 @@ abstract class HistoryDao : MangaQueryBuilder.ConditionCallback {
 	@Query("SELECT manga_id FROM history WHERE deleted_at = 0")
 	abstract suspend fun findAllIds(): LongArray
 
+	@Query("SELECT manga_id FROM history WHERE deleted_at = 0 ORDER BY updated_at DESC LIMIT :limit")
+	abstract suspend fun findRecentIds(limit: Int): LongArray
+
 	@Query(
 		"""SELECT tags.* FROM tags
 		LEFT JOIN manga_tags ON tags.tag_id = manga_tags.tag_id
