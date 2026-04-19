@@ -150,7 +150,7 @@ class MangaSourcesRepository @Inject constructor(
 			},
 		) { skipNsfw, sources ->
 			sources.count {
-				it.source.toMangaSourceOrNull()?.let { s -> !skipNsfw || !s.isNsfw() } == true
+				it.source.toMangaSourceOrNull()?.let { s -> s in allMangaSources && (!skipNsfw || !s.isNsfw()) } == true
 			}
 		}.distinctUntilChanged().onStart { assimilateNewSources() }
 	}
@@ -403,3 +403,4 @@ class MangaSourcesRepository @Inject constructor(
 
 	private fun String.toMangaSourceOrNull(): MangaParserSource? = MangaParserSource.entries.find { it.name == this }
 }
+
