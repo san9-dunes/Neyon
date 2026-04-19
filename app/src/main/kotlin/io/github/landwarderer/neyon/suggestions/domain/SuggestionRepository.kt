@@ -59,21 +59,55 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		val allTags = mutableSetOf<io.github.landwarderer.neyon.core.db.entity.TagEntity>()
+		val mangas = mutableListOf<io.github.landwarderer.neyon.core.db.entity.MangaEntity>()
+		val mangaTagsRelations = mutableListOf<io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity>()
+		val suggestionEntities = mutableListOf<SuggestionEntity>()
+		val mangaIdsWithTags = mutableListOf<Long>()
+
+		val createdAt = System.currentTimeMillis()
+
+		suggestions.forEach { suggestion ->
+			val manga = suggestion.manga
+			val tags = manga.tags.toEntities()
+
+			allTags.addAll(tags)
+			mangas.add(manga.toEntity())
+
+			// Unconditionally add ID to clear relations for this manga before updating
+			mangaIdsWithTags.add(manga.id)
+
+			if (tags.isNotEmpty()) {
+				mangaTagsRelations.addAll(tags.map {
+					io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity(manga.id, it.id)
+				})
+			}
+
+			suggestionEntities.add(
+				SuggestionEntity(
+					mangaId = manga.id,
+					relevance = suggestion.relevance,
+					reason = suggestion.reason,
+					createdAt = createdAt,
+				)
+			)
+		}
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
+
+			if (allTags.isNotEmpty()) {
+				db.getTagsDao().upsert(allTags)
+			}
+			if (mangas.isNotEmpty()) {
+				db.getMangaDao().upsert(mangas)
+			}
+			if (mangaIdsWithTags.isNotEmpty()) {
+				db.getMangaDao().clearTagRelations(mangaIdsWithTags)
+				db.getMangaDao().insertTagRelations(mangaTagsRelations)
+			}
+			if (suggestionEntities.isNotEmpty()) {
+				db.getSuggestionDao().upsert(suggestionEntities)
 			}
 		}
 	}
