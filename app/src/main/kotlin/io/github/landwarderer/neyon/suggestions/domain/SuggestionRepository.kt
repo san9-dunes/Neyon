@@ -10,6 +10,7 @@ import io.github.landwarderer.neyon.core.db.entity.toMangaTags
 import io.github.landwarderer.neyon.core.db.entity.toMangaTagsList
 import io.github.landwarderer.neyon.core.model.toMangaSources
 import io.github.landwarderer.neyon.core.util.ext.mapItems
+import io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity
 import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaSource
@@ -59,21 +60,46 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		val allTags = mutableSetOf<io.github.landwarderer.neyon.core.db.entity.TagEntity>()
+		val allMangas = mutableListOf<io.github.landwarderer.neyon.core.db.entity.MangaEntity>()
+		val allMangaTags = mutableListOf<MangaTagsEntity>()
+		val allMangaIds = mutableSetOf<Long>()
+		val allSuggestionEntities = mutableListOf<SuggestionEntity>()
+
+		val currentTime = System.currentTimeMillis()
+
+		for (suggestion in suggestions) {
+			val manga = suggestion.manga
+			val tags = manga.tags.toEntities()
+
+			allTags.addAll(tags)
+			allMangas.add(manga.toEntity())
+			allMangaIds.add(manga.id)
+
+			tags.forEach { tag ->
+				allMangaTags.add(MangaTagsEntity(manga.id, tag.id))
+			}
+
+			allSuggestionEntities.add(
+				SuggestionEntity(
+					mangaId = manga.id,
+					relevance = suggestion.relevance,
+					reason = suggestion.reason,
+					createdAt = currentTime,
+				)
+			)
+		}
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
+			if (allTags.isNotEmpty()) {
+				db.getTagsDao().upsert(allTags)
+			}
+			if (allMangas.isNotEmpty()) {
+				db.getMangaDao().upsertAllWithTags(allMangas, allMangaTags, allMangaIds)
+			}
+			if (allSuggestionEntities.isNotEmpty()) {
+				db.getSuggestionDao().upsertAll(allSuggestionEntities)
 			}
 		}
 	}
