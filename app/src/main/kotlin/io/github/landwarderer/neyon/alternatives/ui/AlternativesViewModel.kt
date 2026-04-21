@@ -149,44 +149,46 @@ class AlternativesViewModel @Inject constructor(
 	 */
 	private suspend fun searchSources(
 		sources: List<MangaSource>,
-		refManga: Manga = mangaDetails.getOrDefault(manga),
+		refManga: Manga? = null,
 	) {
-		val cleanTitle = alternativesUseCase.cleanTitle(refManga.title) ?: return
-		val refChapters = refManga.chaptersCount()
+		val actualRef = refManga ?: mangaDetails.getOrDefault(manga)
+		val cleanTitle = alternativesUseCase.cleanTitle(actualRef.title) ?: return
+		val refChapters = actualRef.chaptersCount()
 		val semaphore = Semaphore(PARALLEL_SEARCH_LIMIT)
 
-		sources.map { source ->
-			launch(Dispatchers.IO) {
-				semaphore.withPermit {
-					val result = alternativesUseCase.searchSource(source, cleanTitle, refManga.id)
-					updateSourceResult(source, result, refChapters)
+		kotlinx.coroutines.coroutineScope {
+			sources.map { source ->
+				launch(Dispatchers.IO) {
+					semaphore.withPermit {
+						val result = alternativesUseCase.searchSource(source, cleanTitle, actualRef.id)
+						updateSourceResult(source, result, refChapters)
+					}
 				}
-			}
-		}.joinAll()
+			}.joinAll()
+		}
 	}
 
-	private fun updateSourceResult(
+	private suspend fun updateSourceResult(
 		source: MangaSource,
 		result: Result<List<Manga>>,
 		refChapters: Int,
 	) {
+		val successItems = result.getOrNull()?.map { m ->
+			MangaAlternativeModel(
+				mangaModel = mangaListMapper.toListModel(m, ListMode.GRID) as MangaGridModel,
+				referenceChapters = refChapters,
+			)
+		}
+		val error = result.exceptionOrNull()
+
 		sourceResults.update { current ->
 			current.map { model ->
 				if (model.source != source) return@map model
-				result.fold(
-					onSuccess = { mangaList ->
-						val items = mangaList.map { m ->
-							MangaAlternativeModel(
-								mangaModel = mangaListMapper.toListModel(m, ListMode.GRID) as MangaGridModel,
-								referenceChapters = refChapters,
-							)
-						}
-						model.copy(items = items, error = null, loading = false)
-					},
-					onFailure = { error ->
-						model.copy(items = emptyList(), error = error, loading = false)
-					},
-				)
+				if (successItems != null) {
+					model.copy(items = successItems, error = null, loading = false)
+				} else {
+					model.copy(items = emptyList(), error = error, loading = false)
+				}
 			}
 		}
 	}
