@@ -11,7 +11,12 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.plus
+import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.sync.withPermit
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.alternatives.domain.AlternativesUseCase
 import io.github.landwarderer.neyon.alternatives.domain.MigrateUseCase
@@ -22,7 +27,6 @@ import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.ListMode
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
-import io.github.landwarderer.neyon.core.util.ext.append
 import io.github.landwarderer.neyon.core.util.ext.call
 import io.github.landwarderer.neyon.core.util.ext.require
 import io.github.landwarderer.neyon.list.domain.MangaListMapper
@@ -32,11 +36,13 @@ import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.LoadingFooter
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
 import io.github.landwarderer.neyon.list.ui.model.MangaGridModel
-import io.github.landwarderer.neyon.list.ui.model.toErrorState
 import org.koitharu.kotatsu.parsers.model.Manga
+import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.util.suspendlazy.getOrDefault
 import org.koitharu.kotatsu.parsers.util.suspendlazy.suspendLazy
 import javax.inject.Inject
+
+private const val PARALLEL_SEARCH_LIMIT = 5
 
 @HiltViewModel
 class AlternativesViewModel @Inject constructor(
@@ -50,8 +56,9 @@ class AlternativesViewModel @Inject constructor(
 	val manga = savedStateHandle.require<ParcelableManga>(AppRouter.KEY_MANGA).manga
 
 	private var includeDisabledSources = MutableStateFlow(false)
-	private val results = MutableStateFlow<List<MangaAlternativeModel>>(emptyList())
-	private val errorState = MutableStateFlow<Throwable?>(null)
+
+	/** Per-source search results, analogous to SearchViewModel.results. */
+	private val sourceResults = MutableStateFlow<List<AlternativeSourceModel>>(emptyList())
 
 	private var migrationJob: Job? = null
 	private var searchJob: Job? = null
@@ -63,16 +70,16 @@ class AlternativesViewModel @Inject constructor(
 	val onMigrated = MutableEventFlow<Manga>()
 
 	val list: StateFlow<List<ListModel>> = combine(
-		results,
+		sourceResults,
 		isLoading,
 		includeDisabledSources,
-		errorState,
-	) { list, loading, includeDisabled, error ->
+	) { results, loading, includeDisabled ->
+		// Filter out sources that finished with no results and no error
+		val visibleResults = results.filter { it.loading || it.items.isNotEmpty() || it.error != null }
 		when {
-			list.isEmpty() -> listOf(
+			visibleResults.isEmpty() -> listOf(
 				when {
 					loading -> LoadingState
-					error != null -> error.toErrorState(canRetry = true)
 					else -> EmptyState(
 						icon = R.drawable.ic_empty_common,
 						textPrimary = R.string.nothing_found,
@@ -82,9 +89,9 @@ class AlternativesViewModel @Inject constructor(
 				},
 			)
 
-			loading -> list + LoadingFooter()
-			includeDisabled -> list
-			else -> list + ButtonFooter(R.string.search_disabled_sources)
+			loading -> visibleResults + LoadingFooter()
+			includeDisabled -> visibleResults
+			else -> visibleResults + ButtonFooter(R.string.search_disabled_sources)
 		}
 	}.stateIn(viewModelScope + Dispatchers.IO, SharingStarted.Eagerly, listOf(LoadingState))
 
@@ -94,28 +101,25 @@ class AlternativesViewModel @Inject constructor(
 
 	fun retry() {
 		searchJob?.cancel()
-		results.value = emptyList()
-		errorState.value = null
+		sourceResults.value = emptyList()
 		includeDisabledSources.value = false
 		doSearch(throughDisabledSources = false)
 	}
 
 	fun continueSearch() {
-		if (includeDisabledSources.value) {
-			return
-		}
+		if (includeDisabledSources.value) return
 		val prevJob = searchJob
 		searchJob = launchLoadingJob(Dispatchers.IO) {
 			includeDisabledSources.value = true
 			prevJob?.join()
-			doSearch(throughDisabledSources = true)
+			val disabledSources = alternativesUseCase.getSources(manga.source, throughDisabledSources = true)
+				.filter { source -> sourceResults.value.none { it.source == source } }
+			searchSources(disabledSources)
 		}
 	}
 
 	fun migrate(target: Manga) {
-		if (migrationJob?.isActive == true) {
-			return
-		}
+		if (migrationJob?.isActive == true) return
 		migrationJob = launchLoadingJob(Dispatchers.IO) {
 			migrateUseCase(manga, target)
 			onMigrated.call(target)
@@ -125,24 +129,64 @@ class AlternativesViewModel @Inject constructor(
 	private fun doSearch(throughDisabledSources: Boolean) {
 		val prevJob = searchJob
 		searchJob = launchLoadingJob(Dispatchers.IO) {
-			errorState.value = null
 			prevJob?.cancelAndJoin()
-			try {
-				val ref = mangaDetails.getOrDefault(manga)
-				val refCount = ref.chaptersCount()
-				alternativesUseCase.invoke(ref, throughDisabledSources)
-					.collect {
-						val model = MangaAlternativeModel(
-							mangaModel = mangaListMapper.toListModel(it, ListMode.GRID) as MangaGridModel,
-							referenceChapters = refCount,
-						)
-						results.append(model)
-					}
-			} catch (e: Exception) {
-				if (e !is kotlinx.coroutines.CancellationException) {
-					errorState.value = e
+			sourceResults.value = emptyList()
+
+			val ref = mangaDetails.getOrDefault(manga)
+			val sources = alternativesUseCase.getSources(ref.source, throughDisabledSources)
+
+			// Pre-populate per-source loading states (like SearchViewModel does)
+			sourceResults.value = sources.map { source ->
+				AlternativeSourceModel(source = source, items = emptyList(), error = null, loading = true)
+			}
+			searchSources(sources, refManga = ref)
+		}
+	}
+
+	/**
+	 * Searches each source in [sources] with up to [PARALLEL_SEARCH_LIMIT] concurrent requests,
+	 * updating [sourceResults] per-source as each completes — identical to SearchViewModel's approach.
+	 */
+	private suspend fun searchSources(
+		sources: List<MangaSource>,
+		refManga: Manga = mangaDetails.getOrDefault(manga),
+	) {
+		val cleanTitle = alternativesUseCase.cleanTitle(refManga.title) ?: return
+		val refChapters = refManga.chaptersCount()
+		val semaphore = Semaphore(PARALLEL_SEARCH_LIMIT)
+
+		sources.map { source ->
+			launch(Dispatchers.IO) {
+				semaphore.withPermit {
+					val result = alternativesUseCase.searchSource(source, cleanTitle, refManga.id)
+					updateSourceResult(source, result, refChapters)
 				}
-				throw e
+			}
+		}.joinAll()
+	}
+
+	private fun updateSourceResult(
+		source: MangaSource,
+		result: Result<List<Manga>>,
+		refChapters: Int,
+	) {
+		sourceResults.update { current ->
+			current.map { model ->
+				if (model.source != source) return@map model
+				result.fold(
+					onSuccess = { mangaList ->
+						val items = mangaList.map { m ->
+							MangaAlternativeModel(
+								mangaModel = mangaListMapper.toListModel(m, ListMode.GRID) as MangaGridModel,
+								referenceChapters = refChapters,
+							)
+						}
+						model.copy(items = items, error = null, loading = false)
+					},
+					onFailure = { error ->
+						model.copy(items = emptyList(), error = error, loading = false)
+					},
+				)
 			}
 		}
 	}

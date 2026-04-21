@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
+import androidx.recyclerview.widget.RecyclerView
 import coil3.ImageLoader
 import dagger.hilt.android.AndroidEntryPoint
 import io.github.landwarderer.neyon.R
@@ -35,8 +36,7 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
-	ListStateHolderListener,
-	OnListItemClickListener<MangaAlternativeModel> {
+	ListStateHolderListener {
 
 	@Inject
 	lateinit var coil: ImageLoader
@@ -50,13 +50,35 @@ class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
 			setDisplayHomeAsUpEnabled(true)
 			subtitle = viewModel.manga.title
 		}
+
+		// Shared RecycledViewPool for nested per-source RecyclerViews
+		val sharedPool = RecyclerView.RecycledViewPool()
+
+		// Item click listener for individual manga alternative cards (migrate / open details)
+		val itemClickListener = OnListItemClickListener<MangaAlternativeModel> { item, view ->
+			when (view.id) {
+				R.id.chip_source -> router.openSearch(item.manga.source, viewModel.manga.title)
+				R.id.button_migrate -> confirmMigration(item.manga)
+				else -> router.openDetails(item.manga)
+			}
+		}
+
 		val listAdapter = BaseListAdapter<ListModel>()
-			.addDelegate(ListItemType.MANGA_LIST_DETAILED, alternativeAD(coil, this, this))
+			.addDelegate(
+				ListItemType.ALTERNATIVE_SOURCE_GROUP,
+				alternativeSourceAD(
+					sharedPool = sharedPool,
+					coil = coil,
+					lifecycleOwner = this,
+					itemClickListener = itemClickListener,
+				),
+			)
 			.addDelegate(ListItemType.STATE_EMPTY, emptyStateListAD(this))
 			.addDelegate(ListItemType.STATE_ERROR, errorStateListAD(this))
 			.addDelegate(ListItemType.FOOTER_LOADING, loadingFooterAD())
 			.addDelegate(ListItemType.STATE_LOADING, loadingStateAD())
 			.addDelegate(ListItemType.FOOTER_BUTTON, buttonFooterAD(this))
+
 		with(viewBinding.recyclerView) {
 			setHasFixedSize(true)
 			addItemDecoration(TypedListSpacingDecoration(context, addHorizontalPadding = false))
@@ -74,7 +96,7 @@ class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
 
 	override fun onApplyWindowInsets(
 		v: View,
-		insets: WindowInsetsCompat
+		insets: WindowInsetsCompat,
 	): WindowInsetsCompat {
 		val barsInsets = insets.systemBarsInsets
 		viewBinding.recyclerView.updatePadding(
@@ -88,14 +110,6 @@ class AlternativesActivity : BaseActivity<ActivityAlternativesBinding>(),
 			top = barsInsets.top,
 		)
 		return insets.consumeAllSystemBarsInsets()
-	}
-
-	override fun onItemClick(item: MangaAlternativeModel, view: View) {
-		when (view.id) {
-			R.id.chip_source -> router.openSearch(item.manga.source, viewModel.manga.title)
-			R.id.button_migrate -> confirmMigration(item.manga)
-			else -> router.openDetails(item.manga)
-		}
 	}
 
 	override fun onRetryClick(error: Throwable) = viewModel.retry()
