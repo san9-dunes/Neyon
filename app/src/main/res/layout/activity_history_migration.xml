@@ -62,6 +62,8 @@
         app:icon="@drawable/ic_replace"
         app:layout_anchor="@id/recyclerView"
         app:layout_anchorGravity="bottom|center"
-        android:text="@string/migrate" />
+        android:text="@string/migrate"
+		android:contentDescription="@string/migrate_all_unavailable"
+		android:tooltipText="@string/migrate_all_unavailable" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
