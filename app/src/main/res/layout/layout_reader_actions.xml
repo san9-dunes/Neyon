@@ -20,6 +20,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/prev_chapter"
+			android:tooltipText="@string/prev_chapter"
 			app:icon="@drawable/ic_prev" />
 	</FrameLayout>
 
@@ -46,6 +47,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/next_chapter"
+			android:tooltipText="@string/next_chapter"
 			app:icon="@drawable/ic_next" />
 	</FrameLayout>
 
@@ -60,6 +62,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/save_page"
+			android:tooltipText="@string/save_page"
 			app:icon="@drawable/ic_save" />
 	</FrameLayout>
 
@@ -74,6 +77,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/automatic_scroll"
+			android:tooltipText="@string/automatic_scroll"
 			app:icon="@drawable/ic_timer" />
 	</FrameLayout>
 
@@ -88,6 +92,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/screen_orientation"
+			android:tooltipText="@string/screen_orientation"
 			app:icon="@drawable/ic_screen_rotation" />
 	</FrameLayout>
 
@@ -102,6 +107,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/bookmark_add"
+			android:tooltipText="@string/bookmark_add"
 			app:icon="@drawable/ic_bookmark" />
 	</FrameLayout>
 
@@ -116,6 +122,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/pages"
+			android:tooltipText="@string/pages"
 			app:icon="@drawable/ic_grid" />
 	</FrameLayout>
 
@@ -130,6 +137,7 @@
 			android:layout_height="48dp"
 			android:layout_gravity="center"
 			android:contentDescription="@string/options"
+			android:tooltipText="@string/options"
 			app:icon="@drawable/abc_ic_menu_overflow_material" />
 	</FrameLayout>
 
