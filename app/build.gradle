@@ -213,6 +213,11 @@ dependencies {
     // Foldable/Window layout
     implementation libs.androidx.window
 
+    implementation libs.injekt.core
+    implementation libs.quickjs.kt
+    implementation libs.rxjava
+    implementation libs.rxandroid
+
     implementation libs.androidx.room.runtime
     implementation libs.androidx.room.ktx
     ksp libs.androidx.room.compiler

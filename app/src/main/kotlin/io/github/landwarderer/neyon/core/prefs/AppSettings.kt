@@ -603,6 +603,10 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		get() = prefs.getBoolean(KEY_CRASH_ANALYTICS_ENABLED, false)
 		set(value) = prefs.edit { putBoolean(KEY_CRASH_ANALYTICS_ENABLED, value) }
 
+	var gitHubMirror: GitHubMirror
+		get() = prefs.getEnumValue(KEY_GITHUB_MIRROR, GitHubMirror.KEIYOUSHI)
+		set(value) = prefs.edit { putEnumValue(KEY_GITHUB_MIRROR, value) }
+
 	val isAutoLocalChaptersCleanupEnabled: Boolean
 		get() = prefs.getBoolean(KEY_CHAPTERS_CLEAR_AUTO, false)
 
@@ -825,6 +829,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_32BIT_COLOR = "enhanced_colors"
 		const val KEY_SOURCES_ORDER = "sources_sort_order"
 		const val KEY_SOURCES_CATALOG = "sources_catalog"
+		const val KEY_EXTENSION_DOWNLOADER = "extension_downloader"
 		const val KEY_CF_BRIGHTNESS = "cf_brightness"
 		const val KEY_CF_CONTRAST = "cf_contrast"
 		const val KEY_CF_INVERTED = "cf_inverted"
@@ -850,6 +855,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		const val KEY_DISCORD_RPC_SKIP_NSFW = "discord_rpc_skip_nsfw"
 		const val KEY_DISCORD_TOKEN = "discord_token"
 		const val KEY_CRASH_ANALYTICS_ENABLED = "crash_analytics_enabled"
+		const val KEY_GITHUB_MIRROR = "github_mirror"
 
 		// keys for non-persistent preferences
 		const val KEY_APP_VERSION = "app_version"

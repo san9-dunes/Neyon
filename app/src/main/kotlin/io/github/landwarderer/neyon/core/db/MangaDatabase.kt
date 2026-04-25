@@ -24,6 +24,8 @@ import io.github.landwarderer.neyon.core.db.entity.MangaPrefsEntity
 import io.github.landwarderer.neyon.core.db.entity.MangaSourceEntity
 import io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity
 import io.github.landwarderer.neyon.core.db.entity.TagEntity
+import io.github.landwarderer.neyon.core.db.entity.ExternalExtensionRepoEntity
+import io.github.landwarderer.neyon.core.db.dao.ExternalExtensionRepoDao
 import io.github.landwarderer.neyon.core.db.migrations.Migration10To11
 import io.github.landwarderer.neyon.core.db.migrations.Migration11To12
 import io.github.landwarderer.neyon.core.db.migrations.Migration12To13
@@ -53,6 +55,7 @@ import io.github.landwarderer.neyon.core.db.migrations.Migration8To9
 import io.github.landwarderer.neyon.core.db.migrations.Migration9To10
 import io.github.landwarderer.neyon.core.db.migrations.Migration27To28
 import io.github.landwarderer.neyon.core.db.migrations.Migration28To29
+import io.github.landwarderer.neyon.core.db.migrations.Migration29To30
 import io.github.landwarderer.neyon.core.util.ext.processLifecycleScope
 import io.github.landwarderer.neyon.favourites.data.FavouriteCategoriesDao
 import io.github.landwarderer.neyon.favourites.data.FavouriteCategoryEntity
@@ -72,14 +75,14 @@ import io.github.landwarderer.neyon.tracker.data.TrackEntity
 import io.github.landwarderer.neyon.tracker.data.TrackLogEntity
 import io.github.landwarderer.neyon.tracker.data.TracksDao
 
-const val DATABASE_VERSION = 29
+const val DATABASE_VERSION = 30
 
 @Database(
 	entities = [
 		MangaEntity::class, TagEntity::class, HistoryEntity::class, MangaTagsEntity::class, ChapterEntity::class,
 		FavouriteCategoryEntity::class, FavouriteEntity::class, MangaPrefsEntity::class, TrackEntity::class,
 		TrackLogEntity::class, SuggestionEntity::class, BookmarkEntity::class, ScrobblingEntity::class,
-		MangaSourceEntity::class, StatsEntity::class, LocalMangaIndexEntity::class,
+		MangaSourceEntity::class, StatsEntity::class, LocalMangaIndexEntity::class, ExternalExtensionRepoEntity::class,
 	],
 	version = DATABASE_VERSION,
 )
@@ -114,6 +117,8 @@ abstract class MangaDatabase : RoomDatabase() {
 	abstract fun getLocalMangaIndexDao(): LocalMangaIndexDao
 
 	abstract fun getChaptersDao(): ChaptersDao
+
+	abstract fun getExternalExtensionRepoDao(): ExternalExtensionRepoDao
 }
 
 fun getDatabaseMigrations(context: Context): Array<Migration> = arrayOf(
@@ -146,6 +151,7 @@ fun getDatabaseMigrations(context: Context): Array<Migration> = arrayOf(
 	Migration26To27(),
 	Migration27To28(),
 	Migration28To29(),
+	Migration29To30(),
 )
 
 fun MangaDatabase(context: Context): MangaDatabase = Room

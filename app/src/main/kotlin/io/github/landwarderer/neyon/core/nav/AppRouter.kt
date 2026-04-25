@@ -100,6 +100,7 @@ import io.github.landwarderer.neyon.settings.override.OverrideConfigActivity
 import io.github.landwarderer.neyon.settings.reader.ReaderTapGridConfigActivity
 import io.github.landwarderer.neyon.settings.sources.auth.SourceAuthActivity
 import io.github.landwarderer.neyon.settings.sources.catalog.SourcesCatalogActivity
+import io.github.landwarderer.neyon.settings.sources.extension.ExtensionDownloaderActivity
 import io.github.landwarderer.neyon.settings.storage.MangaDirectorySelectDialog
 import io.github.landwarderer.neyon.settings.storage.directories.MangaDirectoriesActivity
 import io.github.landwarderer.neyon.settings.tracker.categories.TrackerCategoriesConfigSheet
@@ -212,6 +213,8 @@ class AppRouter private constructor(
     }
 
     fun openSourcesCatalog() = startActivity(SourcesCatalogActivity::class.java)
+
+    fun openExtensionDownloader() = startActivity(ExtensionDownloaderActivity::class.java)
 
     fun openDownloads() = startActivity(DownloadsActivity::class.java)
 

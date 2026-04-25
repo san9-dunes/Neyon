@@ -286,6 +286,9 @@
 			android:name="io.github.landwarderer.neyon.settings.sources.catalog.SourcesCatalogActivity"
 			android:label="@string/sources_catalog" />
 		<activity
+			android:name="io.github.landwarderer.neyon.settings.sources.extension.ExtensionDownloaderActivity"
+			android:label="@string/extensions_manager" />
+		<activity
 			android:name="io.github.landwarderer.neyon.scrobbling.kitsu.ui.KitsuAuthActivity"
 			android:exported="false"
 			android:label="@string/kitsu"
