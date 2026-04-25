@@ -7,7 +7,6 @@ import eu.kanade.tachiyomi.source.Source
 import io.github.landwarderer.neyon.mihon.extensions.runtime.ExternalExtensionManagerFacade
 import io.github.landwarderer.neyon.mihon.model.MihonLoadResult
 import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
-import io.github.landwarderer.neyon.mihon.model.MihonLoadResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

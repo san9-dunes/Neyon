@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.LocalizedAppContext
 import io.github.landwarderer.neyon.core.db.TABLE_SOURCES
+import io.github.landwarderer.neyon.core.model.MangaSourceInfo
 import io.github.landwarderer.neyon.core.model.getTitle
 import io.github.landwarderer.neyon.core.model.isNsfw
 import io.github.landwarderer.neyon.core.model.unwrap
@@ -54,7 +55,6 @@ class SourcesListProducer @Inject constructor(
 			.onEach { onInvalidated(emptySet()) }
 			.launchIn(scope)
 		mihonExtensionManager.installedExtensions
-			.flowOn(Dispatchers.IO)
 			.onEach { onInvalidated(emptySet()) }
 			.launchIn(scope)
 	}
@@ -73,8 +73,11 @@ class SourcesListProducer @Inject constructor(
 	}
 
 	private suspend fun buildList(): List<SourceConfigItem> {
-		val allEnabled = repository.getEnabledSources()
-		val enabledSources = allEnabled.filter { it.unwrap() is MangaParserSource || it.unwrap() is MihonMangaSource }
+		val parserSources = repository.getEnabledSources().filter { it.unwrap() is MangaParserSource }
+		val mihonSources = mihonExtensionManager.getMihonMangaSources()
+			.filter { !settings.isNsfwContentDisabled || !it.isNsfw }
+			.map { MangaSourceInfo(it, isEnabled = true, isPinned = false) }
+		val enabledSources = parserSources + mihonSources
 		val pinned = repository.getPinnedSources().mapToSet { it.name }
 		val isNsfwDisabled = settings.isNsfwContentDisabled
 		val isSfwDisabled = settings.isSfwContentDisabled
