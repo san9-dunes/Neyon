@@ -13,6 +13,7 @@ class ExtensionDownloaderMenuProvider(
 	private val activity: Activity,
 	private val viewModel: ExtensionDownloaderViewModel,
 	private val onAddRepoClick: () -> Unit,
+	private val onManageReposClick: () -> Unit,
 ) : MenuProvider,
 	MenuItem.OnActionExpandListener,
 	SearchView.OnQueryTextListener {
@@ -30,6 +31,11 @@ class ExtensionDownloaderMenuProvider(
 	override fun onMenuItemSelected(menuItem: MenuItem): Boolean = when (menuItem.itemId) {
 		R.id.action_add_repo -> {
 			onAddRepoClick()
+			true
+		}
+
+		R.id.action_manage_repos -> {
+			onManageReposClick()
 			true
 		}
 

@@ -14,6 +14,7 @@ import io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource
 import io.github.landwarderer.neyon.core.util.ext.getDisplayName
 import io.github.landwarderer.neyon.core.util.ext.toLocale
 import io.github.landwarderer.neyon.core.util.ext.toLocaleOrNull
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.model.ContentType
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
@@ -32,6 +33,13 @@ data object TestMangaSource : MangaSource {
 	override val name = "TEST"
 }
 
+/**
+ * Lightweight placeholder for a Mihon extension source deserialized from DB.
+ * The MangaRepository.Factory resolves this to a real MihonMangaSource at use time
+ * via MihonExtensionManager, which avoids a direct dependency on the manager here.
+ */
+data class MihonMangaSourceStub(override val name: String) : MangaSource
+
 fun MangaSource(name: String?): MangaSource {
 	when (name ?: return UnknownMangaSource) {
 		UnknownMangaSource.name -> return UnknownMangaSource
@@ -41,6 +49,9 @@ fun MangaSource(name: String?): MangaSource {
 	if (name.startsWith("content:")) {
 		val parts = name.substringAfter(':').splitTwoParts('/') ?: return UnknownMangaSource
 		return ExternalMangaSource(packageName = parts.first, authority = parts.second)
+	}
+	if (name.startsWith("MIHON_")) {
+		return MihonMangaSourceStub(name)
 	}
 	MangaParserSource.entries.forEach {
 		if (it.name == name) return it
@@ -53,6 +64,8 @@ fun Collection<String>.toMangaSources() = map(::MangaSource)
 fun MangaSource.isNsfw(): Boolean = when (this) {
 	is MangaSourceInfo -> mangaSource.isNsfw()
 	is MangaParserSource -> contentType == ContentType.HENTAI
+	is MihonMangaSource -> isNsfw
+	is MihonMangaSourceStub -> false
 	else -> false
 }
 
@@ -92,6 +105,12 @@ fun MangaSource.getSummary(context: Context): String? = when (val source = unwra
 
 	is ExternalMangaSource -> context.getString(R.string.external_source)
 
+	is MihonMangaSource -> {
+		val type = context.getString(R.string.extension_source)
+		val locale = source.language.toLocale().getDisplayName(context)
+		context.getString(R.string.source_summary_pattern, type, locale)
+	}
+
 	else -> null
 }
 
@@ -100,6 +119,7 @@ fun MangaSource.getTitle(context: Context): String = when (val source = unwrap()
 	LocalMangaSource -> context.getString(R.string.local_storage)
 	TestMangaSource -> context.getString(R.string.test_parser)
 	is ExternalMangaSource -> source.resolveName(context)
+	is MihonMangaSource -> source.displayName
 	else -> context.getString(R.string.unknown)
 }
 

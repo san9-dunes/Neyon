@@ -23,6 +23,8 @@ import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.ext.lifecycleScope
 import io.github.landwarderer.neyon.explore.data.MangaSourcesRepository
 import io.github.landwarderer.neyon.explore.data.SourcesSortOrder
+import io.github.landwarderer.neyon.mihon.MihonExtensionManager
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.util.mapToSet
 import io.github.landwarderer.neyon.settings.sources.model.SourceConfigItem
@@ -34,6 +36,7 @@ class SourcesListProducer @Inject constructor(
 	@LocalizedAppContext private val context: Context,
 	private val repository: MangaSourcesRepository,
 	private val settings: AppSettings,
+	private val mihonExtensionManager: MihonExtensionManager,
 ) : InvalidationTracker.Observer(TABLE_SOURCES) {
 
 	private val scope = lifecycle.lifecycleScope
@@ -47,6 +50,10 @@ class SourcesListProducer @Inject constructor(
 	init {
 		settings.observeChanges()
 			.filter { it == AppSettings.KEY_TIPS_CLOSED || it == AppSettings.KEY_DISABLE_NSFW || it == AppSettings.KEY_DISABLE_SFW }
+			.flowOn(Dispatchers.IO)
+			.onEach { onInvalidated(emptySet()) }
+			.launchIn(scope)
+		mihonExtensionManager.installedExtensions
 			.flowOn(Dispatchers.IO)
 			.onEach { onInvalidated(emptySet()) }
 			.launchIn(scope)
@@ -66,7 +73,8 @@ class SourcesListProducer @Inject constructor(
 	}
 
 	private suspend fun buildList(): List<SourceConfigItem> {
-		val enabledSources = repository.getEnabledSources().filter { it.unwrap() is MangaParserSource }
+		val allEnabled = repository.getEnabledSources()
+		val enabledSources = allEnabled.filter { it.unwrap() is MangaParserSource || it.unwrap() is MihonMangaSource }
 		val pinned = repository.getPinnedSources().mapToSet { it.name }
 		val isNsfwDisabled = settings.isNsfwContentDisabled
 		val isSfwDisabled = settings.isSfwContentDisabled
@@ -79,13 +87,14 @@ class SourcesListProducer @Inject constructor(
 				if (!it.getTitle(context).contains(query, ignoreCase = true)) {
 					return@mapNotNull null
 				}
+				val isExtension = it.unwrap() is MihonMangaSource
 				SourceConfigItem.SourceItem(
 					source = it,
 					isEnabled = it in enabledSet,
 					isDraggable = false,
 					isAvailable = (!isNsfwDisabled || !it.isNsfw()) && (!isSfwDisabled || it.isNsfw()),
 					isPinned = it.name in pinned,
-					isDisableAvailable = isDisableAvailable,
+					isDisableAvailable = if (isExtension) false else isDisableAvailable,
 				)
 			}.ifEmpty {
 				listOf(SourceConfigItem.EmptySearchResult)
@@ -101,13 +110,14 @@ class SourcesListProducer @Inject constructor(
 				)
 			}
 			enabledSources.mapTo(result) {
+				val isExtension = it.unwrap() is MihonMangaSource
 				SourceConfigItem.SourceItem(
 					source = it,
 					isEnabled = true,
-					isDraggable = isReorderAvailable,
+					isDraggable = if (isExtension) false else isReorderAvailable,
 					isAvailable = false,
 					isPinned = it.name in pinned,
-					isDisableAvailable = isDisableAvailable,
+					isDisableAvailable = if (isExtension) false else isDisableAvailable,
 				)
 			}
 		}

@@ -43,6 +43,8 @@ class ExternalExtensionManagerFacade<ResultT, SuccessT, ErrorT, SourceT, Catalog
 	val failedExtensions: StateFlow<List<ErrorT>> = runtime.failedExtensions
 	val isLoading: StateFlow<Boolean> = runtime.isLoading
 
+	var onRawResults: ((List<ResultT>) -> Unit)? = null
+
 	fun initialize() {
 		runtime.initialize(::loadExtensions)
 	}
@@ -51,6 +53,7 @@ class ExternalExtensionManagerFacade<ResultT, SuccessT, ErrorT, SourceT, Catalog
 		runtime.loadExtensions(
 			loadResults = loadResults,
 			processResults = { results ->
+				onRawResults?.invoke(results)
 				Log.d(logTag, "load_start ecosystem=$ecosystem")
 				processExternalExtensionResults<ResultT, SuccessT, ErrorT, SourceT, CatalogueT, WrappedSourceT>(
 					results = results,

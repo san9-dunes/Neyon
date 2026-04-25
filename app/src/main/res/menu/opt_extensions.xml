@@ -16,6 +16,11 @@
 		app:showAsAction="ifRoom" />
 
 	<item
+		android:id="@+id/action_manage_repos"
+		android:title="@string/manage_repos"
+		app:showAsAction="never" />
+
+	<item
 		android:id="@+id/action_search"
 		android:icon="?actionModeWebSearchDrawable"
 		android:title="@string/search"

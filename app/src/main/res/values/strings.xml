@@ -545,6 +545,13 @@
     <string name="install">Install</string>
     <string name="installed">Installed</string>
     <string name="uninstall">Uninstall</string>
+    <string name="extension_update">Update</string>
+    <string name="extension_untrusted">Unverified</string>
+    <string name="extension_untrusted_hint">This extension was installed outside of any known repo. Add the matching repo to verify it.</string>
+    <string name="manage_repos">Manage repos</string>
+    <string name="repo_builtin_cannot_delete">Built-in repos cannot be removed</string>
+    <string name="repo_deleted">Repo removed</string>
+    <string name="repos">Repos</string>
     <string name="source_enabled">Source enabled</string>
     <string name="no_manga_sources_catalog_text">There are no sources available in this section, or all of it might have been already added.\nStay tuned</string>
     <string name="no_manga_sources_found">No available manga sources found by your query</string>
@@ -726,6 +733,7 @@
     <string name="chapters_read">Chapters read</string>
     <string name="chapters_left">Chapters left</string>
     <string name="external_source">External/plugin</string>
+    <string name="extension_source">Extension</string>
     <string name="plugin_incompatible">Incompatible plugin or internal error. Make sure you are using the latest version of the plugin and Neyon</string>
     <string name="plugin_incompatible_with_cause">Plugin error: %s\n Make sure you are using the latest version of the plugin and Neyon</string>
     <string name="connection_ok">Connection is OK</string>

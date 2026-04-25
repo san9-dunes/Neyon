@@ -7,10 +7,13 @@ import eu.kanade.tachiyomi.source.Source
 import io.github.landwarderer.neyon.mihon.extensions.runtime.ExternalExtensionManagerFacade
 import io.github.landwarderer.neyon.mihon.model.MihonLoadResult
 import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
+import io.github.landwarderer.neyon.mihon.model.MihonLoadResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,6 +32,9 @@ class MihonExtensionManager @Inject constructor(
     }
     
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    private val _untrustedExtensions = MutableStateFlow<List<MihonLoadResult.Untrusted>>(emptyList())
+    val untrustedExtensions: StateFlow<List<MihonLoadResult.Untrusted>> = _untrustedExtensions.asStateFlow()
 
     private val facade = ExternalExtensionManagerFacade<
         MihonLoadResult,
@@ -72,6 +78,9 @@ class MihonExtensionManager @Inject constructor(
     val isLoading: StateFlow<Boolean> = facade.isLoading
 
     init {
+        facade.onRawResults = { results ->
+            _untrustedExtensions.value = results.filterIsInstance<MihonLoadResult.Untrusted>()
+        }
         initialize()
     }
     

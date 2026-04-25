@@ -3,7 +3,9 @@ package io.github.landwarderer.neyon.settings.sources.model
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.unwrap
 import io.github.landwarderer.neyon.list.ui.model.ListModel
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
 
 sealed interface SourceConfigItem : ListModel {
@@ -19,6 +21,9 @@ sealed interface SourceConfigItem : ListModel {
 
 		val isNsfw: Boolean
 			get() = source.isNsfw()
+
+		val isExtension: Boolean
+			get() = source.unwrap() is MihonMangaSource
 
 		override fun areItemsTheSame(other: ListModel): Boolean {
 			return other is SourceItem && other.source == source

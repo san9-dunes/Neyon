@@ -73,6 +73,17 @@ class ExternalExtensionRepoRepository @Inject constructor(
 		return PrepareAddRepoResult.Ready(repo)
 	}
 
+	suspend fun seedBuiltInReposIfNeeded() {
+		if (getByType(ExternalExtensionType.MIHON).none { it.isBuiltIn }) {
+			DEFAULT_REPO_URLS.forEach { url ->
+				val result = prepareAddRepo(ExternalExtensionType.MIHON, url)
+				if (result is PrepareAddRepoResult.Ready) {
+					confirmAddRepo(result.repo.copy(isBuiltIn = true))
+				}
+			}
+		}
+	}
+
 	suspend fun confirmAddRepo(repo: ExternalExtensionRepo): AddRepoResult {
 		Log.d(TAG, "confirmAddRepo:start type=${repo.type} baseUrl=${repo.baseUrl} name=${repo.displayName}")
 		if (dao.get(repo.type, repo.baseUrl) != null) {
@@ -159,6 +170,9 @@ class ExternalExtensionRepoRepository @Inject constructor(
 
 	private companion object {
 		const val TAG = "ExtensionRepo"
+		val DEFAULT_REPO_URLS = listOf(
+			"https://raw.githubusercontent.com/yuzono/manga-repo/repo/index.min.json",
+		)
 	}
 }
 
@@ -175,6 +189,7 @@ private fun ExternalExtensionRepoEntity.toDomain(): ExternalExtensionRepo {
 		lastSuccessAt = lastSuccessAt,
 		lastError = lastError,
 		version = version,
+		isBuiltIn = isBuiltIn,
 	)
 }
 
@@ -191,5 +206,6 @@ private fun ExternalExtensionRepo.toEntity(): ExternalExtensionRepoEntity {
 		lastSuccessAt = lastSuccessAt,
 		lastError = lastError,
 		version = version,
+		isBuiltIn = isBuiltIn,
 	)
 }

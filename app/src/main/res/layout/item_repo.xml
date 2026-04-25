@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:minHeight="?listPreferredItemHeightSmall"
+    android:orientation="horizontal"
+    android:paddingStart="?listPreferredItemPaddingStart"
+    android:paddingEnd="?listPreferredItemPaddingEnd"
+    android:paddingVertical="8dp"
+    tools:ignore="RtlSymmetry">
+
+	<LinearLayout
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:orientation="vertical">
+
+		<TextView
+			android:id="@+id/textView_repo_name"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:ellipsize="end"
+			android:singleLine="true"
+			android:textAppearance="?attr/textAppearanceTitleSmall"
+			tools:text="Yuzono" />
+
+		<TextView
+			android:id="@+id/textView_repo_url"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="2dp"
+			android:ellipsize="end"
+			android:singleLine="true"
+			android:textAppearance="?attr/textAppearanceBodySmall"
+			android:textColor="?android:textColorSecondary"
+			tools:text="https://raw.githubusercontent.com/…" />
+
+		<TextView
+			android:id="@+id/textView_repo_error"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="2dp"
+			android:ellipsize="end"
+			android:singleLine="true"
+			android:textAppearance="?attr/textAppearanceBodySmall"
+			android:textColor="?colorError"
+			android:visibility="gone"
+			tools:text="Network error"
+			tools:visibility="visible" />
+
+	</LinearLayout>
+
+	<ImageButton
+		android:id="@+id/button_delete"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:background="?selectableItemBackgroundBorderless"
+		android:contentDescription="@string/uninstall"
+		android:padding="8dp"
+		android:src="@drawable/ic_delete"
+		android:tint="?colorError"
+		android:visibility="gone"
+		tools:visibility="visible" />
+
+	<ImageView
+		android:id="@+id/icon_lock"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:contentDescription="@null"
+		android:padding="8dp"
+		android:src="@drawable/ic_lock"
+		android:tint="?android:textColorSecondary"
+		android:visibility="gone"
+		tools:visibility="visible" />
+
+</LinearLayout>

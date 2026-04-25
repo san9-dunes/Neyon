@@ -27,6 +27,7 @@ import io.github.landwarderer.neyon.core.model.isNsfw
 import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource
 import io.github.landwarderer.neyon.core.prefs.AppSettings
+import io.github.landwarderer.neyon.mihon.MihonExtensionManager
 import io.github.landwarderer.neyon.core.prefs.observeAsFlow
 import io.github.landwarderer.neyon.core.ui.util.ReversibleHandle
 import io.github.landwarderer.neyon.core.util.ext.flattenLatest
@@ -47,6 +48,7 @@ class MangaSourcesRepository @Inject constructor(
 	@LocalizedAppContext private val context: Context,
 	private val db: MangaDatabase,
 	private val settings: AppSettings,
+	private val mihonExtensionManager: dagger.Lazy<MihonExtensionManager>,
 ) {
 
 	private val isNewSourcesAssimilated = AtomicBoolean(false)
@@ -69,9 +71,12 @@ class MangaSourcesRepository @Inject constructor(
 		)
 			.let { enabled ->
 				val external = getExternalSources()
-				val list = ArrayList<MangaSourceInfo>(enabled.size + external.size)
+				val mihon = mihonExtensionManager.get().getMihonMangaSources()
+					.filter { !settings.isNsfwContentDisabled || !it.isNsfw }
+				val list = ArrayList<MangaSourceInfo>(enabled.size + external.size + mihon.size)
 				external.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
 				list.addAll(enabled)
+				mihon.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = false) }
 				list
 			}
 	}
@@ -199,6 +204,20 @@ class MangaSourcesRepository @Inject constructor(
 			val list = ArrayList<MangaSourceInfo>(enabled.size + external.size)
 			external.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
 			list.addAll(enabled)
+			list
+		}
+		.combine(
+			combine(
+				mihonExtensionManager.get().installedExtensions,
+				observeIsNsfwDisabled(),
+			) { _, skipNsfw ->
+				mihonExtensionManager.get().getMihonMangaSources()
+					.filter { !skipNsfw || !it.isNsfw }
+			},
+		) { enabledWithExternal, mihon ->
+			val list = ArrayList<MangaSourceInfo>(enabledWithExternal.size + mihon.size)
+			list.addAll(enabledWithExternal)
+			mihon.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = false) }
 			list
 		}
 

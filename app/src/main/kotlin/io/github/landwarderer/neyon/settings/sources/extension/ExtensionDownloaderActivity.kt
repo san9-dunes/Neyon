@@ -9,6 +9,9 @@ import androidx.core.content.getSystemService
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.core.view.updatePadding
+import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
@@ -18,6 +21,8 @@ import io.github.landwarderer.neyon.core.util.ext.getDisplayMessage
 import io.github.landwarderer.neyon.core.util.ext.observe
 import io.github.landwarderer.neyon.core.util.ext.observeEvent
 import io.github.landwarderer.neyon.databinding.ActivityExtensionDownloaderBinding
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 
 @AndroidEntryPoint
 class ExtensionDownloaderActivity : BaseActivity<ActivityExtensionDownloaderBinding>() {
@@ -27,14 +32,15 @@ class ExtensionDownloaderActivity : BaseActivity<ActivityExtensionDownloaderBind
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(ActivityExtensionDownloaderBinding.inflate(layoutInflater))
-        
+
         setTitle(R.string.extensions_manager)
         setDisplayHomeAsUp(isEnabled = true, showUpAsClose = false)
 
         val adapter = ExtensionDownloaderAdapter(
             onInstallClick = { viewModel.installExtension(it.available) },
             onCancelClick = { viewModel.cancelDownload(it.available.pkgName) },
-            onUninstallClick = { viewModel.uninstallExtension(it.available.pkgName) }
+            onUninstallClick = { viewModel.uninstallExtension(it.available.pkgName) },
+            onUninstallUntrustedClick = { viewModel.uninstallExtension(it.untrusted.pkgName) },
         )
 
         viewBinding.errorState.buttonRetry.setOnClickListener {
@@ -65,7 +71,14 @@ class ExtensionDownloaderActivity : BaseActivity<ActivityExtensionDownloaderBind
         viewModel.messageEvent.observeEvent(this) { messageResId ->
             Snackbar.make(viewBinding.recyclerView, messageResId, Snackbar.LENGTH_LONG).show()
         }
-        addMenuProvider(ExtensionDownloaderMenuProvider(this, viewModel, ::showAddRepoDialog))
+        addMenuProvider(
+            ExtensionDownloaderMenuProvider(
+                activity = this,
+                viewModel = viewModel,
+                onAddRepoClick = ::showAddRepoDialog,
+                onManageReposClick = ::showManageReposDialog,
+            )
+        )
     }
 
     override fun onApplyWindowInsets(v: android.view.View, insets: WindowInsetsCompat): WindowInsetsCompat {
@@ -96,5 +109,29 @@ class ExtensionDownloaderActivity : BaseActivity<ActivityExtensionDownloaderBind
         input.post {
             getSystemService<InputMethodManager>()?.showSoftInput(input, InputMethodManager.SHOW_IMPLICIT)
         }
+    }
+
+    private fun showManageReposDialog() {
+        val repoAdapter = RepoListAdapter(
+            onDeleteClick = { repo ->
+                viewModel.deleteRepo(repo)
+            }
+        )
+        val recyclerView = RecyclerView(this).apply {
+            layoutManager = LinearLayoutManager(this@ExtensionDownloaderActivity)
+            adapter = repoAdapter
+        }
+        val horizontalPadding = resources.getDimensionPixelOffset(R.dimen.margin_normal)
+        recyclerView.setPadding(0, horizontalPadding / 2, 0, 0)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.repos)
+            .setView(recyclerView)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
+
+        viewModel.observeRepos()
+            .onEach { repos -> repoAdapter.submitList(repos) }
+            .launchIn(lifecycleScope)
     }
 }

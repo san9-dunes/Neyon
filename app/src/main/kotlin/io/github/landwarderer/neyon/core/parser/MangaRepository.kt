@@ -7,11 +7,15 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.github.landwarderer.neyon.core.cache.MemoryContentCache
 import io.github.landwarderer.neyon.core.model.LocalMangaSource
 import io.github.landwarderer.neyon.core.model.MangaSourceInfo
+import io.github.landwarderer.neyon.core.model.MihonMangaSourceStub
 import io.github.landwarderer.neyon.core.model.TestMangaSource
 import io.github.landwarderer.neyon.core.model.UnknownMangaSource
 import io.github.landwarderer.neyon.core.parser.external.ExternalMangaRepository
 import io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource
 import io.github.landwarderer.neyon.local.data.LocalMangaRepository
+import io.github.landwarderer.neyon.mihon.MihonExtensionManager
+import io.github.landwarderer.neyon.mihon.MihonMangaRepository
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.MangaLoaderContext
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaChapter
@@ -60,6 +64,7 @@ interface MangaRepository {
 		private val loaderContext: MangaLoaderContext,
 		private val contentCache: MemoryContentCache,
 		private val mirrorSwitcher: MirrorSwitcher,
+		private val mihonExtensionManager: dagger.Lazy<MihonExtensionManager>,
 	) {
 
 		private val cache = ArrayMap<MangaSource, WeakReference<MangaRepository>>()
@@ -70,6 +75,10 @@ interface MangaRepository {
 				is MangaSourceInfo -> return create(source.mangaSource)
 				LocalMangaSource -> return localMangaRepository
 				UnknownMangaSource -> return EmptyMangaRepository(source)
+				is MihonMangaSourceStub -> {
+					val real = mihonExtensionManager.get().getMihonMangaSourceByName(source.name)
+					return if (real != null) create(real) else EmptyMangaRepository(source)
+				}
 			}
 			cache[source]?.get()?.let { return it }
 			return synchronized(cache) {
@@ -85,6 +94,11 @@ interface MangaRepository {
 		}
 
 		private fun createRepository(source: MangaSource): MangaRepository? = when (source) {
+			is MihonMangaSource -> MihonMangaRepository(
+				source = source,
+				cache = contentCache,
+			)
+
 			is MangaParserSource -> ParserMangaRepository(
 				parser = loaderContext.newParserInstance(source),
 				cache = contentCache,
