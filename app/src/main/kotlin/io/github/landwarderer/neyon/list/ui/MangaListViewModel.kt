@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.plus
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.ListMode
@@ -62,6 +63,7 @@ abstract class MangaListViewModel(
 	}
 
 	protected fun Flow<Set<ListFilterOption>>.combineWithSettings(): Flow<Set<ListFilterOption>> = combine(
+		this,
 		settings.observeAsFlow(AppSettings.KEY_DISABLE_NSFW) { isNsfwContentDisabled },
 		settings.observeAsFlow(AppSettings.KEY_DISABLE_SFW) { isSfwContentDisabled },
 	) { filters, skipNsfw, skipSfw ->

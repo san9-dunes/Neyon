@@ -24,6 +24,7 @@ import io.github.landwarderer.neyon.core.db.entity.MangaSourceEntity
 import io.github.landwarderer.neyon.core.model.MangaSourceInfo
 import io.github.landwarderer.neyon.core.model.getTitle
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.observeAsFlow

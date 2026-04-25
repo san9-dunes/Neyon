@@ -42,6 +42,7 @@ import io.github.landwarderer.neyon.core.exceptions.resolve.CaptchaHandler
 import io.github.landwarderer.neyon.core.model.distinctById
 import io.github.landwarderer.neyon.core.model.getLocale
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.nav.AppRouter
 import io.github.landwarderer.neyon.core.nav.ReaderIntent
 import io.github.landwarderer.neyon.core.parser.MangaRepository

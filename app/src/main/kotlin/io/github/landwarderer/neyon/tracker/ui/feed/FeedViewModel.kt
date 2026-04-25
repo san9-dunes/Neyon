@@ -166,6 +166,7 @@ class FeedViewModel @Inject constructor(
 	}
 
 	private fun Flow<Set<ListFilterOption>>.combineWithSettings(): Flow<Set<ListFilterOption>> = combine(
+		this,
 		settings.observeAsFlow(AppSettings.KEY_DISABLE_NSFW) { isNsfwContentDisabled },
 		settings.observeAsFlow(AppSettings.KEY_DISABLE_SFW) { isSfwContentDisabled },
 	) { filters, skipNsfw, skipSfw ->

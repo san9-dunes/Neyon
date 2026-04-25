@@ -5,6 +5,7 @@ import androidx.core.net.toUri
 import io.github.landwarderer.neyon.core.model.LocalMangaSource
 import io.github.landwarderer.neyon.core.model.isLocal
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.AlphanumComparator
