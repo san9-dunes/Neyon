@@ -8,6 +8,9 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import eu.kanade.tachiyomi.source.Source
 import eu.kanade.tachiyomi.source.SourceFactory
 import io.github.landwarderer.neyon.mihon.compat.MihonInjektBridge
+import io.github.landwarderer.neyon.mihon.extensions.repo.ExternalExtensionRepoRepository
+import io.github.landwarderer.neyon.mihon.extensions.repo.ExternalExtensionType
+import io.github.landwarderer.neyon.mihon.extensions.repo.InstalledExtensionSignatureValidator
 import io.github.landwarderer.neyon.mihon.extensions.runtime.ExternalExtensionLoaderSupport
 import io.github.landwarderer.neyon.mihon.extensions.runtime.ExternalExtensionMetadataSupport
 import io.github.landwarderer.neyon.mihon.extensions.runtime.ExternalExtensionSourceLoaderSupport
@@ -29,6 +32,8 @@ import javax.inject.Singleton
 class MihonExtensionLoader @Inject constructor(
     @ApplicationContext private val applicationContext: Context,
     private val injektBridge: dagger.Lazy<MihonInjektBridge>,
+    private val repoRepository: ExternalExtensionRepoRepository,
+    private val signatureValidator: InstalledExtensionSignatureValidator,
 ) {
     companion object {
         private const val TAG = "MihonExtensionLoader"
@@ -58,6 +63,7 @@ class MihonExtensionLoader @Inject constructor(
             Log.d(TAG, "Starting Mihon extension loading...")
             // Ensure Injekt is initialized before loading any extensions
             injektBridge.get().initialize()
+            signatureValidator.clearCache()
             
             val pkgManager = context.packageManager
             
@@ -115,6 +121,7 @@ class MihonExtensionLoader @Inject constructor(
      */
     suspend fun loadExtension(context: Context, packageName: String): MihonLoadResult? = withContext(Dispatchers.IO) {
         injektBridge.get().initialize()
+        signatureValidator.clearCache()
         
         val pkgManager = context.packageManager
         val pkgInfo = ExternalExtensionLoaderSupport.getPackageInfoOrNull(pkgManager, packageName)
@@ -227,7 +234,7 @@ class MihonExtensionLoader @Inject constructor(
         )
     }
     
-    private fun loadExtension(context: Context, pkgInfo: PackageInfo): MihonLoadResult {
+    private suspend fun loadExtension(context: Context, pkgInfo: PackageInfo): MihonLoadResult {
         val pkgName = pkgInfo.packageName
         val appInfo = pkgInfo.applicationInfo
             ?: run {
@@ -241,6 +248,17 @@ class MihonExtensionLoader @Inject constructor(
                 return MihonLoadResult.Error(pkgName, "No version name")
             }
         val versionCode = PackageInfoCompat.getLongVersionCode(pkgInfo)
+        val appName = try { ExternalExtensionLoaderSupport.getAppLabel(context, appInfo) } catch (e: Exception) { null }
+
+        if (!isTrusted(pkgName)) {
+            Log.w(TAG, "loadExtension($pkgName) skipped: no matching trusted repo fingerprint")
+            return MihonLoadResult.Untrusted(
+                pkgName = pkgName,
+                appName = appName ?: pkgName.substringAfterLast('.'),
+                versionCode = versionCode,
+                versionName = versionName,
+            )
+        }
         
         // Extract library version
         val libVersion = try {
@@ -277,8 +295,7 @@ class MihonExtensionLoader @Inject constructor(
             return MihonLoadResult.Error(pkgName, "No source class specified in manifest")
         }
         
-        // Get app name and language
-        val appName = try { ExternalExtensionLoaderSupport.getAppLabel(context, appInfo) } catch (e: Exception) { null }
+        // Get language
         val lang = ExternalExtensionLoaderSupport.extractLanguage(pkgName, "extension")
         
         Log.d(TAG, "Loading extension: $pkgName (lib $libVersion, $lang) - Name: $appName")
@@ -321,6 +338,16 @@ class MihonExtensionLoader @Inject constructor(
             isNsfw = declaredSource.isNsfw,
             sources = sources,
         )
+    }
+
+    private suspend fun isTrusted(packageName: String): Boolean {
+        val repos = repoRepository.getByType(ExternalExtensionType.MIHON)
+        if (repos.isEmpty()) {
+            return false
+        }
+        return repos.any { repo ->
+            signatureValidator.isTrusted(packageName, repo.signingKeyFingerprint)
+        }
     }
     
     private fun loadSources(

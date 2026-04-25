@@ -534,6 +534,14 @@
     <string name="source_summary_pattern" translatable="false">%1$s, %2$s</string>
     <string name="sources_catalog">Sources catalog</string>
     <string name="extensions_manager">Extensions manager</string>
+    <string name="no_extensions_found">No extensions found</string>
+    <string name="add_repo">Add repo</string>
+    <string name="add_repo_summary">Add a repo URL that ends with index.min.json.</string>
+    <string name="repo_url">Repo URL</string>
+    <string name="repo_url_required">Repo URL is required</string>
+    <string name="repo_added">Repo added</string>
+    <string name="repo_already_exists">Repo already exists</string>
+    <string name="invalid_repo_url">Invalid repo URL</string>
     <string name="install">Install</string>
     <string name="installed">Installed</string>
     <string name="uninstall">Uninstall</string>

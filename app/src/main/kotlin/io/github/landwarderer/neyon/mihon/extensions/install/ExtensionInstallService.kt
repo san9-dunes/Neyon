@@ -2,6 +2,9 @@ package io.github.landwarderer.neyon.mihon.extensions.install
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.core.content.FileProvider
 import androidx.core.content.edit
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -53,6 +56,16 @@ class ExtensionInstallService @Inject constructor(
 	private val _downloadStates = MutableStateFlow<Map<String, ExtensionInstallDownloadState>>(emptyMap())
 
 	val downloadStates: StateFlow<Map<String, ExtensionInstallDownloadState>> = _downloadStates.asStateFlow()
+
+	fun getInstallPermissionIntent(): Intent? {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O || context.packageManager.canRequestPackageInstalls()) {
+			return null
+		}
+		return Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES).apply {
+			data = Uri.parse("package:${context.packageName}")
+			addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+		}
+	}
 
 	suspend fun createInstallIntent(extension: RepoAvailableExtension): Intent? = withContext(Dispatchers.IO) {
 		val apkUrl = applyMirror("${extension.repoUrl}/apk/${extension.apkName}")

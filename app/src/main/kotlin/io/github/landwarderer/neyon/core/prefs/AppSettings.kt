@@ -604,7 +604,7 @@ class AppSettings @Inject constructor(@ApplicationContext context: Context) {
 		set(value) = prefs.edit { putBoolean(KEY_CRASH_ANALYTICS_ENABLED, value) }
 
 	var gitHubMirror: GitHubMirror
-		get() = prefs.getEnumValue(KEY_GITHUB_MIRROR, GitHubMirror.KEIYOUSHI)
+		get() = prefs.getEnumValue(KEY_GITHUB_MIRROR, GitHubMirror.NATIVE)
 		set(value) = prefs.edit { putEnumValue(KEY_GITHUB_MIRROR, value) }
 
 	val isAutoLocalChaptersCleanupEnabled: Boolean

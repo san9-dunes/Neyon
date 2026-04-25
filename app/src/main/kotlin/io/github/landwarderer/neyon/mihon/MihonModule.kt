@@ -10,6 +10,8 @@ import dagger.hilt.components.SingletonComponent
 import io.github.landwarderer.neyon.core.network.MangaHttpClient
 import io.github.landwarderer.neyon.core.network.webview.WebViewExecutor
 import io.github.landwarderer.neyon.mihon.compat.MihonInjektBridge
+import io.github.landwarderer.neyon.mihon.extensions.repo.ExternalExtensionRepoRepository
+import io.github.landwarderer.neyon.mihon.extensions.repo.InstalledExtensionSignatureValidator
 import kotlinx.serialization.json.Json
 import okhttp3.CookieJar
 import okhttp3.OkHttpClient
@@ -54,8 +56,10 @@ object MihonModule {
     fun provideMihonExtensionLoader(
         @ApplicationContext context: Context,
         injektBridge: dagger.Lazy<MihonInjektBridge>,
+        repoRepository: ExternalExtensionRepoRepository,
+        signatureValidator: InstalledExtensionSignatureValidator,
     ): MihonExtensionLoader {
-        return MihonExtensionLoader(context,injektBridge)
+        return MihonExtensionLoader(context, injektBridge, repoRepository, signatureValidator)
     }
 
     @Provides
