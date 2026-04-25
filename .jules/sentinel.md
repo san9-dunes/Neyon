@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-01 - [Sentinel] Replace Weak MD5 App Password Hashing with PBKDF2
+**Vulnerability:** Application PIN/passwords were hashed using MD5 and stored without a salt. MD5 is completely broken for password storage, making it highly vulnerable to rainbow tables and fast brute-force dictionary attacks if an attacker gains access to the app's preferences file.
+**Learning:** When adding security locks to apps, always use a modern key derivation function designed to be slow and salt-dependent to mitigate offline attacks against stolen preference files, even if the primary storage mechanism is Android's `SharedPreferences`.
+**Prevention:** Utilize PBKDF2WithHmacSHA1 (or Argon2/Bcrypt where available) with a high iteration count and random salt to store passwords. When migrating from a legacy algorithm like MD5, intercept correct passwords during the next successful login to transparently re-hash and save them with the stronger algorithm.
