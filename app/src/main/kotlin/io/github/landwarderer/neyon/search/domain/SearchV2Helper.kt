@@ -4,6 +4,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.parser.MangaDataRepository
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
@@ -27,7 +28,9 @@ class SearchV2Helper @AssistedInject constructor(
 ) {
 
 	suspend operator fun invoke(query: String, kind: SearchKind): SearchResults? {
-		if (settings.isNsfwContentDisabled && source.isNsfw()) {
+		val isNsfwDisabled = settings.isNsfwContentDisabled
+		val isSfwDisabled = settings.isSfwContentDisabled
+		if ((isNsfwDisabled && source.isNsfw()) || (isSfwDisabled && source.isSfw())) {
 			return null
 		}
 		val repository = mangaRepositoryFactory.create(source)
@@ -77,6 +80,9 @@ class SearchV2Helper @AssistedInject constructor(
 	private fun MutableList<Manga>.postFilter(query: String, kind: SearchKind) {
 		if (settings.isNsfwContentDisabled) {
 			removeAll { it.isNsfw() }
+		}
+		if (settings.isSfwContentDisabled) {
+			removeAll { it.isSfw() }
 		}
 		when (kind) {
 			SearchKind.TITLE -> retainAll { m ->

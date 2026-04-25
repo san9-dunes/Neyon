@@ -23,6 +23,12 @@
 		app:showAsAction="never" />
 
 	<item
+		android:id="@+id/action_no_sfw"
+		android:checkable="true"
+		android:title="@string/disable_sfw"
+		app:showAsAction="never" />
+
+	<item
 		android:id="@+id/action_disable_all"
 		android:title="@string/disable_all"
 		app:showAsAction="never" />

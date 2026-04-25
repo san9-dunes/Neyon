@@ -172,12 +172,18 @@ class SourcesManageFragment :
 				true
 			}
 
+			R.id.action_no_sfw -> {
+				settings.isSfwContentDisabled = !menuItem.isChecked
+				true
+			}
+
 			else -> false
 		}
 
 		override fun onPrepareMenu(menu: Menu) {
 			super.onPrepareMenu(menu)
 			menu.findItem(R.id.action_no_nsfw).isChecked = settings.isNsfwContentDisabled
+			menu.findItem(R.id.action_no_sfw).isChecked = settings.isSfwContentDisabled
 			menu.findItem(R.id.action_disable_all).isVisible = !settings.isAllSourcesEnabled
 			menu.findItem(R.id.action_catalog).isVisible = !settings.isAllSourcesEnabled
 		}

@@ -16,6 +16,9 @@ interface LocalMangaIndexDao {
 	@Query("SELECT title FROM local_index LEFT JOIN manga_tags ON manga_tags.manga_id = local_index.manga_id LEFT JOIN tags ON tags.tag_id = manga_tags.tag_id WHERE (SELECT nsfw FROM manga WHERE manga.manga_id = local_index.manga_id) = :isNsfw AND title IS NOT NULL GROUP BY title")
 	suspend fun findTags(isNsfw: Boolean): List<String>
 
+	@Query("SELECT manga_id FROM local_index WHERE manga_id IN (:mangaIds)")
+	suspend fun findSavedIds(mangaIds: Collection<Long>): List<Long>
+
 	@Upsert
 	suspend fun upsert(entity: LocalMangaIndexEntity)
 

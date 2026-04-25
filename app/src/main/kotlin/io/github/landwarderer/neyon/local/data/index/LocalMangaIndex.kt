@@ -77,6 +77,11 @@ class LocalMangaIndex @Inject constructor(
 		return db.getLocalMangaIndexDao().findPath(mangaId) != null
 	}
 
+	suspend fun getSavedIds(mangaIds: Collection<Long>): Set<Long> {
+		if (mangaIds.isEmpty()) return emptySet()
+		return db.getLocalMangaIndexDao().findSavedIds(mangaIds).toSet()
+	}
+
 	suspend fun put(manga: LocalManga) = mutex.withLock {
 		db.withTransaction {
 			upsert(manga)
@@ -87,12 +92,12 @@ class LocalMangaIndex @Inject constructor(
 		db.getLocalMangaIndexDao().delete(mangaId)
 	}
 
-	suspend fun getAvailableTags(skipNsfw: Boolean): List<String> {
+	suspend fun getAvailableTags(skipNsfw: Boolean, skipSfw: Boolean): List<String> {
 		val dao = db.getLocalMangaIndexDao()
-		return if (skipNsfw) {
-			dao.findTags(isNsfw = false)
-		} else {
-			dao.findTags()
+		return when {
+			skipNsfw -> dao.findTags(isNsfw = false)
+			skipSfw -> dao.findTags(isNsfw = true)
+			else -> dao.findTags()
 		}
 	}
 

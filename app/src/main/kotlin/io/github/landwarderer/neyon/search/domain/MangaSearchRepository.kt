@@ -39,7 +39,14 @@ class MangaSearchRepository @Inject constructor(
 		source != null -> db.getMangaDao().searchByTitle("%$query%", source.name, limit)
 		else -> db.getMangaDao().searchByTitle("%$query%", limit)
 	}.let {
-		if (settings.isNsfwContentDisabled) it.filterNot { x -> x.manga.isNsfw } else it
+		var list = it
+		if (settings.isNsfwContentDisabled) {
+			list = list.filterNot { x -> x.manga.isNsfw }
+		}
+		if (settings.isSfwContentDisabled) {
+			list = list.filter { x -> x.manga.isNsfw }
+		}
+		list
 	}.map {
 		it.toManga()
 	}.sortedBy { x ->
@@ -133,9 +140,12 @@ class MangaSearchRepository @Inject constructor(
 			return emptyList()
 		}
 		val skipNsfw = settings.isNsfwContentDisabled
+		val skipSfw = settings.isSfwContentDisabled
 		val sources = sourcesRepository.allMangaSources
 			.filter { x ->
-				(x.contentType != ContentType.HENTAI || !skipNsfw) && x.title.contains(query, ignoreCase = true)
+				(x.contentType != ContentType.HENTAI || !skipNsfw) &&
+					(x.contentType == ContentType.HENTAI || !skipSfw) &&
+					x.title.contains(query, ignoreCase = true)
 			}
 		return if (limit == 0) {
 			sources

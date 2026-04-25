@@ -102,6 +102,9 @@ abstract class HistoryDao : MangaQueryBuilder.ConditionCallback {
 	@Query("SELECT * FROM history WHERE manga_id = :id AND deleted_at = 0")
 	abstract fun observe(id: Long): Flow<HistoryEntity?>
 
+	@Query("SELECT * FROM history WHERE manga_id IN (:mangaIds) AND deleted_at = 0")
+	abstract suspend fun findBatch(mangaIds: Collection<Long>): List<HistoryEntity>
+
 	@Query("SELECT COUNT(*) FROM history WHERE deleted_at = 0")
 	abstract fun observeCount(): Flow<Int>
 

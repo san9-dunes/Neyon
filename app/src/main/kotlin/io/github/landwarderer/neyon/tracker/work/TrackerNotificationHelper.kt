@@ -18,6 +18,7 @@ import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.LocalizedAppContext
 import io.github.landwarderer.neyon.core.model.getLocalizedTitle
 import io.github.landwarderer.neyon.core.model.isNsfw
+import io.github.landwarderer.neyon.core.model.isSfw
 import io.github.landwarderer.neyon.core.nav.AppRouter
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.ext.checkNotificationPermission
@@ -53,6 +54,9 @@ class TrackerNotificationHelper @Inject constructor(
 			return null
 		}
 		if (manga.isNsfw() && (settings.isTrackerNsfwDisabled || settings.isNsfwContentDisabled)) {
+			return null
+		}
+		if (manga.isSfw() && settings.isSfwContentDisabled) {
 			return null
 		}
 		val id = manga.url.hashCode()

@@ -46,7 +46,7 @@ class SourcesListProducer @Inject constructor(
 
 	init {
 		settings.observeChanges()
-			.filter { it == AppSettings.KEY_TIPS_CLOSED || it == AppSettings.KEY_DISABLE_NSFW }
+			.filter { it == AppSettings.KEY_TIPS_CLOSED || it == AppSettings.KEY_DISABLE_NSFW || it == AppSettings.KEY_DISABLE_SFW }
 			.flowOn(Dispatchers.IO)
 			.onEach { onInvalidated(emptySet()) }
 			.launchIn(scope)
@@ -69,6 +69,7 @@ class SourcesListProducer @Inject constructor(
 		val enabledSources = repository.getEnabledSources().filter { it.unwrap() is MangaParserSource }
 		val pinned = repository.getPinnedSources().mapToSet { it.name }
 		val isNsfwDisabled = settings.isNsfwContentDisabled
+		val isSfwDisabled = settings.isSfwContentDisabled
 		val isReorderAvailable = settings.sourcesSortOrder == SourcesSortOrder.MANUAL
 		val isDisableAvailable = !settings.isAllSourcesEnabled
 		val withTip = isReorderAvailable && settings.isTipEnabled(TIP_REORDER)
@@ -82,7 +83,7 @@ class SourcesListProducer @Inject constructor(
 					source = it,
 					isEnabled = it in enabledSet,
 					isDraggable = false,
-					isAvailable = !isNsfwDisabled || !it.isNsfw(),
+					isAvailable = (!isNsfwDisabled || !it.isNsfw()) && (!isSfwDisabled || it.isNsfw()),
 					isPinned = it.name in pinned,
 					isDisableAvailable = isDisableAvailable,
 				)

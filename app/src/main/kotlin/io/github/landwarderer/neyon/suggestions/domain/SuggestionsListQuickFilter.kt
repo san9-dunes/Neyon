@@ -52,6 +52,8 @@ class SuggestionsListQuickFilter @Inject constructor(
 
                 if (!settings.isNsfwContentDisabled && !settings.isSuggestionsExcludeNsfw) {
                         add(ListFilterOption.Macro.NSFW)
+                }
+                if (!settings.isSfwContentDisabled) {
                         add(ListFilterOption.SFW)
                 }
                 suggestionRepository.getTopSources(3).mapTo(this) {

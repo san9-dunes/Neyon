@@ -190,8 +190,10 @@ class SuggestionsWorker @AssistedInject constructor(
 
 		val semaphore = Semaphore(MAX_PARALLELISM)
 		val producer = channelFlow {
+			val skipNsfw = appSettings.isSuggestionsExcludeNsfw || appSettings.isNsfwContentDisabled
+			val skipSfw = appSettings.isSfwContentDisabled
 			for (it in sources) {
-				if (it.isNsfw() && (appSettings.isSuggestionsExcludeNsfw || appSettings.isNsfwContentDisabled)) {
+				if ((it.isNsfw() && skipNsfw) || (it.isSfw() && skipSfw)) {
 					continue
 				}
 				launch {
@@ -267,8 +269,11 @@ offset = 0,
 order = order,
 filter = MangaListFilter(tags = setOfNotNull(tag), tagsExclude = excludedTags),
 ).asArrayList()
-		if (appSettings.isSuggestionsExcludeNsfw) {
+		if (appSettings.isSuggestionsExcludeNsfw || appSettings.isNsfwContentDisabled) {
 			list.removeAll { it.isNsfw() }
+		}
+		if (appSettings.isSfwContentDisabled) {
+			list.removeAll { it.isSfw() }
 		}
 		if (blacklist.isNotEmpty()) {
 			list.removeAll { manga -> manga in blacklist }

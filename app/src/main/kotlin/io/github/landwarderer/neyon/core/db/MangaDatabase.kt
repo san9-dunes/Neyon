@@ -52,6 +52,7 @@ import io.github.landwarderer.neyon.core.db.migrations.Migration7To8
 import io.github.landwarderer.neyon.core.db.migrations.Migration8To9
 import io.github.landwarderer.neyon.core.db.migrations.Migration9To10
 import io.github.landwarderer.neyon.core.db.migrations.Migration27To28
+import io.github.landwarderer.neyon.core.db.migrations.Migration28To29
 import io.github.landwarderer.neyon.core.util.ext.processLifecycleScope
 import io.github.landwarderer.neyon.favourites.data.FavouriteCategoriesDao
 import io.github.landwarderer.neyon.favourites.data.FavouriteCategoryEntity
@@ -71,7 +72,7 @@ import io.github.landwarderer.neyon.tracker.data.TrackEntity
 import io.github.landwarderer.neyon.tracker.data.TrackLogEntity
 import io.github.landwarderer.neyon.tracker.data.TracksDao
 
-const val DATABASE_VERSION = 28
+const val DATABASE_VERSION = 29
 
 @Database(
 	entities = [
@@ -144,6 +145,7 @@ fun getDatabaseMigrations(context: Context): Array<Migration> = arrayOf(
 	Migration25To26(),
 	Migration26To27(),
 	Migration27To28(),
+	Migration28To29(),
 )
 
 fun MangaDatabase(context: Context): MangaDatabase = Room

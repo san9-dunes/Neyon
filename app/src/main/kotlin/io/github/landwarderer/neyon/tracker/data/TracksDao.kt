@@ -9,6 +9,12 @@ import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.flow.Flow
 import io.github.landwarderer.neyon.core.db.MangaQueryBuilder
 import io.github.landwarderer.neyon.list.domain.ListFilterOption
+import androidx.room.ColumnInfo
+
+data class MangaIdCount(
+	@ColumnInfo(name = "manga_id") val mangaId: Long,
+	@ColumnInfo(name = "chapters_new") val count: Int,
+)
 
 @Dao
 abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
@@ -38,6 +44,9 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 
 	@Query("SELECT IFNULL(chapters_new, 0) FROM tracks WHERE manga_id = :mangaId")
 	abstract fun observeNewChapters(mangaId: Long): Flow<Int>
+
+	@Query("SELECT manga_id, chapters_new FROM tracks WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun findNewChapters(mangaIds: Collection<Long>): List<MangaIdCount>
 
 	@Transaction
 	@Query("SELECT * FROM tracks WHERE chapters_new > 0 ORDER BY last_chapter_date DESC")

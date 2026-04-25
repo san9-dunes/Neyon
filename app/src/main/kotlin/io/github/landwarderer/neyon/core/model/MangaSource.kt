@@ -56,6 +56,8 @@ fun MangaSource.isNsfw(): Boolean = when (this) {
 	else -> false
 }
 
+fun MangaSource.isSfw(): Boolean = !isNsfw()
+
 @get:StringRes
 val ContentType.titleResId
 	get() = when (this) {

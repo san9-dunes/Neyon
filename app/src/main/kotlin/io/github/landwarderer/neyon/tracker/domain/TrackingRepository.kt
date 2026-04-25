@@ -48,6 +48,11 @@ class TrackingRepository @Inject constructor(
 		return db.getTracksDao().findNewChapters(mangaId)
 	}
 
+	suspend fun getNewChaptersCounts(mangaIds: Collection<Long>): Map<Long, Int> {
+		if (mangaIds.isEmpty()) return emptyMap()
+		return db.getTracksDao().findNewChapters(mangaIds).associate { it.mangaId to it.count }
+	}
+
 	fun observeNewChaptersCount(mangaId: Long): Flow<Int> {
 		return db.getTracksDao().observeNewChapters(mangaId)
 	}

@@ -67,7 +67,7 @@ class SourcesCatalogViewModel @Inject constructor(
 	init {
 		repository.clearNewSourcesBadge()
 		launchJob(Dispatchers.IO) {
-			contentTypes.value = getContentTypes(settings.isNsfwContentDisabled)
+			contentTypes.value = getContentTypes(settings.isNsfwContentDisabled, settings.isSfwContentDisabled)
 		}
 	}
 
@@ -136,12 +136,10 @@ class SourcesCatalogViewModel @Inject constructor(
 	}
 
 	@WorkerThread
-	private fun getContentTypes(isNsfwDisabled: Boolean): List<ContentType> {
+	private fun getContentTypes(isNsfwDisabled: Boolean, isSfwDisabled: Boolean): List<ContentType> {
 		val result = repository.allMangaSources.mapSortedByCount { it.contentType }
-		return if (isNsfwDisabled) {
-			result.filterNot { it == ContentType.HENTAI }
-		} else {
-			result
+		return result.filter {
+			(!isNsfwDisabled || it != ContentType.HENTAI) && (!isSfwDisabled || it == ContentType.HENTAI)
 		}
 	}
 }

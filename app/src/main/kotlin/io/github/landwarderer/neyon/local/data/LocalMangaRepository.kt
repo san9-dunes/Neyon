@@ -80,11 +80,18 @@ class LocalMangaRepository @Inject constructor(
 	override suspend fun getFilterOptions() = MangaListFilterOptions(
 		availableTags = localMangaIndex.getAvailableTags(
 			skipNsfw = settings.isNsfwContentDisabled,
+			skipSfw = settings.isSfwContentDisabled,
 		).mapToSet { MangaTag(title = it, key = it, source = source) },
-		availableContentRating = if (!settings.isNsfwContentDisabled) {
-			EnumSet.of(ContentRating.SAFE, ContentRating.ADULT)
+		availableContentRating = if (settings.isNsfwContentDisabled) {
+			EnumSet.of(ContentRating.ADULT)
+		} else if (settings.isSfwContentDisabled) {
+			EnumSet.of(ContentRating.SAFE)
 		} else {
-			emptySet()
+			EnumSet.of(ContentRating.SAFE, ContentRating.ADULT)
+		}.let {
+			if (settings.isNsfwContentDisabled) it - ContentRating.ADULT else it
+		}.let {
+			if (settings.isSfwContentDisabled) it - ContentRating.SAFE else it
 		},
 	)
 
@@ -95,6 +102,9 @@ class LocalMangaRepository @Inject constructor(
 		val list = getRawList()
 		if (settings.isNsfwContentDisabled) {
 			list.removeAll { it.manga.isNsfw() }
+		}
+		if (settings.isSfwContentDisabled) {
+			list.removeAll { it.manga.isSfw() }
 		}
 		if (filter != null) {
 			val query = filter.query

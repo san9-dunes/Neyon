@@ -50,20 +50,29 @@ abstract class MangaListViewModel(
 
 	abstract fun onRetry()
 
-	protected fun List<Manga>.skipNsfwIfNeeded() = if (settings.isNsfwContentDisabled) {
-		filterNot { it.isNsfw() }
-	} else {
-		this
+	protected fun List<Manga>.skipNsfwIfNeeded(): List<Manga> {
+		var result = this
+		if (settings.isNsfwContentDisabled) {
+			result = result.filterNot { it.isNsfw() }
+		}
+		if (settings.isSfwContentDisabled) {
+			result = result.filter { it.isNsfw() }
+		}
+		return result
 	}
 
 	protected fun Flow<Set<ListFilterOption>>.combineWithSettings(): Flow<Set<ListFilterOption>> = combine(
 		settings.observeAsFlow(AppSettings.KEY_DISABLE_NSFW) { isNsfwContentDisabled },
-	) { filters, skipNsfw ->
+		settings.observeAsFlow(AppSettings.KEY_DISABLE_SFW) { isSfwContentDisabled },
+	) { filters, skipNsfw, skipSfw ->
+		var result = filters
 		if (skipNsfw) {
-			filters + ListFilterOption.SFW
-		} else {
-			filters
+			result = result + ListFilterOption.SFW
 		}
+		if (skipSfw) {
+			result = result + ListFilterOption.Macro.NSFW
+		}
+		result
 	}
 
 	protected fun observeListModeWithTriggers(): Flow<ListMode> = combine(

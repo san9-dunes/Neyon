@@ -58,6 +58,13 @@ class MangaListMapper @Inject constructor(
 		val options = getOptions(flags)
 		val overrides = dataRepository.getOverrides()
 		val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
+		
+		val ids = manga.map { it.id }
+		val counters = if (settings.isTrackerEnabled) trackingRepository.getNewChaptersCounts(ids) else emptyMap()
+		val favorites = if (options.isBadgeEnabled(FAVORITE)) favouritesRepository.getFavoriteIds(ids) else emptySet()
+		val saved = if (options.isBadgeEnabled(SAVED)) localMangaIndex.getSavedIds(ids) else emptySet()
+		val progresses = if (options.isBadgeEnabled(PROGRESS)) historyRepository.getProgresses(ids, settings.progressIndicatorMode) else emptyMap()
+
 		manga.mapTo(destination) {
 			toListModelImpl(
 				manga = it,
@@ -65,6 +72,10 @@ class MangaListMapper @Inject constructor(
 				options = options,
 				override = overrides[it.id],
 				isSourceAvailable = enabledSources.contains(it.source.name),
+				counter = counters[it.id] ?: 0,
+				isFavorite = favorites.contains(it.id),
+				isSaved = saved.contains(it.id),
+				progress = progresses[it.id],
 			)
 		}
 	}
@@ -75,12 +86,17 @@ class MangaListMapper @Inject constructor(
 		@Flags flags: Int = DEFAULTS,
 	): MangaListModel {
 		val enabledSources = sourcesRepository.getEnabledSources().mapToSet { it.name }
+		val options = getOptions(flags)
 		return toListModelImpl(
 			manga = manga,
 			mode = mode,
-			options = getOptions(flags),
+			options = options,
 			override = dataRepository.getOverride(manga.id),
 			isSourceAvailable = enabledSources.contains(manga.source.name),
+			counter = getCounter(manga.id, options),
+			isFavorite = isFavorite(manga.id, options),
+			isSaved = isSaved(manga.id, options),
+			progress = getProgress(manga.id, options),
 		)
 	}
 
@@ -102,46 +118,52 @@ class MangaListMapper @Inject constructor(
 
 	private suspend fun toCompactListModel(
 		manga: Manga,
-		@Options options: Int,
+		counter: Int,
 		override: MangaOverride?,
 		isSourceAvailable: Boolean,
 	) = MangaCompactListModel(
 		manga = manga,
 		override = override,
 		subtitle = manga.tags.joinToString(", ") { it.title },
-		counter = getCounter(manga.id, options),
+		counter = counter,
 		isSourceAvailable = isSourceAvailable,
 	)
 
-	private suspend fun toDetailedListModel(
+	private fun toDetailedListModel(
 		manga: Manga,
-		@Options options: Int,
+		counter: Int,
+		progress: ReadingProgress?,
+		isFavorite: Boolean,
+		isSaved: Boolean,
 		override: MangaOverride?,
 		isSourceAvailable: Boolean,
 	) = MangaDetailedListModel(
 		manga = manga,
 		override = override,
 		subtitle = manga.altTitles.firstOrNull(),
-		counter = getCounter(manga.id, options),
-		progress = getProgress(manga.id, options),
-		isFavorite = isFavorite(manga.id, options),
-		isSaved = isSaved(manga.id, options),
+		counter = counter,
+		progress = progress,
+		isFavorite = isFavorite,
+		isSaved = isSaved,
 		tags = mapTags(manga.tags),
 		isSourceAvailable = isSourceAvailable,
 	)
 
-	private suspend fun toGridModel(
+	private fun toGridModel(
 		manga: Manga,
-		@Options options: Int,
+		counter: Int,
+		progress: ReadingProgress?,
+		isFavorite: Boolean,
+		isSaved: Boolean,
 		override: MangaOverride?,
 		isSourceAvailable: Boolean,
 	) = MangaGridModel(
 		manga = manga,
 		override = override,
-		counter = getCounter(manga.id, options),
-		progress = getProgress(manga.id, options),
-		isFavorite = isFavorite(manga.id, options),
-		isSaved = isSaved(manga.id, options),
+		counter = counter,
+		progress = progress,
+		isFavorite = isFavorite,
+		isSaved = isSaved,
 		isSourceAvailable = isSourceAvailable,
 	)
 
@@ -151,23 +173,30 @@ class MangaListMapper @Inject constructor(
 		@Options options: Int,
 		override: MangaOverride?,
 		isSourceAvailable: Boolean,
+		counter: Int,
+		isFavorite: Boolean,
+		isSaved: Boolean,
+		progress: ReadingProgress?,
 	): MangaListModel = when (mode) {
-		ListMode.LIST -> toCompactListModel(manga, options, override, isSourceAvailable)
-		ListMode.DETAILED_LIST -> {
-			val progress = getProgress(manga.id, options)
-			MangaDetailedListModel(
-				manga = manga,
-				override = override,
-				subtitle = manga.altTitles.firstOrNull(),
-				counter = getCounter(manga.id, options),
-				progress = progress,
-				isFavorite = isFavorite(manga.id, options),
-				isSaved = isSaved(manga.id, options),
-				tags = mapTags(manga.tags),
-				isSourceAvailable = isSourceAvailable,
-			)
-		}
-		ListMode.GRID -> toGridModel(manga, options, override, isSourceAvailable)
+		ListMode.LIST -> toCompactListModel(manga, counter, override, isSourceAvailable)
+		ListMode.DETAILED_LIST -> toDetailedListModel(
+			manga = manga,
+			counter = counter,
+			progress = progress,
+			isFavorite = isFavorite,
+			isSaved = isSaved,
+			override = override,
+			isSourceAvailable = isSourceAvailable,
+		)
+		ListMode.GRID -> toGridModel(
+			manga = manga,
+			counter = counter,
+			progress = progress,
+			isFavorite = isFavorite,
+			isSaved = isSaved,
+			override = override,
+			isSourceAvailable = isSourceAvailable,
+		)
 	}
 
 	private suspend fun getCounter(mangaId: Long, @Options options: Int): Int {

@@ -3,6 +3,7 @@ package io.github.landwarderer.neyon.history.data
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import io.github.landwarderer.neyon.core.db.TABLE_HISTORY
 import io.github.landwarderer.neyon.core.db.entity.MangaEntity
@@ -16,6 +17,11 @@ import io.github.landwarderer.neyon.core.db.entity.MangaEntity
 			childColumns = ["manga_id"],
 			onDelete = ForeignKey.CASCADE,
 		),
+	],
+	indices = [
+		Index(value = ["updated_at"]),
+		Index(value = ["created_at"]),
+		Index(value = ["deleted_at"]),
 	],
 )
 data class HistoryEntity(

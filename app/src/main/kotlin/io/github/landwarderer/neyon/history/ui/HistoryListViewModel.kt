@@ -243,9 +243,11 @@ class HistoryListViewModel @Inject constructor(
 		}
 		val order = sortOrder.value
 		var prevHeader: ListHeader? = null
+		val mangaModels = mangaListMapper.toListModelList(list.map { it.manga }, mode)
 		var isEmpty = true
-		for ((manga, history) in list) {
+		for ((index, item) in list.withIndex()) {
 			isEmpty = false
+			val history = item.history
 			if (grouped) {
 				val header = history.header(order)
 				if (header != prevHeader) {
@@ -255,7 +257,7 @@ class HistoryListViewModel @Inject constructor(
 					prevHeader = header
 				}
 			}
-			result += mangaListMapper.toListModel(manga, mode)
+			result += mangaModels[index]
 		}
 		if (filters.isNotEmpty() && isEmpty) {
 			result += getEmptyState(hasFilters = true)
