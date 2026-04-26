@@ -52,9 +52,11 @@ class CommonHeadersInterceptor @Inject constructor(
 		}
 		val headersBuilder = request.headers.newBuilder()
 			.removeAll(CommonHeaders.MANGA_SOURCE)
-		(parserRepository?.getRequestHeaders() ?: mihonRepository?.getRequestHeaders())?.let {
-			headersBuilder.mergeWith(it, replaceExisting = false)
-		}
+		val extraHeaders: Headers? = parserRepository?.getRequestHeaders()
+			?: mihonRepository?.getRequestHeaders()?.let { map ->
+				Headers.Builder().apply { map.forEach { (k, v) -> add(k, v) } }.build()
+			}
+		extraHeaders?.let { headersBuilder.mergeWith(it, replaceExisting = false) }
 		if (headersBuilder[CommonHeaders.USER_AGENT] == null) {
 			headersBuilder[CommonHeaders.USER_AGENT] = mangaLoaderContextLazy.get().getDefaultUserAgent()
 		}
