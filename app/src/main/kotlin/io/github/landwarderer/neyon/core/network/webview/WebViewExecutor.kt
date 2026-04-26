@@ -21,8 +21,10 @@ import io.github.landwarderer.neyon.core.network.proxy.ProxyProvider
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.parser.ParserMangaRepository
 import io.github.landwarderer.neyon.core.util.ext.configureForParser
+import io.github.landwarderer.neyon.core.network.BaseHttpClient
 import io.github.landwarderer.neyon.core.util.ext.printStackTraceDebug
 import io.github.landwarderer.neyon.core.util.ext.sanitizeHeaderValue
+import okhttp3.OkHttpClient
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.util.nullIfEmpty
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
@@ -40,6 +42,7 @@ class WebViewExecutor @Inject constructor(
 	private val proxyProvider: ProxyProvider,
 	private val cookieJar: MutableCookieJar,
 	private val mangaRepositoryFactoryProvider: Provider<MangaRepository.Factory>,
+	@BaseHttpClient private val baseHttpClient: OkHttpClient,
 ) {
 
 	private var webViewCached: WeakReference<WebView>? = null
@@ -168,6 +171,7 @@ class WebViewExecutor @Inject constructor(
 					withTimeout(timeout) {
 						suspendCancellableCoroutine { cont ->
 							webView.webViewClient = CaptchaContinuationClient(
+								baseHttpClient = baseHttpClient,
 								cookieJar = cookieJar,
 								targetUrl = exception.url,
 								continuation = cont,
