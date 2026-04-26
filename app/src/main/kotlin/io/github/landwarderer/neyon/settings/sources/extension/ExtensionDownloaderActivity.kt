@@ -81,6 +81,11 @@ class ExtensionDownloaderActivity : BaseActivity<ActivityExtensionDownloaderBind
         )
     }
 
+    override fun onResume() {
+        super.onResume()
+        viewModel.refreshInstalledExtensions()
+    }
+
     override fun onApplyWindowInsets(v: android.view.View, insets: WindowInsetsCompat): WindowInsetsCompat {
         val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
         v.updatePadding(bottom = systemBars.bottom)

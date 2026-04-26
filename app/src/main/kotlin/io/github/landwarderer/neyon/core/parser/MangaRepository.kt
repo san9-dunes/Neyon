@@ -97,6 +97,7 @@ interface MangaRepository {
 			is MihonMangaSource -> MihonMangaRepository(
 				source = source,
 				cache = contentCache,
+				extensionManager = mihonExtensionManager,
 			)
 
 			is MangaParserSource -> ParserMangaRepository(

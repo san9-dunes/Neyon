@@ -45,7 +45,7 @@ class ExtensionDownloaderViewModel @Inject constructor(
 
     init {
         launchJob(Dispatchers.IO) {
-            repoRepository.seedBuiltInReposIfNeeded()
+            repoRepository.deleteBuiltInRepos(ExternalExtensionType.MIHON)
             Log.d("ExtensionDownloaderViewModel", "fetching extensions")
             catalogExtensions.value = repoRepository.getCatalogExtensions(ExternalExtensionType.MIHON)
         }
@@ -110,6 +110,12 @@ class ExtensionDownloaderViewModel @Inject constructor(
     fun refresh() {
         launchJob(Dispatchers.IO) {
             refreshCatalog(refreshRepos = true)
+        }
+    }
+
+    fun refreshInstalledExtensions() {
+        launchJob(Dispatchers.IO) {
+            extensionManager.loadExtensions()
         }
     }
 

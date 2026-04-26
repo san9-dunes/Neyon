@@ -27,4 +27,7 @@ interface ExternalExtensionRepoDao {
 
     @Query("DELETE FROM external_extension_repos WHERE type = :type AND baseUrl = :baseUrl")
     suspend fun delete(type: ExternalExtensionType, baseUrl: String)
+
+    @Query("DELETE FROM external_extension_repos WHERE type = :type AND isBuiltIn = 1")
+    suspend fun deleteBuiltInByType(type: ExternalExtensionType)
 }

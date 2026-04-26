@@ -10,6 +10,7 @@ import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.ext.contains
 import io.github.landwarderer.neyon.core.util.ext.printStackTraceDebug
+import io.github.landwarderer.neyon.mihon.MihonMangaRepository
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaListFilter
 import org.koitharu.kotatsu.parsers.model.MangaSource
@@ -34,6 +35,19 @@ class SearchV2Helper @AssistedInject constructor(
 			return null
 		}
 		val repository = mangaRepositoryFactory.create(source)
+		if (repository is MihonMangaRepository && kind != SearchKind.TAG) {
+			val directResult = repository.searchManga(query = query, page = 1).getOrThrow()
+			if (directResult.manga.isEmpty()) {
+				return null
+			}
+			val result = directResult.manga.toMutableList()
+			result.postFilter(query, kind)
+			if (result.isEmpty()) {
+				return null
+			}
+			result.sortByRelevance(query, kind)
+			return directResult.copy(manga = result)
+		}
 		val listFilter = repository.getFilter(query, kind) ?: return null
 		val sortOrder = repository.getSortOrder(kind)
 		val list = repository.getList(0, sortOrder, listFilter)

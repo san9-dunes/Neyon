@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.util.ext.processLifecycleScope
+import io.github.landwarderer.neyon.mihon.extensions.update.ExtensionUpdateWorker
 import io.github.landwarderer.neyon.suggestions.ui.SuggestionsWorker
 import io.github.landwarderer.neyon.tracker.work.TrackWorker
 import javax.inject.Inject
@@ -15,6 +16,7 @@ class WorkScheduleManager @Inject constructor(
 	private val settings: AppSettings,
 	private val suggestionScheduler: SuggestionsWorker.Scheduler,
 	private val trackerScheduler: TrackWorker.Scheduler,
+	private val extensionUpdateScheduler: ExtensionUpdateWorker.Scheduler,
 ) : SharedPreferences.OnSharedPreferenceChangeListener {
 
 	override fun onSharedPreferenceChanged(sharedPreferences: SharedPreferences?, key: String?) {
@@ -41,6 +43,7 @@ class WorkScheduleManager @Inject constructor(
 		processLifecycleScope.launch(Dispatchers.IO) {
 			updateWorkerImpl(trackerScheduler, settings.isTrackerEnabled, true) // always force due to adaptive interval
 			updateWorkerImpl(suggestionScheduler, settings.isSuggestionsEnabled, false)
+			updateWorkerImpl(extensionUpdateScheduler, true, false)
 		}
 	}
 

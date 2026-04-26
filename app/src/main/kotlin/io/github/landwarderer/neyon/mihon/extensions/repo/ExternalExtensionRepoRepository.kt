@@ -73,15 +73,8 @@ class ExternalExtensionRepoRepository @Inject constructor(
 		return PrepareAddRepoResult.Ready(repo)
 	}
 
-	suspend fun seedBuiltInReposIfNeeded() {
-		if (getByType(ExternalExtensionType.MIHON).none { it.isBuiltIn }) {
-			DEFAULT_REPO_URLS.forEach { url ->
-				val result = prepareAddRepo(ExternalExtensionType.MIHON, url)
-				if (result is PrepareAddRepoResult.Ready) {
-					confirmAddRepo(result.repo.copy(isBuiltIn = true))
-				}
-			}
-		}
+	suspend fun deleteBuiltInRepos(type: ExternalExtensionType) {
+		dao.deleteBuiltInByType(type)
 	}
 
 	suspend fun confirmAddRepo(repo: ExternalExtensionRepo): AddRepoResult {
@@ -170,9 +163,6 @@ class ExternalExtensionRepoRepository @Inject constructor(
 
 	private companion object {
 		const val TAG = "ExtensionRepo"
-		val DEFAULT_REPO_URLS = listOf(
-			"https://raw.githubusercontent.com/yuzono/manga-repo/repo/index.min.json",
-		)
 	}
 }
 

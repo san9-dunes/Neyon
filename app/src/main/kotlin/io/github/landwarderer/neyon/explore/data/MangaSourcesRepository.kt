@@ -30,6 +30,8 @@ import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.prefs.observeAsFlow
 import io.github.landwarderer.neyon.core.ui.util.ReversibleHandle
 import io.github.landwarderer.neyon.core.util.ext.flattenLatest
+import io.github.landwarderer.neyon.mihon.MihonExtensionManager
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.model.ContentType
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
@@ -47,6 +49,7 @@ class MangaSourcesRepository @Inject constructor(
 	@LocalizedAppContext private val context: Context,
 	private val db: MangaDatabase,
 	private val settings: AppSettings,
+	private val mihonExtensionManager: dagger.Lazy<MihonExtensionManager>? = null,
 ) {
 
 	private val isNewSourcesAssimilated = AtomicBoolean(false)
@@ -69,8 +72,10 @@ class MangaSourcesRepository @Inject constructor(
 		)
 			.let { enabled ->
 				val external = getExternalSources()
-				val list = ArrayList<MangaSourceInfo>(enabled.size + external.size)
+				val mihon = getMihonSources()
+				val list = ArrayList<MangaSourceInfo>(enabled.size + external.size + mihon.size)
 				external.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
+				mihon.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
 				list.addAll(enabled)
 				list
 			}
@@ -184,7 +189,8 @@ class MangaSourcesRepository @Inject constructor(
 		}.distinctUntilChanged().onStart { assimilateNewSources() }
 	}
 
-	fun observeEnabledSources(): Flow<List<MangaSourceInfo>> = combine(
+	fun observeEnabledSources(): Flow<List<MangaSourceInfo>> {
+		val nativeSources = combine(
 		observeIsNsfwDisabled(),
 		observeIsSfwDisabled(),
 		observeAllEnabled(),
@@ -195,12 +201,20 @@ class MangaSourcesRepository @Inject constructor(
 		}
 	}.flattenLatest()
 		.onStart { assimilateNewSources() }
-		.combine(observeExternalSources()) { enabled, external ->
+		return nativeSources
+			.combine(observeExternalSources()) { enabled, external ->
 			val list = ArrayList<MangaSourceInfo>(enabled.size + external.size)
 			external.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
 			list.addAll(enabled)
 			list
 		}
+			.combine(observeMihonSources()) { enabled, mihon ->
+				val list = ArrayList<MangaSourceInfo>(enabled.size + mihon.size)
+				mihon.mapTo(list) { MangaSourceInfo(it, isEnabled = true, isPinned = true) }
+				list.addAll(enabled)
+				list
+			}
+	}
 
 	fun observeAll(): Flow<List<Pair<MangaSource, Boolean>>> = dao.observeAll().map { entities ->
 		val result = ArrayList<Pair<MangaSource, Boolean>>(entities.size)
@@ -380,6 +394,22 @@ class MangaSourcesRepository @Inject constructor(
 			packageName = resolveInfo.providerInfo.packageName,
 			authority = resolveInfo.providerInfo.authority,
 		)
+	}
+
+	private fun observeMihonSources(): Flow<List<MihonMangaSource>> {
+		val manager = mihonExtensionManager?.get() ?: return kotlinx.coroutines.flow.flowOf(emptyList())
+		return manager.installedExtensions.map {
+			getMihonSources()
+		}.distinctUntilChanged()
+	}
+
+	private fun getMihonSources(): List<MihonMangaSource> {
+		val manager = mihonExtensionManager?.get() ?: return emptyList()
+		val skipNsfw = settings.isNsfwContentDisabled
+		val skipSfw = settings.isSfwContentDisabled
+		return manager.getMihonMangaSources().filterNot { source ->
+			(skipNsfw && source.isNsfw()) || (skipSfw && source.isSfw())
+		}
 	}
 
 	private fun List<MangaSourceEntity>.toSources(

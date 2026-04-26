@@ -33,6 +33,7 @@ import io.github.landwarderer.neyon.list.ui.model.ListHeader
 import io.github.landwarderer.neyon.list.ui.model.ListModel
 import io.github.landwarderer.neyon.list.ui.model.LoadingState
 import io.github.landwarderer.neyon.list.ui.model.MangaCompactListModel
+import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.util.runCatchingCancellable
@@ -163,14 +164,27 @@ class ExploreViewModel @Inject constructor(
 			result += ListHeader(R.string.suggestions, R.string.more, R.id.nav_suggestions)
 			result += RecommendationsItem(recommendation.toRecommendationList())
 		}
-		if (sources.isNotEmpty()) {
+
+		val extensionSources = sources.filter { it.mangaSource is MihonMangaSource }
+		val internalSources = sources.filterNot { it.mangaSource is MihonMangaSource }
+
+		if (internalSources.isNotEmpty()) {
 			result += ListHeader(
 				textRes = R.string.remote_sources,
 				buttonTextRes = if (allSourcesEnabled) R.string.manage else R.string.catalog,
 				badge = if (!allSourcesEnabled && hasNewSources) "" else null,
 			)
-			sources.mapTo(result) { MangaSourceItem(it, isGrid) }
-		} else {
+			internalSources.mapTo(result) { MangaSourceItem(it, isGrid) }
+		}
+		if (extensionSources.isNotEmpty()) {
+			result += ListHeader(
+				textRes = R.string.extension_sources,
+				buttonTextRes = R.string.manage,
+				payload = R.id.nav_extensions,
+			)
+			extensionSources.mapTo(result) { MangaSourceItem(it, isGrid) }
+		}
+		if (internalSources.isEmpty() && extensionSources.isEmpty()) {
 			result += EmptyHint(
 				icon = R.drawable.ic_empty_common,
 				textPrimary = R.string.no_manga_sources,

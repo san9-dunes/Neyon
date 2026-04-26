@@ -26,6 +26,7 @@ import io.github.landwarderer.neyon.core.util.ext.isNetworkUri
 import io.github.landwarderer.neyon.core.util.ext.toMimeTypeOrNull
 import io.github.landwarderer.neyon.local.data.LocalStorageCache
 import io.github.landwarderer.neyon.local.data.PageCache
+import io.github.landwarderer.neyon.mihon.MihonMangaRepository
 import org.koitharu.kotatsu.parsers.model.MangaPage
 import org.koitharu.kotatsu.parsers.util.mimeType
 import org.koitharu.kotatsu.parsers.util.requireBody
@@ -89,7 +90,12 @@ class MangaPageFetcher(
 	}
 
 	private suspend fun fetchPage(pageUrl: String): FetchResult {
-		val request = PageLoader.createPageRequest(pageUrl, page.source)
+		val repository = mangaRepositoryFactory.create(page.source)
+		val request = if (repository is MihonMangaRepository) {
+			repository.createPageRequest(pageUrl, page)
+		} else {
+			PageLoader.createPageRequest(pageUrl, page.source)
+		}
 		return imageProxyInterceptor.interceptPageRequest(request, okHttpClient).use { response ->
 			if (!response.isSuccessful) {
 				throw HttpException(response.toNetworkResponse())

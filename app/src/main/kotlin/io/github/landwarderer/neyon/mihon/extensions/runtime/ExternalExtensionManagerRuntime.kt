@@ -2,6 +2,8 @@ package io.github.landwarderer.neyon.mihon.extensions.runtime
 
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,6 +28,7 @@ class ExternalExtensionManagerRuntime<ResultT, SuccessT, ErrorT, SourceT, Wrappe
 
 	@Volatile
 	private var isPackageObserverRegistered = false
+	private var packageObserver: ExternalExtensionPackageObserver? = null
 
 	fun initialize(loadAction: suspend () -> Unit) {
 		registerPackageObserver(loadAction)
@@ -64,8 +67,12 @@ class ExternalExtensionManagerRuntime<ResultT, SuccessT, ErrorT, SourceT, Wrappe
 
 	private fun registerPackageObserver(loadAction: suspend () -> Unit) {
 		if (isPackageObserverRegistered) return
-		registerExternalExtensionPackageObserver(context) {
-			loadAction()
+		val observer = ExternalExtensionPackageObserver(context).also { it.startObserving() }
+		packageObserver = observer
+		scope.launch(Dispatchers.IO) {
+			observer.packageChanges.collectLatest {
+				loadAction()
+			}
 		}
 		isPackageObserverRegistered = true
 	}

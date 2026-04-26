@@ -4,6 +4,7 @@ import eu.kanade.tachiyomi.source.model.Page
 import eu.kanade.tachiyomi.source.model.SChapter
 import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.online.HttpSource
+import io.github.landwarderer.neyon.core.db.entity.ChapterEntity
 import io.github.landwarderer.neyon.mihon.parsers.model.Content
 import io.github.landwarderer.neyon.mihon.parsers.model.ContentChapter
 import io.github.landwarderer.neyon.mihon.parsers.model.ContentPage
@@ -11,6 +12,13 @@ import io.github.landwarderer.neyon.mihon.parsers.model.ContentRating
 import io.github.landwarderer.neyon.mihon.parsers.model.ContentSource
 import io.github.landwarderer.neyon.mihon.parsers.model.ContentState
 import io.github.landwarderer.neyon.mihon.parsers.model.ContentTag
+import io.github.landwarderer.neyon.reader.ui.pager.ReaderPage
+import org.koitharu.kotatsu.parsers.model.Manga
+import org.koitharu.kotatsu.parsers.model.MangaChapter
+import org.koitharu.kotatsu.parsers.model.MangaState
+import org.koitharu.kotatsu.parsers.model.MangaPage
+import org.koitharu.kotatsu.parsers.model.MangaTag
+import org.koitharu.kotatsu.parsers.model.ContentRating as NeyonContentRating
 
 /**
  * Convert Mihon SManga to Domain Content.
@@ -85,6 +93,57 @@ fun SManga.toDomainContent(
         description = safeDescription,
         chapters = chapters,
         source = source,
+    )
+}
+
+/**
+ * Convert Mihon SManga to Neyon's parser Manga model.
+ */
+fun SManga.toNeyonManga(
+    source: MihonMangaSource,
+    publicUrl: String = "",
+    chapters: List<MangaChapter>? = null,
+): Manga {
+    val baseUrl = (source.catalogueSource as? HttpSource)?.baseUrl.orEmpty()
+    val safeUrl = safeString { url }
+    val safeTitle = safeString { title }.ifBlank { "Unknown" }
+    val safeThumbnail = safeNullableString { thumbnail_url }
+    val safeGenres = safeGenres()
+    val safeAuthor = safeNullableString { author }
+    val safeArtist = safeNullableString { artist }
+    val safeDescription = safeNullableString { description }
+    val safeStatus = safeInt(SManga.UNKNOWN) { status }
+    val parserSource = source.toMangaSource()
+    val resolvedPublicUrl = publicUrl.ifBlank {
+        resolveUrl(baseUrl, safeUrl) ?: safeUrl
+    }
+    val resolvedCoverUrl = resolveUrl(baseUrl, safeThumbnail).orEmpty()
+
+    return Manga(
+        id = generateContentId(safeUrl, source.name),
+        title = safeTitle,
+        altTitles = emptySet(),
+        url = safeUrl,
+        publicUrl = resolvedPublicUrl,
+        rating = 0f,
+        contentRating = inferNeyonContentRating(source, safeGenres),
+        coverUrl = resolvedCoverUrl,
+        largeCoverUrl = resolvedCoverUrl,
+        authors = buildSet {
+            safeAuthor?.takeIf { it.isNotBlank() }?.let { add(it) }
+            safeArtist?.takeIf { it.isNotBlank() && it != safeAuthor }?.let { add(it) }
+        },
+        tags = safeGenres.map { genre ->
+            MangaTag(
+                key = genre.lowercase().replace(" ", "_"),
+                title = genre,
+                source = parserSource,
+            )
+        }.toSet(),
+        state = safeStatus.toNeyonMangaState(),
+        description = safeDescription.orEmpty(),
+        chapters = chapters,
+        source = parserSource,
     )
 }
 
@@ -193,6 +252,62 @@ fun ContentChapter.toMihonChapter(): SChapter {
     }
 }
 
+/**
+ * Convert Mihon SChapter to Neyon's parser MangaChapter model.
+ */
+fun SChapter.toNeyonMangaChapter(
+    source: MihonMangaSource,
+    overrideNumber: Float? = null,
+): MangaChapter {
+    val safeUrl = safeString { url }
+    val safeName = safeString { name }
+    val safeChapterNumber = safeFloat(-1f) { chapter_number }
+    val safeScanlator = safeNullableString { scanlator }
+    val finalNumber = overrideNumber ?: if (safeChapterNumber >= 0f) safeChapterNumber else 0f
+
+    return MangaChapter(
+        id = generateChapterId(safeUrl, source.name),
+        title = safeName.takeIf { it.isNotBlank() },
+        number = finalNumber,
+        volume = 0,
+        url = safeUrl,
+        scanlator = safeScanlator,
+        uploadDate = safeLong(0L) { date_upload },
+        branch = safeScanlator,
+        source = source.toMangaSource(),
+    )
+}
+
+/**
+ * Convert Mihon SChapter to Neyon's Room ChapterEntity.
+ */
+fun SChapter.toNeyonChapterEntity(
+    mangaId: Long,
+    source: MihonMangaSource,
+    index: Int = 0,
+): ChapterEntity {
+    val chapter = toNeyonMangaChapter(source)
+    return ChapterEntity(
+        chapterId = chapter.id,
+        mangaId = mangaId,
+        title = chapter.title.orEmpty(),
+        number = chapter.number,
+        volume = chapter.volume,
+        url = chapter.url,
+        scanlator = chapter.scanlator,
+        uploadDate = chapter.uploadDate,
+        branch = chapter.branch,
+        source = chapter.source.name,
+        index = index,
+    )
+}
+
+fun SChapter.toNeyonChapter(
+    mangaId: Long,
+    source: MihonMangaSource,
+    index: Int = 0,
+): ChapterEntity = toNeyonChapterEntity(mangaId, source, index)
+
 // ============ Page <-> ContentPage ============
 
 /**
@@ -217,6 +332,27 @@ fun Page.asContentPage(
         preview = null,
         headers = headers,
         source = source,
+    )
+}
+
+fun Page.toNeyonMangaPage(
+    source: ContentSource,
+    chapter: SChapter,
+    headers: Map<String, String> = emptyMap(),
+): MangaPage {
+    return asContentPage(source, chapter, headers).toMangaPage()
+}
+
+fun Page.toNeyonPage(
+    source: ContentSource,
+    chapter: SChapter,
+    chapterId: Long,
+    headers: Map<String, String> = emptyMap(),
+): ReaderPage {
+    return ReaderPage(
+        page = toNeyonMangaPage(source, chapter, headers),
+        index = index,
+        chapterId = chapterId,
     )
 }
 
@@ -245,6 +381,42 @@ private fun generateContentId(url: String, sourceName: String): Long {
  */
 private fun generateChapterId(url: String, sourceName: String): Long {
     return "$sourceName|chapter|$url".hashCode().toLong() and Long.MAX_VALUE
+}
+
+private fun SManga.safeGenres(): List<String> = runCatching { getGenres().orEmpty() }.getOrDefault(emptyList())
+
+private inline fun safeString(block: () -> String): String = runCatching(block).getOrDefault("")
+
+private inline fun safeNullableString(block: () -> String?): String? = runCatching(block).getOrNull()
+
+private inline fun safeInt(defaultValue: Int, block: () -> Int): Int = runCatching(block).getOrDefault(defaultValue)
+
+private inline fun safeLong(defaultValue: Long, block: () -> Long): Long = runCatching(block).getOrDefault(defaultValue)
+
+private inline fun safeFloat(defaultValue: Float, block: () -> Float): Float = runCatching(block).getOrDefault(defaultValue)
+
+private fun Int.toNeyonMangaState(): MangaState = when (this) {
+    SManga.ONGOING -> MangaState.ONGOING
+    SManga.COMPLETED -> MangaState.FINISHED
+    SManga.ON_HIATUS -> MangaState.PAUSED
+    SManga.CANCELLED -> MangaState.ABANDONED
+    SManga.LICENSED -> MangaState.RESTRICTED
+    SManga.PUBLISHING_FINISHED -> MangaState.FINISHED
+    else -> MangaState.ONGOING
+}
+
+private fun inferNeyonContentRating(source: MihonMangaSource, genres: List<String>): NeyonContentRating? {
+    val normalizedGenres = genres.map { it.lowercase() }
+    val safeGenres = setOf("safe", "all ages", "non-h", "sfw", "非h", "正常向", "全年龄", "全年龄向")
+    if (normalizedGenres.any { it in safeGenres }) {
+        return NeyonContentRating.SAFE
+    }
+    val adultGenres = setOf("adult", "hentai", "18+", "nsfw", "mature", "ecchi")
+    return if (source.isNsfw || normalizedGenres.any { it in adultGenres }) {
+        NeyonContentRating.ADULT
+    } else {
+        null
+    }
 }
 
 // ============ URL Helpers ============

@@ -52,6 +52,7 @@ import io.github.landwarderer.neyon.core.util.progress.ProgressDeferred
 import io.github.landwarderer.neyon.download.ui.worker.DownloadSlowdownDispatcher
 import io.github.landwarderer.neyon.local.data.LocalStorageCache
 import io.github.landwarderer.neyon.local.data.PageCache
+import io.github.landwarderer.neyon.mihon.MihonMangaRepository
 import org.koitharu.kotatsu.parsers.model.MangaPage
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.util.requireBody
@@ -322,7 +323,7 @@ class PageLoader @Inject constructor(
 				if (isPrefetch) {
 					downloadSlowdownDispatcher.delay(page.source)
 				}
-				val request = createPageRequest(pageUrl, page.source)
+				val request = createPageRequest(pageUrl, page)
 				imageProxyInterceptor.interceptPageRequest(request, okHttp).ensureSuccess().use { response ->
 					response.requireBody().withProgress(progress).use {
 						cachePage(
@@ -346,6 +347,15 @@ class PageLoader @Inject constructor(
 			} else {
 				throw error
 			}
+		}
+	}
+
+	private fun createPageRequest(pageUrl: String, page: MangaPage): Request {
+		val repository = getRepository(page.source)
+		return if (repository is MihonMangaRepository) {
+			repository.createPageRequest(pageUrl, page)
+		} else {
+			createPageRequest(pageUrl, page.source)
 		}
 	}
 

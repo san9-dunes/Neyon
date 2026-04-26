@@ -8,4 +8,5 @@ data class SearchResults(
 	val listFilter: MangaListFilter,
 	val sortOrder: SortOrder,
 	val manga: List<Manga>,
+	val hasNextPage: Boolean = false,
 )

@@ -113,6 +113,8 @@ class ExploreFragment :
 	override fun onListHeaderClick(item: ListHeader, view: View) {
 		if (item.payload == R.id.nav_suggestions) {
 			router.openSuggestions()
+		} else if (item.payload == R.id.nav_extensions) {
+			router.openExtensionDownloader()
 		} else if (viewModel.isAllSourcesEnabled.value) {
 			router.openManageSources()
 		} else {

@@ -19,19 +19,12 @@ import java.io.IOException
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.ConcurrentHashMap
-import java.util.concurrent.TimeUnit
 
 /**
  * Implementation of Mihon's NetworkHelper interface.
  * 
  * Wraps App's existing OkHttpClient to provide Mihon extensions with
  * access to the network stack, including CloudFlare bypassing and cookie management.
- * 
- * Note: We create a new client without GZipInterceptor because Mihon extensions
- * handle their own request encoding. App's GZipInterceptor incorrectly
- * adds Content-Encoding: gzip header without actually compressing the body,
- * which causes server-side decompression errors (e.g., Picacomic login fails with
- * "incorrect header check").
  */
 class MihonNetworkHelper(
     baseClient: OkHttpClient,
@@ -41,26 +34,21 @@ class MihonNetworkHelper(
     
     /**
      * The OkHttpClient for Mihon extensions.
-     * We rebuild without GZipInterceptor to prevent incorrect Content-Encoding headers.
+     * Starts from Neyon's shared MangaHttpClient so cache, DNS, proxy, CloudFlare,
+     * rate limits, and common headers stay consistent with in-app sources.
      */
     override val client: OkHttpClient = run {
-        val builder = OkHttpClient.Builder()
-        
-        // Copy configuration from base client
-        builder.connectTimeout(baseClient.connectTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
-        builder.readTimeout(baseClient.readTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
-        builder.writeTimeout(baseClient.writeTimeoutMillis.toLong(), TimeUnit.MILLISECONDS)
-        builder.cookieJar(baseClient.cookieJar)
-        builder.dns(baseClient.dns)
-        builder.cache(baseClient.cache)
-        builder.dispatcher(baseClient.dispatcher)
-        builder.connectionPool(baseClient.connectionPool)
-        builder.followRedirects(baseClient.followRedirects)
-        builder.followSslRedirects(baseClient.followSslRedirects)
-        builder.retryOnConnectionFailure(baseClient.retryOnConnectionFailure)
+        val builder = baseClient.newBuilder()
+        builder.interceptors().removeAll { interceptor ->
+            (interceptor.javaClass.simpleName == "GZipInterceptor").also { removed ->
+                if (removed) {
+                    Log.d("MihonNetworkHelper", "Skipping GZipInterceptor for Mihon client")
+                }
+            }
+        }
         
         // Wrap exceptions thrown by subsequent interceptors (especially from extensions)
-        builder.addInterceptor { chain ->
+        builder.interceptors().add(0, okhttp3.Interceptor { chain ->
             try {
                 chain.proceed(chain.request())
             } catch (e: Throwable) {
@@ -69,21 +57,7 @@ class MihonNetworkHelper(
                 if (e is IOException) throw e
                 throw IOException(e.message, e)
             }
-        }
-        
-        // Copy interceptors but exclude GZipInterceptor
-        baseClient.interceptors.forEach { interceptor ->
-            if (interceptor.javaClass.simpleName != "GZipInterceptor") {
-                builder.addInterceptor(interceptor)
-            } else {
-                Log.d("MihonNetworkHelper", "Skipping GZipInterceptor for Mihon client")
-            }
-        }
-        
-        // Copy network interceptors
-        baseClient.networkInterceptors.forEach { interceptor ->
-            builder.addNetworkInterceptor(interceptor)
-        }
+        })
 
         // Add a Mihon-specific fallback detector.
         // Some Mihon sources build their own clients from network.cloudflareClient, and in practice

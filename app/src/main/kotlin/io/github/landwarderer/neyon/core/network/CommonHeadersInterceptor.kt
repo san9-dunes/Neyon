@@ -7,6 +7,7 @@ import io.github.landwarderer.neyon.core.parser.MangaLoaderContextImpl
 import io.github.landwarderer.neyon.core.parser.MangaRepository
 import io.github.landwarderer.neyon.core.parser.ParserMangaRepository
 import io.github.landwarderer.neyon.core.util.ext.printStackTraceDebug
+import io.github.landwarderer.neyon.mihon.MihonMangaRepository
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.util.mergeWith
@@ -31,29 +32,38 @@ class CommonHeadersInterceptor @Inject constructor(
 		val request = chain.request()
 		val source = request.tag(MangaSource::class.java)
 			?: request.headers[CommonHeaders.MANGA_SOURCE]?.let { MangaSource(it) }
-		val repository = if (source is MangaParserSource) {
-			mangaRepositoryFactoryLazy.get().create(source) as? ParserMangaRepository
-		} else {
-			if (BuildConfig.DEBUG && source == null) {
-				IllegalArgumentException("Request without source tag: ${request.url}")
-					.printStackTrace()
+		val parserRepository = when {
+			source is MangaParserSource -> {
+				mangaRepositoryFactoryLazy.get().create(source) as? ParserMangaRepository
 			}
-			null
+			else -> null
+		}
+		val mihonRepository = when {
+			source?.name?.startsWith("MIHON_") == true -> {
+				mangaRepositoryFactoryLazy.get().create(source) as? MihonMangaRepository
+			}
+			else -> {
+				if (BuildConfig.DEBUG && source == null) {
+					IllegalArgumentException("Request without source tag: ${request.url}")
+						.printStackTrace()
+				}
+				null
+			}
 		}
 		val headersBuilder = request.headers.newBuilder()
 			.removeAll(CommonHeaders.MANGA_SOURCE)
-		repository?.getRequestHeaders()?.let {
+		(parserRepository?.getRequestHeaders() ?: mihonRepository?.getRequestHeaders())?.let {
 			headersBuilder.mergeWith(it, replaceExisting = false)
 		}
 		if (headersBuilder[CommonHeaders.USER_AGENT] == null) {
 			headersBuilder[CommonHeaders.USER_AGENT] = mangaLoaderContextLazy.get().getDefaultUserAgent()
 		}
-		if (headersBuilder[CommonHeaders.REFERER] == null && repository != null) {
-			val idn = IDN.toASCII(repository.domain)
+		if (headersBuilder[CommonHeaders.REFERER] == null && parserRepository != null) {
+			val idn = IDN.toASCII(parserRepository.domain)
 			headersBuilder.trySet(CommonHeaders.REFERER, "https://$idn/")
 		}
 		val newRequest = request.newBuilder().headers(headersBuilder.build()).build()
-		return repository?.interceptSafe(ProxyChain(chain, newRequest)) ?: chain.proceed(newRequest)
+		return parserRepository?.interceptSafe(ProxyChain(chain, newRequest)) ?: chain.proceed(newRequest)
 	}
 
 	private fun Headers.Builder.trySet(name: String, value: String) = try {

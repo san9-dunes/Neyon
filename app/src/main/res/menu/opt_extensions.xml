@@ -7,23 +7,23 @@
 		android:id="@+id/action_add_repo"
 		android:icon="@drawable/ic_add"
 		android:title="@string/add_repo"
-		app:showAsAction="ifRoom" />
-
-	<item
-		android:id="@+id/action_refresh"
-		android:icon="@drawable/ic_sync"
-		android:title="@string/update"
-		app:showAsAction="ifRoom" />
-
-	<item
-		android:id="@+id/action_manage_repos"
-		android:title="@string/manage_repos"
-		app:showAsAction="never" />
+		app:showAsAction="always" />
 
 	<item
 		android:id="@+id/action_search"
 		android:icon="?actionModeWebSearchDrawable"
 		android:title="@string/search"
 		app:actionViewClass="androidx.appcompat.widget.SearchView"
-		app:showAsAction="ifRoom|collapseActionView" />
+		app:showAsAction="always|collapseActionView" />
+
+	<item
+		android:id="@+id/action_refresh"
+		android:icon="@drawable/ic_sync"
+		android:title="@string/update"
+		app:showAsAction="never" />
+
+	<item
+		android:id="@+id/action_manage_repos"
+		android:title="@string/manage_repos"
+		app:showAsAction="never" />
 </menu>

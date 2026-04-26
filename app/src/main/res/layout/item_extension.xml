@@ -6,15 +6,16 @@
     android:layout_height="wrap_content"
     android:background="?selectableItemBackground"
     android:gravity="center_vertical"
-    android:minHeight="?listPreferredItemHeightSmall"
+    android:minHeight="76dp"
     android:orientation="horizontal"
     android:paddingStart="?listPreferredItemPaddingStart"
+    android:paddingEnd="@dimen/margin_small"
     tools:ignore="RtlSymmetry">
 
 	<io.github.landwarderer.neyon.core.image.CoilImageView
 		android:id="@+id/imageView_icon"
-		android:layout_width="40dp"
-		android:layout_height="40dp"
+		android:layout_width="48dp"
+		android:layout_height="48dp"
 		android:labelFor="@id/textView_title"
 		android:scaleType="fitCenter"
 		tools:src="@tools:sample/avatars" />
@@ -60,7 +61,7 @@
 
 		<com.google.android.material.chip.Chip
 			android:id="@+id/chip_nsfw"
-			style="@style/Widget.Material3.Chip.Assist.Elevated"
+			style="@style/Widget.Material3.Chip.Assist"
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="2dp"
@@ -68,7 +69,7 @@
 			android:textColor="?colorOnError"
 			android:visibility="gone"
 			app:chipBackgroundColor="?colorError"
-			app:chipMinHeight="20dp"
+			app:chipMinHeight="24dp"
 			xmlns:app="http://schemas.android.com/apk/res-auto"
 			tools:visibility="visible" />
 
@@ -83,25 +84,18 @@
 
 	</LinearLayout>
 
-	<View
-		android:layout_width="1dp"
-		android:layout_height="match_parent"
-		android:layout_marginVertical="@dimen/margin_small"
-		android:background="?colorOutline" />
-
 	<com.google.android.material.button.MaterialButton
 		android:id="@+id/button_action"
 		style="@style/Widget.Material3.Button.TextButton"
-		android:layout_width="wrap_content"
+		android:layout_width="96dp"
 		android:layout_height="wrap_content"
 		tools:text="Install" />
 
 	<com.google.android.material.button.MaterialButton
 		android:id="@+id/button_uninstall"
 		style="@style/Widget.Material3.Button.TextButton"
-		android:layout_width="wrap_content"
+		android:layout_width="96dp"
 		android:layout_height="wrap_content"
-		android:layout_marginEnd="@dimen/margin_small"
 		android:text="@string/uninstall"
 		android:textColor="?colorError"
 		android:visibility="gone"
