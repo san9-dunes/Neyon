@@ -1,12 +1,15 @@
 package io.github.landwarderer.neyon.settings.sources.catalog
 
 import androidx.core.content.ContextCompat
+import androidx.core.text.bold
+import androidx.core.text.buildSpannedString
 import androidx.core.view.isVisible
 import androidx.core.view.updatePaddingRelative
 import com.hannesdorfmann.adapterdelegates4.dsl.adapterDelegateViewBinding
 import io.github.landwarderer.neyon.R
 import io.github.landwarderer.neyon.core.model.getSummary
 import io.github.landwarderer.neyon.core.model.getTitle
+import io.github.landwarderer.neyon.core.model.isBroken
 import io.github.landwarderer.neyon.core.ui.image.FaviconDrawable
 import io.github.landwarderer.neyon.core.ui.list.OnListItemClickListener
 import io.github.landwarderer.neyon.core.util.ext.drawableStart
@@ -40,7 +43,15 @@ fun sourceCatalogItemSourceAD(
 	)
 
 	bind {
-		binding.textViewTitle.text = item.source.getTitle(context)
+		val title = if (item.source is io.github.landwarderer.neyon.mihon.model.MihonMangaSource) {
+			buildSpannedString {
+				bold { append("[EXT] ") }
+				append(item.source.getTitle(context))
+			}
+		} else {
+			item.source.getTitle(context)
+		}
+		binding.textViewTitle.text = title
 		binding.textViewDescription.text = item.source.getSummary(context)
 		binding.textViewDescription.drawableStart = if (item.source.isBroken) {
 			ContextCompat.getDrawable(context, R.drawable.ic_off_small)

@@ -15,6 +15,7 @@ import io.github.landwarderer.neyon.core.util.ext.getDisplayName
 import io.github.landwarderer.neyon.core.util.ext.toLocale
 import io.github.landwarderer.neyon.core.util.ext.toLocaleOrNull
 import io.github.landwarderer.neyon.mihon.model.MihonMangaSource
+import io.github.landwarderer.neyon.mihon.parsers.model.ContentType as MihonContentType
 import org.koitharu.kotatsu.parsers.model.ContentType
 import org.koitharu.kotatsu.parsers.model.MangaParserSource
 import org.koitharu.kotatsu.parsers.model.MangaSource
@@ -72,12 +73,11 @@ fun MangaSource.isNsfw(): Boolean = when (this) {
 fun MangaSource.isSfw(): Boolean = !isNsfw()
 
 @get:StringRes
-val ContentType.titleResId
+val ContentType.titleResId: Int
 	get() = when (this) {
 		ContentType.MANGA -> R.string.content_type_manga
 		ContentType.HENTAI -> R.string.content_type_hentai
 		ContentType.COMICS -> R.string.content_type_comics
-		ContentType.OTHER -> R.string.content_type_other
 		ContentType.MANHWA -> R.string.content_type_manhwa
 		ContentType.MANHUA -> R.string.content_type_manhua
 		ContentType.NOVEL -> R.string.content_type_novel
@@ -86,6 +86,7 @@ val ContentType.titleResId
 		ContentType.IMAGE_SET -> R.string.content_type_image_set
 		ContentType.ARTIST_CG -> R.string.content_type_artist_cg
 		ContentType.GAME_CG -> R.string.content_type_game_cg
+		ContentType.OTHER -> R.string.content_type_other
 	}
 
 tailrec fun MangaSource.unwrap(): MangaSource = if (this is MangaSourceInfo) {
@@ -94,24 +95,49 @@ tailrec fun MangaSource.unwrap(): MangaSource = if (this is MangaSourceInfo) {
 	this
 }
 
-fun MangaSource.getLocale(): Locale? = (unwrap() as? MangaParserSource)?.locale?.toLocaleOrNull()
-
-fun MangaSource.getSummary(context: Context): String? = when (val source = unwrap()) {
-	is MangaParserSource -> {
-		val type = context.getString(source.contentType.titleResId)
-		val locale = source.locale.toLocale().getDisplayName(context)
-		context.getString(R.string.source_summary_pattern, type, locale)
+val MangaSource.locale: String
+	get() = when (val s = unwrap()) {
+		is MangaParserSource -> s.locale
+		is MihonMangaSource -> s.language
+		else -> ""
 	}
 
-	is ExternalMangaSource -> context.getString(R.string.external_source)
-
-	is MihonMangaSource -> {
-		val type = context.getString(R.string.extension_source)
-		val locale = source.language.toLocale().getDisplayName(context)
-		context.getString(R.string.source_summary_pattern, type, locale)
+val MangaSource.contentType: ContentType
+	get() = when (val s = unwrap()) {
+		is MangaParserSource -> s.contentType
+		is MihonMangaSource -> when (s.contentType) {
+			MihonContentType.MANGA -> ContentType.MANGA
+			MihonContentType.MANHWA -> ContentType.MANHWA
+			MihonContentType.MANHUA -> ContentType.MANHUA
+			MihonContentType.HENTAI_MANGA, MihonContentType.HENTAI_NOVEL, MihonContentType.HENTAI_VIDEO -> ContentType.HENTAI
+			MihonContentType.COMICS -> ContentType.COMICS
+			MihonContentType.VIDEO -> ContentType.OTHER
+			MihonContentType.NOVEL -> ContentType.NOVEL
+			MihonContentType.ONE_SHOT -> ContentType.ONE_SHOT
+			MihonContentType.DOUJINSHI -> ContentType.DOUJINSHI
+			MihonContentType.IMAGE_SET -> ContentType.IMAGE_SET
+			MihonContentType.ARTIST_CG -> ContentType.ARTIST_CG
+			MihonContentType.GAME_CG -> ContentType.GAME_CG
+			MihonContentType.OTHER -> ContentType.OTHER
+		}
+		else -> ContentType.OTHER
 	}
 
-	else -> null
+fun MangaSource.getLocale(): Locale? = locale.toLocaleOrNull()
+
+fun MangaSource.getSummary(context: Context): String? {
+	val source = unwrap()
+	if (source is ExternalMangaSource) {
+		return context.getString(R.string.external_source)
+	}
+
+	val type = context.getString(contentType.titleResId)
+	val localeName = locale.toLocaleOrNull()?.getDisplayName(context) ?: locale
+	return if (type.isNotEmpty() && localeName.isNotEmpty()) {
+		context.getString(R.string.source_summary_pattern, type, localeName)
+	} else {
+		null
+	}
 }
 
 fun MangaSource.getTitle(context: Context): String = when (val source = unwrap()) {
@@ -122,6 +148,9 @@ fun MangaSource.getTitle(context: Context): String = when (val source = unwrap()
 	is MihonMangaSource -> source.displayName
 	else -> context.getString(R.string.unknown)
 }
+
+val MangaSource.isBroken: Boolean
+	get() = (this as? MangaParserSource)?.isBroken == true
 
 fun SpannableStringBuilder.appendIcon(textView: TextView, @DrawableRes resId: Int): SpannableStringBuilder {
 	val icon = ContextCompat.getDrawable(textView.context, resId) ?: return this
