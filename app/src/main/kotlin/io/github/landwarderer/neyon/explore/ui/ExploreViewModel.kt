@@ -70,6 +70,7 @@ class ExploreViewModel @Inject constructor(
 	val onActionDone = MutableEventFlow<ReversibleAction>()
 	val onShowSuggestionsTip = MutableEventFlow<Unit>()
 	private val isRandomLoading = MutableStateFlow(false)
+	val selectedTab = MutableStateFlow(0)
 
 	val content: StateFlow<List<ListModel>> = isLoading.flatMapLatest { loading ->
 		if (loading) {
@@ -146,8 +147,9 @@ class ExploreViewModel @Inject constructor(
 		isRandomLoading,
 		isAllSourcesEnabled,
 		sourcesRepository.observeHasNewSourcesForBadge(),
-	) { content, suggestions, grid, randomLoading, allSourcesEnabled, newSources ->
-		buildList(content, suggestions, grid, randomLoading, allSourcesEnabled, newSources)
+		selectedTab,
+	) { content, suggestions, grid, randomLoading, allSourcesEnabled, newSources, tab ->
+		buildList(content, suggestions, grid, randomLoading, allSourcesEnabled, newSources, tab)
 	}.withErrorHandling()
 
 	private fun buildList(
@@ -157,39 +159,49 @@ class ExploreViewModel @Inject constructor(
 		randomLoading: Boolean,
 		allSourcesEnabled: Boolean,
 		hasNewSources: Boolean,
+		selectedTab: Int,
 	): List<ListModel> {
-		val result = ArrayList<ListModel>(sources.size + 3)
-		result += ExploreButtons(randomLoading)
-		if (recommendation.isNotEmpty()) {
-			result += ListHeader(R.string.suggestions, R.string.more, R.id.nav_suggestions)
-			result += RecommendationsItem(recommendation.toRecommendationList())
+		val result = ArrayList<ListModel>(sources.size + 4)
+
+		if (selectedTab == 0) {
+			result += ExploreButtons(randomLoading)
+			if (recommendation.isNotEmpty()) {
+				result += ListHeader(R.string.suggestions, R.string.more, R.id.nav_suggestions)
+				result += RecommendationsItem(recommendation.toRecommendationList())
+			}
 		}
 
-		val extensionSources = sources.filter { it.mangaSource is MihonMangaSource }
-		val internalSources = sources.filterNot { it.mangaSource is MihonMangaSource }
+		if (sources.isNotEmpty()) {
+			val (externalSources, internalSources) = sources.partition {
+				it.mangaSource is MihonMangaSource || it.mangaSource is io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource
+			}
 
-		if (internalSources.isNotEmpty()) {
-			result += ListHeader(
-				textRes = R.string.remote_sources,
-				buttonTextRes = if (allSourcesEnabled) R.string.manage else R.string.catalog,
-				badge = if (!allSourcesEnabled && hasNewSources) "" else null,
-			)
-			internalSources.mapTo(result) { MangaSourceItem(it, isGrid) }
+			if (selectedTab == 0 && internalSources.isNotEmpty()) {
+				result += ListHeader(
+					textRes = R.string.remote_sources,
+					buttonTextRes = if (allSourcesEnabled) R.string.manage else R.string.catalog,
+					badge = if (!allSourcesEnabled && hasNewSources) "" else null,
+				)
+				internalSources.mapTo(result) { MangaSourceItem(it, isGrid) }
+			}
+
+			if (selectedTab == 1 && externalSources.isNotEmpty()) {
+				result += ListHeader(
+					textRes = R.string.extension_sources,
+					buttonTextRes = if (allSourcesEnabled) R.string.manage else R.string.catalog,
+					payload = R.id.nav_extensions,
+				)
+				externalSources.mapTo(result) { MangaSourceItem(it, isGrid) }
+			}
 		}
-		if (extensionSources.isNotEmpty()) {
-			result += ListHeader(
-				textRes = R.string.extension_sources,
-				buttonTextRes = R.string.manage,
-				payload = R.id.nav_extensions,
-			)
-			extensionSources.mapTo(result) { MangaSourceItem(it, isGrid) }
-		}
-		if (internalSources.isEmpty() && extensionSources.isEmpty()) {
+
+		if ((selectedTab == 0 && !sources.any { it.mangaSource !is MihonMangaSource && it.mangaSource !is io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource }) ||
+			(selectedTab == 1 && !sources.any { it.mangaSource is MihonMangaSource || it.mangaSource is io.github.landwarderer.neyon.core.parser.external.ExternalMangaSource })) {
 			result += EmptyHint(
 				icon = R.drawable.ic_empty_common,
 				textPrimary = R.string.no_manga_sources,
 				textSecondary = R.string.no_manga_sources_text,
-				actionStringRes = R.string.catalog,
+				actionStringRes = if (selectedTab == 1) R.string.extensions_manager else R.string.catalog,
 			)
 		}
 		return result

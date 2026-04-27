@@ -74,6 +74,13 @@ class ExploreFragment :
 			registryOwner = this,
 			callback = this,
 		)
+		binding.tabLayout.addOnTabSelectedListener(object : com.google.android.material.tabs.TabLayout.OnTabSelectedListener {
+			override fun onTabSelected(tab: com.google.android.material.tabs.TabLayout.Tab) {
+				viewModel.selectedTab.value = tab.position
+			}
+			override fun onTabUnselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+			override fun onTabReselected(tab: com.google.android.material.tabs.TabLayout.Tab) {}
+		})
 		with(binding.recyclerView) {
 			adapter = exploreAdapter
 			setHasFixedSize(true)
