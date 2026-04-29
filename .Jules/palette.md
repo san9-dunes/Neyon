@@ -1,0 +1,3 @@
+## 2026-04-29 - Add tooltips to icon-only buttons
+**Learning:** Found that some generic views like FloatingActionButton and ImageButton within the codebase were relying solely on `android:contentDescription` for accessibility, which serves screen readers well but lacks visual feedback for users on desktop environments (like ChromeOS) or those utilizing mouse/stylus hover interactions.
+**Action:** When adding or reviewing new interactive views with purely graphical content, ensure `android:tooltipText` (or `app:tooltipText` where appropriate) is consistently provided alongside `android:contentDescription` for inclusive UX.
