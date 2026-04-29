@@ -1,3 +1,6 @@
 ## 2024-05-24 - Bulk Insert Optimization in Room
 **Learning:** Found an N+1 insertion problem in `MangaDao.upsert` where tags were inserted one by one in a loop (`.forEach { insert(it) }`). Room can process these much faster as a single bulk operation (`insert(tags)`).
 **Action:** Always verify if iterative DAO `insert`/`update`/`delete` calls can be replaced with a single method accepting a `Collection` for better performance.
+## $(date +%Y-%m-%d) - Bulk Insert Optimization in Repositories
+**Learning:** Found an N+1 insertion problem in `SuggestionRepository.replace` where suggestions, tags, and relations were inserted iteratively in a `.forEach` loop. Grouping tags, mangas, and suggestion entities into lists and using Room's native `@Upsert` and `IN` clause queries significantly reduces SQLite transaction overhead. Also, mapping multiple items into a flat list can produce duplicates; however, Room's `@Upsert` handles conflicts gracefully, so pre-deduplicating in memory (e.g., using `distinctBy`) is an optional minor enhancement but not strictly necessary.
+**Action:** When a repository updates multiple entities in a transaction, aggregate the objects into collections and update the respective DAOs to accept `Collection<T>` instead of looping over single-item inserts.
