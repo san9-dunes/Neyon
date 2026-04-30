@@ -1,0 +1,1 @@
+## 2024-05-24 - Accessibility standards in XML layouts\n**Learning:** ImageButtons require both `contentDescription` for screen readers and `tooltipText` for visual hover/long-press feedback in this app's components to ensure proper accessibility.\n**Action:** Always add `tooltipText` when adding or modifying `ImageButton` or `FloatingActionButton` if it's missing.
