@@ -23,10 +23,12 @@ import io.github.landwarderer.neyon.core.exceptions.CloudFlareProtectedException
 import io.github.landwarderer.neyon.core.exceptions.resolve.CaptchaHandler
 import io.github.landwarderer.neyon.core.model.MangaSource
 import io.github.landwarderer.neyon.core.nav.AppRouter
+import io.github.landwarderer.neyon.core.network.BaseHttpClient
 import io.github.landwarderer.neyon.core.network.cookies.MutableCookieJar
 import io.github.landwarderer.neyon.core.parser.ParserMangaRepository
 import io.github.landwarderer.neyon.core.util.ext.getDisplayMessage
 import io.github.landwarderer.neyon.core.util.ext.printStackTraceDebug
+import okhttp3.OkHttpClient
 import org.koitharu.kotatsu.parsers.config.ConfigKey
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.network.CloudFlareHelper
@@ -38,6 +40,10 @@ import javax.inject.Inject
 class CloudFlareActivity : BaseBrowserActivity(), CloudFlareCallback {
 
 	private var pendingResult = RESULT_CANCELED
+
+	@Inject
+	@BaseHttpClient
+	lateinit var baseHttpClient: OkHttpClient
 
 	@Inject
 	lateinit var cookieJar: MutableCookieJar
@@ -61,7 +67,7 @@ class CloudFlareActivity : BaseBrowserActivity(), CloudFlareCallback {
 
 		cfClient = if (needsInterception) {
 			Log.d(TAG, "Using CloudFlareInterceptClient with header filtering")
-			CloudFlareInterceptClient(cookieJar, this, adBlock, url)
+			CloudFlareInterceptClient(baseHttpClient, cookieJar, this, adBlock, url)
 		} else {
 			Log.d(TAG, "Using regular CloudFlareClient (no interception)")
 			CloudFlareClient(cookieJar, this, adBlock, url)
