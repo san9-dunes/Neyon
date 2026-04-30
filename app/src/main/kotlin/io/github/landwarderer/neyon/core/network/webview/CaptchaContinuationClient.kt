@@ -13,12 +13,20 @@ import java.util.concurrent.TimeUnit
 import kotlin.toString
 
 class CaptchaContinuationClient(
+    private val baseHttpClient: OkHttpClient,
     private val cookieJar: MutableCookieJar,
     private val targetUrl: String,
     continuation: Continuation<Unit>,
 ) : ContinuationResumeWebViewClient(continuation) {
 
     private val oldClearance = CloudFlareHelper.getClearanceCookie(cookieJar, targetUrl)
+
+    private val interceptClient by lazy {
+        baseHttpClient.newBuilder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
+    }
 
     override fun onPageFinished(view: WebView?, url: String?) = Unit
 
@@ -35,11 +43,6 @@ class CaptchaContinuationClient(
             if (request.method == "POST") {
                 return super.shouldInterceptRequest(view, request)
             }
-
-            val client = OkHttpClient.Builder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(15, TimeUnit.SECONDS)
-                .build()
 
             val requestBuilder = Request.Builder()
                 .url(request.url.toString())
@@ -58,7 +61,7 @@ class CaptchaContinuationClient(
                 }
             }
 
-            val response = client.newCall(requestBuilder.build()).execute()
+            val response = interceptClient.newCall(requestBuilder.build()).execute()
 
             val contentType = response.header("Content-Type", "text/html")
             val mimeType = contentType?.split(";")?.get(0)?.trim() ?: "text/html"

@@ -20,11 +20,20 @@ private const val TAG = "CFInterceptClient"
  * Filters out sec-ch-ua, sec-ch-ua-full-version-list, and x-requested-with headers
  */
 class CloudFlareInterceptClient(
+	private val baseHttpClient: OkHttpClient,
 	private val cookieJar: MutableCookieJar,
 	callback: CloudFlareCallback,
 	adBlock: AdBlock,
 	targetUrl: String,
 ) : CloudFlareClient(cookieJar, callback, adBlock, targetUrl) {
+
+	private val interceptClient by lazy {
+		baseHttpClient.newBuilder()
+			.cookieJar(cookieJar)
+			.connectTimeout(15, TimeUnit.SECONDS)
+			.readTimeout(15, TimeUnit.SECONDS)
+			.build()
+	}
 
 	private val targetUri = runCatching { URI(targetUrl) }.getOrNull()
 
@@ -50,12 +59,6 @@ class CloudFlareInterceptClient(
 
 			Log.d(TAG, "Intercepting request: ${request.url}")
 
-			val client = OkHttpClient.Builder()
-				.cookieJar(cookieJar)
-				.connectTimeout(15, TimeUnit.SECONDS)
-				.readTimeout(15, TimeUnit.SECONDS)
-				.build()
-
 			val requestBuilder = Request.Builder()
 				.url(request.url.toString())
 				.method(request.method, null)
@@ -74,7 +77,7 @@ class CloudFlareInterceptClient(
 				Log.d(TAG, "Blocked headers: ${blockedCount.joinToString(", ")}")
 			}
 
-			val response = client.newCall(requestBuilder.build()).execute()
+			val response = interceptClient.newCall(requestBuilder.build()).execute()
 
 			val contentType = response.header("Content-Type")
 			val mimeType: String
