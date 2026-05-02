@@ -1,0 +1,3 @@
+## 2026-05-02 - [ExtendedFloatingActionButtons need explicit accessibility context]
+**Learning:** ExtendedFloatingActionButtons (EFABs) in this app often shrink to an icon-only state on scroll or via behavior. When this happens, the accessibility context provided by `android:text` is lost, leaving screen readers and hover states with no information about the button's purpose.
+**Action:** Always explicitly define `android:contentDescription` and `android:tooltipText` for EFABs, especially if they use behaviors like `ShrinkOnScrollBehavior` or act as primary actions that can collapse, ensuring context is preserved in all visual states.
