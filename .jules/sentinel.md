@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2025-03-01 - [Sentinel] Prevent local file exfiltration via WebView in parsers
+**Vulnerability:** WebView configured with `javaScriptEnabled = true` but missing explicit `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` checks. This configuration is used for Manga parsers and leaves the app vulnerable to local file read via `file://` scheme because these permissions are enabled by default on older API levels (the app supports `minSdk = 23`).
+**Learning:** When JavaScript execution is explicitly permitted on untrusted content, `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` must be explicitly disabled, in addition to `allowFileAccess = false`, to fully mitigate file-based XSS attacks on older Android versions.
+**Prevention:** Always verify that `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` are explicitly set when initializing `WebView`s with JavaScript enabled.
