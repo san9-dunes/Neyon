@@ -1,0 +1,3 @@
+## 2024-05-24 - ExtendedFloatingActionButton Accessibility in Collapsed State
+**Learning:** When an `ExtendedFloatingActionButton` shrinks on scroll (e.g., via `ShrinkOnScrollBehavior`), its `android:text` is visually hidden, leaving only the icon. This state change removes the visible label, making the button's purpose unclear to sighted users relying on hover, and to screen reader users if no content description is provided.
+**Action:** Always provide explicit `android:contentDescription` (for screen readers) and `android:tooltipText` (for hover/long-press visual feedback) on `ExtendedFloatingActionButton`s that shrink to an icon-only state, ensuring their intent remains accessible regardless of the scroll state.
