@@ -79,8 +79,14 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 	@Query("DELETE FROM tracks WHERE manga_id NOT IN (SELECT manga_id FROM history WHERE history.deleted_at = 0 UNION SELECT manga_id FROM favourites WHERE favourites.deleted_at = 0 AND category_id IN (SELECT category_id FROM favourite_categories WHERE favourite_categories.deleted_at = 0 AND track = 1))")
 	abstract suspend fun gc()
 
+	@Query("DELETE FROM tracks WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun deleteAll(mangaIds: Collection<Long>)
+
 	@Upsert
 	abstract suspend fun upsert(entity: TrackEntity)
+
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<TrackEntity>)
 
 	@Transaction
 	@RawQuery(observedEntities = [TrackEntity::class])
