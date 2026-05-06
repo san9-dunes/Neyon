@@ -1,0 +1,3 @@
+## 2024-05-06 - ExtendedFloatingActionButton Accessibility When Shrunk
+**Learning:** `ExtendedFloatingActionButton` elements configured to shrink on scroll (e.g. using custom behaviors like `ShrinkOnScrollBehavior` or `MainActionButtonBehavior`) lose the accessibility and hover context provided by their `android:text` attribute when they enter the collapsed (icon-only) state.
+**Action:** Always explicitly define both `android:contentDescription` for screen readers and `android:tooltipText` for mouse/stylus hover interactions on any `ExtendedFloatingActionButton` that can shrink, ensuring the interactive purpose remains clear regardless of state.
