@@ -1,3 +1,7 @@
-## 2024-05-24 - Bulk Insert Optimization in Room
-**Learning:** Found an N+1 insertion problem in `MangaDao.upsert` where tags were inserted one by one in a loop (`.forEach { insert(it) }`). Room can process these much faster as a single bulk operation (`insert(tags)`).
-**Action:** Always verify if iterative DAO `insert`/`update`/`delete` calls can be replaced with a single method accepting a `Collection` for better performance.
+## 2024-05-24 - Bulk Operations in Room
+**Learning:** Replaced iterative `.forEach { insertTagRelation(it) }` with a single bulk `insertTagRelations(tags)` call. Resolves N+1 query problem, drastically reducing SQLite transaction overhead during bulk upserts.
+**Action:** When updating database in loops, use bulk queries (IN clauses or @Upsert with collections) whenever possible. Room >= 2.4.0 automatically chunks IN collections to prevent SQLite parameter limits.
+
+## 2024-05-24 - Bulk Operations in TrackingRepository
+**Learning:** Replaced iterative `dao.upsert(TrackEntity.create(mangaId))`, `dao.clearCounter(id)`, and `dao.delete(mangaId)` with single bulk `dao.upsertAll(tracksToInsert)`, `dao.clearCounters(ids)`, and `dao.deleteAll(ids)` calls. Resolves N+1 query problems in TrackingRepository, drastically reducing SQLite transaction overhead during bulk updates. Room >= 2.4.0 automatically chunks IN collections to prevent SQLite parameter limits.
+**Action:** When updating database in loops, use bulk queries (IN clauses or @Upsert with collections) whenever possible to prevent performance bottlenecks.
