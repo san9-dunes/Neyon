@@ -178,11 +178,7 @@ class TrackingRepository @Inject constructor(
 		when {
 			ids.isEmpty() -> return
 			ids.size == 1 -> db.getTracksDao().clearCounter(ids.single())
-			else -> db.withTransaction {
-				for (id in ids) {
-					db.getTracksDao().clearCounter(id)
-				}
-			}
+			else -> db.getTracksDao().clearCounters(ids)
 		}
 	}
 
@@ -212,12 +208,14 @@ class TrackingRepository @Inject constructor(
 		dao.gc()
 		val ids = dao.findAllIds().toMutableSet()
 		val size = ids.size
+		val tracksToInsert = mutableListOf<TrackEntity>()
+
 		// history
 		if (AppSettings.TRACK_HISTORY in settings.trackSources) {
 			val historyIds = db.getHistoryDao().findAllIds()
 			for (mangaId in historyIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					tracksToInsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
@@ -226,13 +224,17 @@ class TrackingRepository @Inject constructor(
 			val favoritesIds = db.getFavouritesDao().findIdsWithTrack()
 			for (mangaId in favoritesIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					tracksToInsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
+		// insert new
+		if (tracksToInsert.isNotEmpty()) {
+			dao.upsertAll(tracksToInsert)
+		}
 		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
+		if (ids.isNotEmpty()) {
+			dao.deleteAll(ids)
 		}
 		size - ids.size
 	}
