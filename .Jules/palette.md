@@ -1,0 +1,3 @@
+## 2024-05-19 - [ExtendedFloatingActionButton Shrink Accessibility]
+**Learning:** In the `neyon` project, `ExtendedFloatingActionButton` elements often use scroll behaviors (like `MainActionButtonBehavior` or `ShrinkOnScrollBehavior`) that collapse the button to an icon-only state upon scrolling. When this happens, the context provided by `android:text` is lost, which degrades accessibility for screen readers and breaks visual hover support.
+**Action:** Always explicitly define `android:contentDescription` and `android:tooltipText` on `ExtendedFloatingActionButton` elements in this project to preserve accessibility context even when the text label is visually hidden.
