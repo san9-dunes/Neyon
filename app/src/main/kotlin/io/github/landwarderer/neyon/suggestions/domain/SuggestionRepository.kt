@@ -14,6 +14,7 @@ import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.model.MangaTag
+import io.github.landwarderer.neyon.core.db.entity.TagEntity
 import io.github.landwarderer.neyon.suggestions.data.SuggestionEntity
 import io.github.landwarderer.neyon.suggestions.data.SuggestionWithManga
 import javax.inject.Inject
@@ -61,20 +62,30 @@ class SuggestionRepository @Inject constructor(
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
+
+			val allTags = mutableListOf<TagEntity>()
+			val allMangaEntities = mutableListOf<io.github.landwarderer.neyon.core.db.entity.MangaEntity>()
+			val allSuggestionEntities = mutableListOf<SuggestionEntity>()
+
 			suggestions.forEach { suggestion ->
 				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
+				allTags.addAll(manga.tags.toEntities())
+				allMangaEntities.add(manga.toEntity())
+				allSuggestionEntities.add(
 					SuggestionEntity(
 						mangaId = manga.id,
 						relevance = suggestion.relevance,
 						reason = suggestion.reason,
 						createdAt = System.currentTimeMillis(),
-					),
+					)
 				)
 			}
+
+			db.getTagsDao().upsert(allTags.distinctBy { it.id })
+			db.getMangaDao().upsertAllWithTags(allMangaEntities) { mangaEntity ->
+				suggestions.find { it.manga.id == mangaEntity.id }?.manga?.tags?.toEntities()
+			}
+			db.getSuggestionDao().upsertAll(allSuggestionEntities)
 		}
 	}
 

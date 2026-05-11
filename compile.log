@@ -1,0 +1,864 @@
+
+> Configure project :app
+WARNING: The option setting 'android.usesSdkInManifest.disallowed=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.sdk.defaultTargetSdkToCompileSdkIfUnset=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.enableAppCompileTimeRClass=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.builtInKotlin=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.newDsl=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.r8.optimizedResourceShrinking=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.defaults.buildfeatures.resvalues=true' is deprecated.
+The current default is 'false'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+WARNING: The option setting 'android.nonFinalResIds=false' is deprecated.
+The current default is 'true'.
+It will be removed in version 10.0 of the Android Gradle plugin.
+⚠️ No keystore found - signing may fail
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The property android.dependency.excludeLibraryComponentsFromConstraints improves project import performance for very large projects. It should be enabled to improve performance.
+To suppress this warning, add android.generateSyncIssueWhenLibraryConstraintsAreEnabled=false to gradle.properties
+WARNING: The specified Android SDK Build Tools version (35.0.0) is ignored, as it is below the minimum supported version (36.0.0) for Android Gradle Plugin 9.1.1.
+Android SDK Build Tools 36.0.0 will be used.
+To suppress this warning, remove "buildToolsVersion '35.0.0'" from your build.gradle file, as each version of the Android Gradle Plugin now has a default version of the build tools.
+
+> Task :app:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDebugBuild UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
+> Task :app:generateDebugResValues UP-TO-DATE
+> Task :app:generateDebugResources UP-TO-DATE
+> Task :app:mergeDebugResources UP-TO-DATE
+> Task :app:packageDebugResources UP-TO-DATE
+> Task :app:processDebugNavigationResources UP-TO-DATE
+> Task :app:parseDebugLocalResources UP-TO-DATE
+> Task :app:dataBindingGenBaseClassesDebug UP-TO-DATE
+> Task :app:generateDebugBuildConfig UP-TO-DATE
+> Task :app:checkDebugAarMetadata UP-TO-DATE
+> Task :app:mapDebugSourceSetPaths UP-TO-DATE
+> Task :app:compileDebugNavigationResources UP-TO-DATE
+> Task :app:createDebugCompatibleScreenManifests UP-TO-DATE
+> Task :app:extractDeepLinksDebug UP-TO-DATE
+> Task :app:processDebugMainManifest UP-TO-DATE
+> Task :app:processDebugManifest UP-TO-DATE
+> Task :app:processDebugManifestForPackage UP-TO-DATE
+> Task :app:processDebugResources UP-TO-DATE
+> Task :app:kspDebugKotlin
+> Task :app:copyRoomSchemas NO-SOURCE
+> Task :app:compileDebugKotlin
+Unable to release compile session, maybe daemon is already down
+java.rmi.ConnectException: Connection refused to host: 127.0.0.1; nested exception is:
+	java.net.ConnectException: Connection refused
+	at java.rmi/sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:625)
+	at java.rmi/sun.rmi.transport.tcp.TCPChannel.createConnection(TCPChannel.java:217)
+	at java.rmi/sun.rmi.transport.tcp.TCPChannel.newConnection(TCPChannel.java:204)
+	at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:134)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invokeRemoteMethod(RemoteObjectInvocationHandler.java:215)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invoke(RemoteObjectInvocationHandler.java:160)
+	at jdk.proxy4/jdk.proxy4.$Proxy178.releaseCompileSession(Unknown Source)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:261)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:74)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:269)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:42)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:267)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:259)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.net.ConnectException: Connection refused
+	at java.base/sun.nio.ch.Net.connect0(Native Method)
+	at java.base/sun.nio.ch.Net.connect(Net.java:601)
+	at java.base/sun.nio.ch.Net.connect(Net.java:590)
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:583)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/java.net.Socket.connect(Socket.java:686)
+	at java.base/java.net.Socket.<init>(Socket.java:555)
+	at java.base/java.net.Socket.<init>(Socket.java:356)
+	at org.jetbrains.kotlin.daemon.common.LoopbackNetworkInterface$ClientLoopbackSocketFactory.socketCreate(NetworkUtils.kt:94)
+	at org.jetbrains.kotlin.daemon.common.LoopbackNetworkInterface$ClientLoopbackSocketFactory.socketCreate(NetworkUtils.kt:93)
+	at org.jetbrains.kotlin.daemon.common.LoopbackNetworkInterface$AbstractClientLoopbackSocketFactory.createSocket(NetworkUtils.kt:83)
+	at org.jetbrains.kotlin.daemon.common.LoopbackNetworkInterface$ClientLoopbackSocketFactory.createSocket(NetworkUtils.kt:93)
+	at java.rmi/sun.rmi.transport.tcp.TCPEndpoint.newSocket(TCPEndpoint.java:619)
+	... 47 more
+e: Daemon compilation failed: Connection to the Kotlin daemon has been unexpectedly lost. This might be caused by the daemon being killed by another process or the operating system, or by JVM crash.
+org.jetbrains.kotlin.gradle.tasks.DaemonCrashedException: Connection to the Kotlin daemon has been unexpectedly lost. This might be caused by the daemon being killed by another process or the operating system, or by JVM crash.
+	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.wrapCompilationExceptionIfNeeded(tasksUtils.kt:54)
+	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.wrapAndRethrowCompilationException(tasksUtils.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:243)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:74)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:269)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:42)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:267)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:259)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.rmi.UnmarshalException: Error unmarshaling return header; nested exception is:
+	java.io.EOFException
+	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:255)
+	at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:166)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invokeRemoteMethod(RemoteObjectInvocationHandler.java:215)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invoke(RemoteObjectInvocationHandler.java:160)
+	at jdk.proxy4/jdk.proxy4.$Proxy178.compile(Unknown Source)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.incrementalCompilationWithDaemon(GradleKotlinCompilerWork.kt:328)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:235)
+	... 40 more
+Caused by: java.io.EOFException
+	at java.base/java.io.DataInputStream.readUnsignedByte(DataInputStream.java:297)
+	at java.base/java.io.DataInputStream.readByte(DataInputStream.java:275)
+	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:241)
+	... 46 more
+
+Failed to compile with Kotlin daemon: org.jetbrains.kotlin.gradle.tasks.DaemonCrashedException: Connection to the Kotlin daemon has been unexpectedly lost. This might be caused by the daemon being killed by another process or the operating system, or by JVM crash.
+	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.wrapCompilationExceptionIfNeeded(tasksUtils.kt:54)
+	at org.jetbrains.kotlin.gradle.tasks.TasksUtilsKt.wrapAndRethrowCompilationException(tasksUtils.kt:65)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:243)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemonOrFallbackImpl(GradleKotlinCompilerWork.kt:159)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.run(GradleKotlinCompilerWork.kt:111)
+	at org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction.execute(GradleCompilerRunnerWithWorkers.kt:74)
+	at org.gradle.workers.internal.DefaultWorkerServer.execute(DefaultWorkerServer.java:68)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:64)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1$1.create(NoIsolationWorkerFactory.java:61)
+	at org.gradle.internal.classloader.ClassLoaderUtils.executeInClassloader(ClassLoaderUtils.java:102)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.lambda$execute$0(NoIsolationWorkerFactory.java:61)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:44)
+	at org.gradle.workers.internal.AbstractWorker$1.call(AbstractWorker.java:41)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
+	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
+	at org.gradle.workers.internal.AbstractWorker.executeWrappedInBuildOperation(AbstractWorker.java:41)
+	at org.gradle.workers.internal.NoIsolationWorkerFactory$1.execute(NoIsolationWorkerFactory.java:58)
+	at org.gradle.workers.internal.DefaultWorkerExecutor.lambda$submitWork$0(DefaultWorkerExecutor.java:176)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runExecution(DefaultConditionalExecutionQueue.java:194)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.access$700(DefaultConditionalExecutionQueue.java:127)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner$1.run(DefaultConditionalExecutionQueue.java:169)
+	at org.gradle.internal.Factories$1.create(Factories.java:30)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.lambda$withLocksAcquired$0(DefaultWorkerLeaseService.java:269)
+	at org.gradle.internal.work.ResourceLockStatistics$1.measure(ResourceLockStatistics.java:42)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocksAcquired(DefaultWorkerLeaseService.java:267)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.withLocks(DefaultWorkerLeaseService.java:259)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:127)
+	at org.gradle.internal.work.DefaultWorkerLeaseService.runAsWorkerThread(DefaultWorkerLeaseService.java:132)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.runBatch(DefaultConditionalExecutionQueue.java:164)
+	at org.gradle.internal.work.DefaultConditionalExecutionQueue$ExecutionRunner.run(DefaultConditionalExecutionQueue.java:133)
+	at java.base/java.util.concurrent.Executors$RunnableAdapter.call(Executors.java:572)
+	at java.base/java.util.concurrent.FutureTask.run(FutureTask.java:317)
+	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
+	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:47)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.rmi.UnmarshalException: Error unmarshaling return header; nested exception is:
+	java.io.EOFException
+	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:255)
+	at java.rmi/sun.rmi.server.UnicastRef.invoke(UnicastRef.java:166)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invokeRemoteMethod(RemoteObjectInvocationHandler.java:215)
+	at java.rmi/java.rmi.server.RemoteObjectInvocationHandler.invoke(RemoteObjectInvocationHandler.java:160)
+	at jdk.proxy4/jdk.proxy4.$Proxy178.compile(Unknown Source)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.incrementalCompilationWithDaemon(GradleKotlinCompilerWork.kt:328)
+	at org.jetbrains.kotlin.compilerRunner.GradleKotlinCompilerWork.compileWithDaemon(GradleKotlinCompilerWork.kt:235)
+	... 40 more
+Caused by: java.io.EOFException
+	at java.base/java.io.DataInputStream.readUnsignedByte(DataInputStream.java:297)
+	at java.base/java.io.DataInputStream.readByte(DataInputStream.java:275)
+	at java.rmi/sun.rmi.transport.StreamRemoteCall.executeCall(StreamRemoteCall.java:241)
+	... 46 more
+Using fallback strategy: Compile without Kotlin daemon
+Try ./gradlew --stop if this issue persists
+If it does not look related to your configuration, please file an issue with logs to https://kotl.in/issue
+exception: app/src/debug/kotlin/io/github/landwarderer/neyon/StrictModeNotifier.kt:17:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/debug/kotlin/io/github/landwarderer/neyon/StrictModeNotifier.kt:59:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(context).getShareTextIntent(violation.stackTraceToString()),
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/eu/kanade/tachiyomi/network/OkHttpExtensions.kt:73:30: warning: 'fun resume(value: Response, onCancellation: ((@ParameterName(...) Throwable) -> Unit)?): Unit' is deprecated. Use the overload that also accepts the `value` and the coroutine context in lambda.
+exception:                 continuation.resume(response) {
+exception:                              ^^^^^^
+exception: app/src/main/kotlin/eu/kanade/tachiyomi/source/online/HttpSource.kt:207:16: warning: 'fun fetchImageUrl(page: Page): Observable<String>' is deprecated. Use the non-RxJava API instead.
+exception:         return fetchImageUrl(page).toBlocking().first()
+exception:                ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/alternatives/ui/AlternativesActivity.kt:101:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/alternatives/ui/AlternativesActivity.kt:112:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/bookmarks/ui/AllBookmarksFragment.kt:115:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/bookmarks/ui/AllBookmarksFragment.kt:123:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/browser/BrowserClient.kt:52:9: warning: 'fun shouldInterceptRequest(p0: WebView!, p1: String!): WebResourceResponse?' is deprecated. Deprecated in Java.
+exception: 		super.shouldInterceptRequest(view, url)
+exception:         ^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/cache/MemoryContentCache.kt:72:15: warning: this declaration overrides a deprecated member but is not marked as deprecated itself. Add the '@Deprecated' annotation or suppress the diagnostic.
+exception: 	override fun onLowMemory() = Unit
+exception:               ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/cache/MemoryContentCache.kt:82:24: warning: 'static field TRIM_MEMORY_RUNNING_CRITICAL: Int' is deprecated. Deprecated in Java.
+exception: 			ComponentCallbacks2.TRIM_MEMORY_RUNNING_CRITICAL,
+exception:                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/cache/MemoryContentCache.kt:83:24: warning: 'static field TRIM_MEMORY_COMPLETE: Int' is deprecated. Deprecated in Java.
+exception: 			ComponentCallbacks2.TRIM_MEMORY_COMPLETE,
+exception:                        ^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/cache/MemoryContentCache.kt:84:24: warning: 'static field TRIM_MEMORY_MODERATE: Int' is deprecated. Deprecated in Java.
+exception: 			ComponentCallbacks2.TRIM_MEMORY_MODERATE -> cache.clear()
+exception:                        ^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/cache/MemoryContentCache.kt:87:24: warning: 'static field TRIM_MEMORY_RUNNING_LOW: Int' is deprecated. Deprecated in Java.
+exception: 			ComponentCallbacks2.TRIM_MEMORY_RUNNING_LOW,
+exception:                        ^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/db/DatabasePrePopulateCallback.kt:14:4: warning: type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>' & 'Serializable']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+exception: 			arrayOf(
+exception:    ^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/db/MangaDatabase.kt:170:63: warning: this is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+exception: 		processLifecycleScope.launch(Dispatchers.IO, CoroutineStart.ATOMIC) {
+exception:                                                               ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/db/entity/EntityMapping.kt:77:11: warning: 'val isNsfw: Boolean' is deprecated. Use contentRating instead.
+exception: 	isNsfw = isNsfw,
+exception:           ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/db/migrations/Migration16To17.kt:32:5: warning: type argument for reified type parameter 'T' was inferred to the intersection of ['Comparable<*>' & 'Serializable']. Reification of an intersection type results in the common supertype being used. This may lead to subtle issues and an explicit type argument is encouraged. This will become an error in a future release.
+exception: 				arrayOf(name, (!isHidden).toInt(), sortKey),
+exception:     ^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/image/BitmapDecoderCompat.kt:46:29: warning: 'fun InputStream.toByteBuffer(): ByteBuffer' is deprecated.
+exception: 			return decodeAvif(stream.toByteBuffer())
+exception:                             ^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/image/BitmapDecoderCompat.kt:53:27: warning: 'fun InputStream.toByteBuffer(): ByteBuffer' is deprecated.
+exception: 		val byteBuffer = stream.toByteBuffer()
+exception:                           ^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/model/GenericSortOrder.kt:28:29: warning: 'enum class GenericSortOrder : Enum<GenericSortOrder>' is deprecated.
+exception: 		fun of(order: SortOrder): GenericSortOrder = entries.first { e ->
+exception:                             ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/network/webview/RequestInterceptorWebViewClient.kt:60:33: warning: the corresponding parameter in the supertype 'BrowserClient' is named 'webView'. This may cause problems when calling this function with named arguments.
+exception:     override fun onPageFinished(view: WebView, url: String) {
+exception:                                 ^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/network/webview/adblock/AdBlock.kt:98:14: warning: 'fun Response.requireBody(): ResponseBody' is deprecated. Useless since OkHttp 5.0.
+exception: 				response.requireBody().source().use { source ->
+exception:              ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/parser/MangaLinkResolver.kt:76:10: warning: 'val altTitle: String?' is deprecated. Please use altTitles.
+exception: 				seed.altTitle
+exception:          ^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/parser/MangaLinkResolver.kt:78:10: warning: 'val author: String?' is deprecated. Please use authors.
+exception: 				seed.author
+exception:          ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/parser/MangaLinkResolver.kt:91:79: warning: 'constructor(id: Long, title: String, altTitle: String?, url: String, publicUrl: String, rating: Float, isNsfw: Boolean, coverUrl: String?, tags: Set<MangaTag>, state: MangaState?, author: String?, largeCoverUrl: String? = ..., description: String? = ..., chapters: List<MangaChapter>? = ..., source: MangaSource): Manga' is deprecated. Use other constructor.
+exception: 	private fun getSeedManga(source: MangaSource, url: String, title: String?) = Manga(
+exception:                                                                               ^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/parser/external/ExternalPluginContentSource.kt:172:17: warning: 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+exception: 						result += Locale(cursor.getString(COLUMN_NAME))
+exception:                 ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/BaseFullscreenActivity.kt:21:4: warning: 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+exception: 			statusBarColor = Color.TRANSPARENT
+exception:    ^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/BaseFullscreenActivity.kt:22:4: warning: 'var navigationBarColor: Int' is deprecated. Deprecated in Java.
+exception: 			navigationBarColor = if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O_MR1) {
+exception:    ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/BasePreferenceFragment.kt:65:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/BasePreferenceFragment.kt:74:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/FragmentContainerActivity.kt:50:17: warning: 'fun WindowInsetsCompat.consumeSystemBarsInsets(left: Boolean = ..., top: Boolean = ..., right: Boolean = ..., bottom: Boolean = ...): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeSystemBarsInsets(top = true)
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/util/ActionModeDelegate.kt:42:35: warning: 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+exception: 			defaultStatusBarColor = window.statusBarColor
+exception:                                   ^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/util/ActionModeDelegate.kt:43:11: warning: 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+exception: 			window.statusBarColor = actionModeColor
+exception:           ^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/util/ActionModeDelegate.kt:60:11: warning: 'var statusBarColor: Int' is deprecated. Deprecated in Java.
+exception: 			window.statusBarColor = defaultStatusBarColor
+exception:           ^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/util/ReversibleHandle.kt:17:99: warning: this is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+exception: fun ReversibleHandle.reverseAsync() = processLifecycleScope.launch(Dispatchers.IO, CoroutineStart.ATOMIC) {
+exception:                                                                                                   ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/widgets/TipView.kt:73:11: warning: 'fun TypedArray.getDrawableCompat(context: Context, index: Int): Drawable?' is deprecated.
+exception: 			icon = getDrawableCompat(context, R.styleable.TipView_icon)
+exception:           ^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/ui/widgets/TwoLinesItemView.kt:92:17: warning: 'fun TypedArray.getDrawableCompat(context: Context, index: Int): Drawable?' is deprecated.
+exception: 			val button = getDrawableCompat(context, R.styleable.TwoLinesItemView_android_button)
+exception:                 ^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/util/ext/Android.kt:217:2: warning: 'var databaseEnabled: Boolean' is deprecated. Deprecated in Java.
+exception: 	databaseEnabled = true
+exception:  ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/core/util/ext/Insets.kt:27:19: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 	val barsInsets = systemBarsInsets
+exception:                   ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/domain/RelatedMangaUseCase.kt:68:17: warning: 'val altTitle: String?' is deprecated. Please use altTitles.
+exception: 		if (candidate.altTitle?.let(::normalizeTitle)?.contains(baseSeed) == true) {
+exception:                 ^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/ui/pager/bookmarks/BookmarksFragment.kt:120:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/ui/pager/bookmarks/BookmarksFragment.kt:127:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/ui/pager/pages/MangaPageFetcher.kt:104:24: warning: 'fun Response.requireBody(): ResponseBody' is deprecated. Useless since OkHttp 5.0.
+exception: 			val file = response.requireBody().use {
+exception:                        ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/ui/pager/pages/PagesSavedObserver.kt:8:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/details/ui/pager/pages/PagesSavedObserver.kt:23:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(snackbarHost.context).shareImage(uri)
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/download/ui/list/DownloadsViewModel.kt:316:17: warning: 'val name: String' is deprecated. Use title instead.
+exception: 						name = it.name,
+exception:                 ^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/download/ui/worker/DownloadWorker.kt:408:15: warning: 'fun Response.requireBody(): ResponseBody' is deprecated. Useless since OkHttp 5.0.
+exception: 					response.requireBody().use { body ->
+exception:               ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/explore/ui/ExploreFragment.kt:103:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/explore/ui/ExploreFragment.kt:111:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/favourites/ui/categories/FavouriteCategoriesActivity.kt:78:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/favourites/ui/categories/FavouriteCategoriesActivity.kt:93:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/favourites/ui/categories/edit/FavouritesCategoryEditActivity.kt:62:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/favourites/ui/categories/edit/FavouritesCategoryEditActivity.kt:69:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/filter/ui/tags/TagTitleComparator.kt:9:56: warning: 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+exception: 	private val collator = lc?.let { Collator.getInstance(Locale(it)) }
+exception:                                                        ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/history/domain/HistoryUpdateUseCase.kt:35:66: warning: this is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+exception: 	) = processLifecycleScope.launch(Dispatchers.IO, CoroutineStart.ATOMIC) {
+exception:                                                                  ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/image/ui/ImageActivity.kt:32:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/image/ui/ImageActivity.kt:139:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(this).shareImage(uri)
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/list/ui/MangaListFragment.kt:38:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/list/ui/MangaListFragment.kt:293:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(requireContext()).shareMangaLinks(selectedItems)
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/list/ui/adapter/ListHeaderAD.kt:29:23: warning: 'fun View.clearBadge(badge: BadgeDrawable?): Unit' is deprecated.
+exception: 			binding.buttonMore.clearBadge(badge)
+exception:                       ^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/list/ui/adapter/ListHeaderAD.kt:33:21: warning: 'fun View.bindBadge(badge: BadgeDrawable?, text: String?): BadgeDrawable?' is deprecated.
+exception: 			badge = itemView.bindBadge(badge, item.badge)
+exception:                     ^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/list/ui/model/ListHeader.kt:9:23: warning: non-public primary constructor is exposed via the generated 'copy()' method of the 'data' class.
+exception:
+exception: the generated 'copy()' will change its visibility in future releases.
+exception:
+exception: to suppress the warning do one of the following:
+exception: - Annotate the data class with the '@ConsistentCopyVisibility' annotation.
+exception: - Use the '-Xconsistent-data-class-copy-visibility' compiler flag.
+exception: - Annotate the data class with the '@ExposedCopyVisibility' annotation
+exception:   (Discouraged, but can be used to keep binary compatibility).
+exception:
+exception: to learn more, see the documentation of the '@ConsistentCopyVisibility' and '@ExposedCopyVisibility' annotations.
+exception:
+exception: this will become an error in language version 2.3.
+exception: data class ListHeader private constructor(
+exception:                       ^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/data/MangaIndex.kt:42:33: warning: 'val altTitle: String?' is deprecated. Please use altTitles.
+exception: 		json.put(KEY_TITLE_ALT, manga.altTitle) // for backward compatibility
+exception:                                 ^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/data/MangaIndex.kt:46:30: warning: 'val author: String?' is deprecated. Please use authors.
+exception: 		json.put(KEY_AUTHOR, manga.author) // for backward compatibility
+exception:                              ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/data/MangaIndex.kt:52:28: warning: 'val isNsfw: Boolean' is deprecated. Use contentRating instead.
+exception: 		json.put(KEY_NSFW, manga.isNsfw) // for backward compatibility
+exception:                            ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/ui/LocalListFragment.kt:22:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/ui/LocalListFragment.kt:111:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(requireContext()).shareCbz(files)
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/local/ui/info/LocalInfoDialog.kt:89:24: warning: 'fun segmentColor(context: Context, resId: Int): Int' is deprecated.
+exception: 			color = NeyonColors.segmentColor(view.context, appcompatR.attr.colorPrimary),
+exception:                        ^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/main/ui/protect/ProtectActivity.kt:86:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/main/ui/protect/ProtectActivity.kt:94:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/MihonFilterMapper.kt:209:13: warning: 'when' is exhaustive so 'else' is redundant here.
+exception:             else -> {}
+exception:             ^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/ContentParser.kt:13:8: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQuery
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/ContentParser.kt:14:8: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQueryCapabilities
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/ContentParser.kt:35:31: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: 	val searchQueryCapabilities: ContentSearchQueryCapabilities
+exception:                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/ContentParser.kt:54:29: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	suspend fun getList(query: ContentSearchQuery): List<Content>
+exception:                             ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/AbstractContentParser.kt:16:8: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQuery
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/AbstractContentParser.kt:17:8: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQueryCapabilities
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/AbstractContentParser.kt:39:53: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: 	public final override val searchQueryCapabilities: ContentSearchQueryCapabilities
+exception:                                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/AbstractContentParser.kt:45:57: warning: 'constructor(p0: String!): Locale' is deprecated. Deprecated in Java.
+exception: 		get() = if (source.locale.isEmpty()) Locale.ROOT else Locale(source.locale)
+exception:                                                         ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/AbstractContentParser.kt:86:45: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	public override suspend fun getList(query: ContentSearchQuery): List<Content> = getList(
+exception:                                             ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/ContentParserWrapper.kt:14:8: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQuery
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/ContentParserWrapper.kt:33:38: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	override suspend fun getList(query: ContentSearchQuery): List<Content> = withContext(Dispatchers.Default) {
+exception:                                      ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/ContentParserWrapper.kt:35:4: warning: 'val searchQueryCapabilities: ContentSearchQueryCapabilities' is deprecated. Too complex. Use filterCapabilities instead.
+exception: 			searchQueryCapabilities.validate(query)
+exception:    ^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/ContentParserWrapper.kt:37:12: warning: 'suspend fun getList(query: ContentSearchQuery): List<Content>' is deprecated. Too complex. Use getList with filter instead.
+exception: 		delegate.getList(query)
+exception:            ^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:8:8: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQuery
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:9:8: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.SearchableField
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:27:44: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	final override suspend fun getList(query: ContentSearchQuery): List<Content> {
+exception:                                            ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:30:20: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 			if (it.field == SearchableField.TITLE_NAME) {
+exception:                    ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:45:49: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	public abstract suspend fun getListPage(query: ContentSearchQuery, page: Int): List<Content>
+exception:                                                 ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/core/FlexiblePagedContentParser.kt:54:10: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 		query: ContentSearchQuery,
+exception:          ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:19:37: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	@JvmField public val criteria: Set<QueryCriteria<*>>,
+exception:                                     ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:29:35: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 		private val criteria = ArraySet<QueryCriteria<*>>()
+exception:                                   ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:36:29: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 		public constructor(query: ContentSearchQuery) : this() {
+exception:                             ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:42:35: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 		public fun criterion(criterion: QueryCriteria<*>): Builder = apply { criteria.add(criterion) }
+exception:                                   ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:51:23: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 		public fun build(): ContentSearchQuery {
+exception:                       ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:52:11: warning: 'constructor(criteria: Set<QueryCriteria<*>>, order: SortOrder?, offset: Int, skipValidation: Boolean): ContentSearchQuery' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 			return ContentSearchQuery(deduplicateCriteria(criteria), order, offset, skipValidation)
+exception:           ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:55:49: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 		private fun deduplicateCriteria(criteria: Set<QueryCriteria<*>>): Set<QueryCriteria<*>> {
+exception:                                                 ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:55:73: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 		private fun deduplicateCriteria(criteria: Set<QueryCriteria<*>>): Set<QueryCriteria<*>> {
+exception:                                                                         ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:57:19: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 				ArrayMap<Pair<SearchableField, Class<out QueryCriteria<*>>>, QueryCriteria<*>>(criteria.size)
+exception:                   ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:57:46: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 				ArrayMap<Pair<SearchableField, Class<out QueryCriteria<*>>>, QueryCriteria<*>>(criteria.size)
+exception:                                              ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:57:66: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 				ArrayMap<Pair<SearchableField, Class<out QueryCriteria<*>>>, QueryCriteria<*>>(criteria.size)
+exception:                                                                  ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:68:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 							QueryCriteria.Include(criterion.field, existing.values union criterion.values)
+exception:        ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:73:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 							QueryCriteria.Exclude(criterion.field, existing.values union criterion.values)
+exception:        ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:88:21: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 		public val EMPTY: ContentSearchQuery = ContentSearchQuery(emptySet(), null, 0, false)
+exception:                     ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQuery.kt:88:42: warning: 'constructor(criteria: Set<QueryCriteria<*>>, order: SortOrder?, offset: Int, skipValidation: Boolean): ContentSearchQuery' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 		public val EMPTY: ContentSearchQuery = ContentSearchQuery(emptySet(), null, 0, false)
+exception:                                          ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:4:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria.Exclude
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:5:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria.Include
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:6:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria.Match
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:7:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria.Range
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:13:31: warning: 'data class SearchCapability : Any' is deprecated. Too complex.
+exception: 	public val capabilities: Set<SearchCapability>,
+exception:                               ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/ContentSearchQueryCapabilities.kt:18:31: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	internal fun validate(query: ContentSearchQuery) {
+exception:                               ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:13:20: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 	public val field: SearchableField
+exception:                    ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:31:30: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 		public override val field: SearchableField,
+exception:                              ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:33:6: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	) : QueryCriteria<T> {
+exception:      ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:52:30: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 		public override val field: SearchableField,
+exception:                              ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:54:6: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	) : QueryCriteria<T> {
+exception:      ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:74:30: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 		public override val field: SearchableField,
+exception:                              ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:77:6: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	) : QueryCriteria<T> {
+exception:      ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:98:30: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 		public override val field: SearchableField,
+exception:                              ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/QueryCriteria.kt:100:6: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	) : QueryCriteria<T> {
+exception:      ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/SearchCapability.kt:27:30: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: 	@JvmField public val field: SearchableField,
+exception:                              ^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/model/search/SearchCapability.kt:29:53: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 	@JvmField public val criteriaTypes: Set<KClass<out QueryCriteria<*>>>,
+exception:                                                     ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:8:8: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQuery
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:9:8: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.ContentSearchQueryCapabilities
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:10:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:11:8: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.QueryCriteria.*
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:12:8: warning: 'data class SearchCapability : Any' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.SearchCapability
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:13:8: warning: 'enum class SearchableField : Enum<SearchableField>' is deprecated. Too complex.
+exception: import io.github.landwarderer.neyon.mihon.parsers.model.search.SearchableField.*
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:24:105: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: internal fun convertToContentSearchQuery(offset: Int, sortOrder: SortOrder, filter: ContentListFilter): ContentSearchQuery {
+exception:                                                                                                         ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:25:9: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: 	return ContentSearchQuery.Builder().apply {
+exception:         ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:35:14: warning: 'interface QueryCriteria<T> : Any' is deprecated. Too complex.
+exception: 			criterion(QueryCriteria.Range(PUBLICATION_YEAR, filter.yearFrom, filter.yearTo))
+exception:              ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:77:54: warning: 'data class ContentSearchQuery : Any' is deprecated. Too complex. Use ContentListFilter instead.
+exception: internal fun convertToContentListFilter(searchQuery: ContentSearchQuery): ContentListFilter {
+exception:                                                      ^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:91:14: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: internal fun ContentSearchQueryCapabilities.toContentListFilterCapabilities() = ContentListFilterCapabilities(
+exception:              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:102:80: warning: 'data class ContentSearchQueryCapabilities : Any' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: internal fun ContentListFilterCapabilities.toContentSearchQueryCapabilities(): ContentSearchQueryCapabilities =
+exception:                                                                                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:103:2: warning: 'constructor(capabilities: Set<SearchCapability>): ContentSearchQueryCapabilities' is deprecated. Too complex. Use ContentListFilterCapabilities instead.
+exception: 	ContentSearchQueryCapabilities(
+exception:  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:106:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:113:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:120:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:128:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:135:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:142:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:149:5: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 				SearchCapability(
+exception:     ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:155:4: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 			SearchCapability(
+exception:    ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:160:4: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 			SearchCapability(
+exception:    ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:163:4: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 			SearchCapability(
+exception:    ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:168:4: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 			SearchCapability(
+exception:    ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/SearchQueryConverter.kt:173:4: warning: 'constructor(field: SearchableField, criteriaTypes: Set<KClass<out QueryCriteria<*>>>, isMultiple: Boolean, isExclusive: Boolean = ...): SearchCapability' is deprecated. Too complex.
+exception: 			SearchCapability(
+exception:    ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/json/JSONArrayTypedIterator.kt:32:31: warning: Java type mismatch: inferred type is 'T? (of class JSONArrayTypedIterator<T : Any>)', but 'T (of class JSONArrayTypedIterator<T : Any>)' was expected.
+exception: 	private fun get(i: Int): T = typeClass.cast(array[i])
+exception:                               ^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/json/JSONArrayTypedListWrapper.kt:14:36: warning: Java type mismatch: inferred type is 'T? (of class JSONArrayTypedListWrapper<T : Any>)', but 'T (of class JSONArrayTypedListWrapper<T : Any>)' was expected.
+exception: 	override fun get(index: Int): T = typeClass.cast(jsonArray[index])
+exception:                                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/mihon/parsers/util/json/JSONObjectTypedIterableWrapper.kt:18:47: warning: Java type mismatch: inferred type is 'JSONObjectTypedIterableWrapper.JSONEntry<T? (of class JSONObjectTypedIterableWrapper<T : Any>)>', but 'Map.Entry<String, T (of class JSONObjectTypedIterableWrapper<T : Any>)>' was expected.
+exception: 		override fun next(): Map.Entry<String, T> = keyIterator.next().let { key ->
+exception:                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/domain/ChaptersLoader.kt:101:24: warning: condition is always 'true'.
+exception: 			if (isDownloaded && localChapter != null) {
+exception:                        ^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/domain/ChaptersLoader.kt:110:24: warning: condition is always 'true'.
+exception: 			if (isDownloaded && localChapter != null) {
+exception:                        ^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/domain/PageLoader.kt:328:15: warning: 'fun Response.requireBody(): ResponseBody' is deprecated. Useless since OkHttp 5.0.
+exception: 					response.requireBody().withProgress(progress).use {
+exception:               ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/ui/colorfilter/ColorFilterConfigActivity.kt:74:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/ui/colorfilter/ColorFilterConfigActivity.kt:81:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/reader/ui/pager/BasePageHolder.kt:151:50: warning: 'static field TRIM_MEMORY_COMPLETE: Int' is deprecated. Deprecated in Java.
+exception: 	final override fun onLowMemory() = onTrimMemory(TRIM_MEMORY_COMPLETE)
+exception:                                                  ^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/scrobbling/common/ui/config/ScrobblerConfigActivity.kt:67:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/scrobbling/common/ui/config/ScrobblerConfigActivity.kt:80:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/domain/SearchV2Helper.kt:119:49: warning: 'val altTitle: String?' is deprecated. Please use altTitles.
+exception: 				minOf(m.title.levenshteinDistance(query), m.altTitle?.levenshteinDistance(query) ?: Int.MAX_VALUE)
+exception:                                                 ^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/domain/SearchV2Helper.kt:149:66: warning: 'val altTitle: String?' is deprecated. Please use altTitles.
+exception: 		return matchesTitles(title, query, threshold) || matchesTitles(altTitle, query, threshold)
+exception:                                                                  ^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/MangaListActivity.kt:118:17: warning: 'fun WindowInsetsCompat.consumeSystemBarsInsets(view: View, start: Boolean = ..., top: Boolean = ..., end: Boolean = ..., bottom: Boolean = ...): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeSystemBarsInsets(v, top = true, end = true)
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchActivity.kt:21:8: warning: 'class ShareHelper : Any' is deprecated.
+exception: import io.github.landwarderer.neyon.core.util.ShareHelper
+exception:        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchActivity.kt:104:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchActivity.kt:116:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchActivity.kt:179:5: warning: 'constructor(context: Context): ShareHelper' is deprecated.
+exception: 				ShareHelper(this).shareMangaLinks(collectSelectedItems())
+exception:     ^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchMenuProvider.kt:61:14: warning: 'fun overridePendingTransition(p0: Int, p1: Int, p2: Int): Unit' is deprecated. Deprecated in Java.
+exception: 				activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out, 0)
+exception:              ^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/search/ui/multi/SearchMenuProvider.kt:63:14: warning: 'fun overridePendingTransition(p0: Int, p1: Int): Unit' is deprecated. Deprecated in Java.
+exception: 				activity.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
+exception:              ^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/about/AppUpdateActivity.kt:50:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/about/AppUpdateActivity.kt:61:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/nav/NavConfigFragment.kt:70:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/nav/NavConfigFragment.kt:79:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/protect/ProtectSetupActivity.kt:63:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/protect/ProtectSetupActivity.kt:71:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/reader/ReaderTapGridConfigActivity.kt:63:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/reader/ReaderTapGridConfigActivity.kt:70:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/sources/catalog/SourcesCatalogViewModel.kt:71:6: warning: 'fun RoomDatabase.invalidationTrackerFlow(vararg tables: String, emitInitialState: Boolean = ...): Flow<Set<String>>' is deprecated. Replaced by equivalent API in InvalidationTracker.
+exception: 		db.invalidationTrackerFlow(TABLE_SOURCES),
+exception:      ^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/sources/manage/SourcesManageFragment.kt:91:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/sources/manage/SourcesManageFragment.kt:100:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/storage/directories/MangaDirectoriesActivity.kt:109:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/settings/utils/SliderPreference.kt:67:10: warning: 'var isTickVisible: Boolean' is deprecated. Deprecated in Java.
+exception: 		slider.isTickVisible = isTickVisible
+exception:          ^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/sync/ui/SyncAuthActivity.kt:84:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/sync/ui/SyncAuthActivity.kt:96:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/tracker/domain/TrackingRepository.kt:168:65: warning: 'val name: String' is deprecated. Use title instead.
+exception: 					chapters = updates.newChapters.joinToString("\n") { x -> x.name },
+exception:                                                                 ^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/tracker/ui/debug/TrackerDebugActivity.kt:40:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/tracker/ui/debug/TrackerDebugActivity.kt:51:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/tracker/ui/feed/FeedViewModel.kt:129:44: warning: this is a delicate API and its use requires care. Make sure you fully read and understand documentation of the declaration that is marked as a delicate API.
+exception: 		launchJob(Dispatchers.IO, CoroutineStart.ATOMIC) {
+exception:                                            ^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/recent/RecentWidgetConfigActivity.kt:41:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/recent/RecentWidgetConfigActivity.kt:48:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/recent/RecentWidgetProvider.kt:25:20: warning: 'fun notifyAppWidgetViewDataChanged(p0: IntArray!, p1: Int): Unit' is deprecated. Deprecated in Java.
+exception: 		appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.stackView)
+exception:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/recent/RecentWidgetProvider.kt:38:9: warning: 'fun setRemoteAdapter(p0: Int, p1: Intent!): Unit' is deprecated. Deprecated in Java.
+exception: 		views.setRemoteAdapter(R.id.stackView, adapter)
+exception:         ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/shelf/ShelfWidgetConfigActivity.kt:59:27: warning: 'val WindowInsetsCompat.systemBarsInsets: Insets' is deprecated.
+exception: 		val barsInsets = insets.systemBarsInsets
+exception:                           ^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/shelf/ShelfWidgetConfigActivity.kt:70:17: warning: 'fun WindowInsetsCompat.consumeAllSystemBarsInsets(): WindowInsetsCompat' is deprecated.
+exception: 		return insets.consumeAllSystemBarsInsets()
+exception:                 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/shelf/ShelfWidgetProvider.kt:25:20: warning: 'fun notifyAppWidgetViewDataChanged(p0: IntArray!, p1: Int): Unit' is deprecated. Deprecated in Java.
+exception: 		appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.gridView)
+exception:                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+exception: app/src/main/kotlin/io/github/landwarderer/neyon/widget/shelf/ShelfWidgetProvider.kt:38:9: warning: 'fun setRemoteAdapter(p0: Int, p1: Intent!): Unit' is deprecated. Deprecated in Java.
+exception: 		views.setRemoteAdapter(R.id.gridView, adapter)
+exception:         ^^^^^^^^^^^^^^^^
+
+[Incubating] Problems report is available at: file:///app/build/reports/problems/problems-report.html
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 10.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/9.3.1/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 4m
+20 actionable tasks: 2 executed, 18 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.3.1/userguide/configuration_cache_enabling.html
