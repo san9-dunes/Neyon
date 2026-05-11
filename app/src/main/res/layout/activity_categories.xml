@@ -60,6 +60,7 @@
 		android:layout_margin="16dp"
 		android:contentDescription="@string/add_new_category"
 		android:src="@drawable/ic_add"
+		android:tooltipText="@string/add_new_category"
 		app:fabSize="normal"
 		app:layout_anchor="@id/recyclerView"
 		app:layout_anchorGravity="bottom|end"
