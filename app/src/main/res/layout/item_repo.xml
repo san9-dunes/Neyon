@@ -62,6 +62,7 @@
 		android:padding="8dp"
 		android:src="@drawable/ic_delete"
 		android:tint="?colorError"
+		android:tooltipText="@string/uninstall"
 		android:visibility="gone"
 		tools:visibility="visible" />
 
