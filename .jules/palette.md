@@ -1,0 +1,3 @@
+## 2023-10-27 - ExtendedFloatingActionButton Accessibility
+**Learning:** `ExtendedFloatingActionButton` shrinks to an icon-only state when scrolling. During this collapsed state, the accessibility text provided by `android:text` is lost because it hides the text view. This leaves screen readers and visual hover (mouse/stylus/long-press) without any context about what the icon means.
+**Action:** Always add `android:contentDescription` and `android:tooltipText` to `ExtendedFloatingActionButton` instances, matching the string used in `android:text`. This ensures the button remains accessible and provides hover context even when collapsed to an icon.
