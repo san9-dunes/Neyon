@@ -34,9 +34,19 @@ class ProtectViewModel @Inject constructor(
 			return
 		}
 		job = launchLoadingJob {
-			val passwordHash = password.md5()
-			val appPasswordHash = settings.appPassword
-			if (passwordHash == appPasswordHash) {
+			val storedHash = settings.appPassword
+			val isLegacyHash = storedHash != null && !storedHash.startsWith("PBKDF2$")
+			val isMatch = if (isLegacyHash) {
+				val isLegacyMatch = password.md5() == storedHash
+				if (isLegacyMatch) {
+					settings.appPassword = io.github.landwarderer.neyon.core.util.HashUtils.hashPassword(password)
+				}
+				isLegacyMatch
+			} else {
+				storedHash != null && io.github.landwarderer.neyon.core.util.HashUtils.verifyPassword(password, storedHash)
+			}
+
+			if (isMatch) {
 				unlock()
 			} else {
 				delay(PASSWORD_COMPARE_DELAY)

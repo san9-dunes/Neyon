@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2025-05-15 - [Sentinel] Migrate legacy MD5 password hashing to PBKDF2WithHmacSHA1
+**Vulnerability:** The application was using the obsolete MD5 algorithm to hash the `appPassword`. MD5 is cryptographically broken and extremely vulnerable to collision and dictionary attacks, meaning app passwords could be easily recovered from the SharedPreferences file.
+**Learning:** Legacy algorithms like MD5 should be proactively replaced. When updating authentication mechanisms, it's essential to preserve user access by implementing transparent "migrate-on-login" validation logic that accepts the old hash format once before silently upgrading to the stronger algorithm.
+**Prevention:** Always use modern, key-stretching algorithms like PBKDF2, Argon2, or bcrypt for passwords. Since `minSdk` restricts some modern Java APIs, `SecretKeyFactory` with `PBKDF2WithHmacSHA1` using high iteration counts (e.g., 100,000) is a robust and compatible alternative for legacy environments.
