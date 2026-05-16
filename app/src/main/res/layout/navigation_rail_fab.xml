@@ -24,6 +24,8 @@
 		android:id="@+id/railFab"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
+		android:contentDescription="@string/_continue"
+		android:tooltipText="@string/_continue"
 		android:text="@string/_continue"
 		app:icon="@drawable/ic_read" />
 
