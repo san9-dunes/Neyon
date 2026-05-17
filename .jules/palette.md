@@ -1,0 +1,3 @@
+## 2024-05-17 - ExtendedFloatingActionButton Shrink-on-Scroll Accessibility
+**Learning:** When using `ExtendedFloatingActionButton` elements configured with behavior `ShrinkOnScrollBehavior`, the element shrinks to an icon-only state upon scrolling. In this state, any accessible text provided via the `android:text` attribute is hidden, leading to a loss of accessibility for screen readers and tooltips.
+**Action:** Always explicitly define `android:contentDescription` and `android:tooltipText` on `ExtendedFloatingActionButton` components that shrink on scroll to ensure their purpose remains clear to assistive technologies and on hover/long-press regardless of their expanded or collapsed state.
