@@ -212,12 +212,13 @@ class TrackingRepository @Inject constructor(
 		dao.gc()
 		val ids = dao.findAllIds().toMutableSet()
 		val size = ids.size
+		val toInsert = mutableListOf<TrackEntity>()
 		// history
 		if (AppSettings.TRACK_HISTORY in settings.trackSources) {
 			val historyIds = db.getHistoryDao().findAllIds()
 			for (mangaId in historyIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toInsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
@@ -226,13 +227,16 @@ class TrackingRepository @Inject constructor(
 			val favoritesIds = db.getFavouritesDao().findIdsWithTrack()
 			for (mangaId in favoritesIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toInsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
+		if (toInsert.isNotEmpty()) {
+			dao.upsertAll(toInsert)
+		}
 		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
+		if (ids.isNotEmpty()) {
+			dao.deleteAll(ids)
 		}
 		size - ids.size
 	}
