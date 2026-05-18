@@ -178,9 +178,11 @@ class TrackingRepository @Inject constructor(
 		when {
 			ids.isEmpty() -> return
 			ids.size == 1 -> db.getTracksDao().clearCounter(ids.single())
-			else -> db.withTransaction {
-				for (id in ids) {
-					db.getTracksDao().clearCounter(id)
+			else -> {
+				// Bolt Optimization: Replace iterative DAO updates with batched operation.
+				// Chunks of 900 prevent exceeding the SQLite maximum variable limit (999) in the IN clause on older Androids.
+				ids.chunked(900).forEach {
+					db.getTracksDao().clearCounters(it)
 				}
 			}
 		}
@@ -212,12 +214,13 @@ class TrackingRepository @Inject constructor(
 		dao.gc()
 		val ids = dao.findAllIds().toMutableSet()
 		val size = ids.size
+		val toUpsert = mutableMapOf<Long, TrackEntity>()
 		// history
 		if (AppSettings.TRACK_HISTORY in settings.trackSources) {
 			val historyIds = db.getHistoryDao().findAllIds()
 			for (mangaId in historyIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toUpsert[mangaId] = TrackEntity.create(mangaId)
 				}
 			}
 		}
@@ -226,13 +229,21 @@ class TrackingRepository @Inject constructor(
 			val favoritesIds = db.getFavouritesDao().findIdsWithTrack()
 			for (mangaId in favoritesIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toUpsert[mangaId] = TrackEntity.create(mangaId)
 				}
 			}
 		}
+		// Bolt Optimization: Replace iterative N+1 upserts and deletes with single bulk operations.
+		// Maps resolve duplicates, and collections eliminate per-row SQLite transaction overhead.
+		if (toUpsert.isNotEmpty()) {
+			dao.upsertAll(toUpsert.values)
+		}
 		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
+		if (ids.isNotEmpty()) {
+			// Chunking deletes prevents hitting the SQLite 999 max variables limit for IN clause
+			ids.chunked(900).forEach { chunk ->
+				dao.deleteAll(chunk)
+			}
 		}
 		size - ids.size
 	}
