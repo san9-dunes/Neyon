@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2025-02-27 - [Sentinel] Use PBKDF2 for password hashing
+**Vulnerability:** Application PIN/Passwords were previously being hashed using plain MD5, which is cryptographically broken and prone to fast brute-forcing.
+**Learning:** Hashing functions for passwords must employ key stretching and salts (e.g., PBKDF2, Argon2, bcrypt). When migrating to PBKDF2, it's vital to handle seamless migration of legacy MD5 hashes upon successful unlock.
+**Prevention:** Ensure `HashUtils` or similar robust cryptography utilities are employed for any password hashing. Review new password features for usage of deprecated algorithms like MD5 or SHA-1.
