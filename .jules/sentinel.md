@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## $(date +%Y-%m-%d) - Disable File Access in WebView
+**Vulnerability:** WebView allowed local file access, which could be exploited for exfiltration if the application ever renders malicious local files or unvalidated `file://` URIs.
+**Learning:** Even though `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` are defaulted to false in newer SDKs, `allowFileAccess` can still be a risk in `minSdk 23`. We must explicitly disable these settings for backwards compatibility.
+**Prevention:** Always explicitly set `allowFileAccess = false`, `allowFileAccessFromFileURLs = false`, and `allowUniversalAccessFromFileURLs = false` alongside `javaScriptEnabled = true` when configuring a `WebView`, suppressing deprecation warnings if necessary.
