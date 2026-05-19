@@ -1,0 +1,3 @@
+## 2024-05-19 - [A11y/Tooltip for FABs]
+**Learning:** ExtendedFloatingActionButtons (and FABs) that expand/collapse often need both `android:contentDescription` for screen readers and `android:tooltipText` for hover/long-press behavior. The `android:text` attribute provides context when expanded, but this is lost in collapsed, icon-only states, making explicit a11y labels critical for these components in Android Material Design.
+**Action:** When updating interactive elements like `ExtendedFloatingActionButton` that can shrink to an icon-only state, explicitly define `android:contentDescription` and `android:tooltipText` since the accessibility context provided by `android:text` is lost in the collapsed state.

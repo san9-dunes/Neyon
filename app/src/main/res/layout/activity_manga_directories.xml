@@ -50,6 +50,7 @@
         android:layout_margin="16dp"
         android:contentDescription="@string/pick_custom_directory"
         android:text="@string/add"
+        android:tooltipText="@string/pick_custom_directory"
         app:fabSize="normal"
         app:icon="@drawable/ic_add"
         app:layout_anchor="@id/recyclerView"
