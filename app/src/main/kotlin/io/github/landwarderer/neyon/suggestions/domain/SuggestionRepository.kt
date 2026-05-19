@@ -61,20 +61,32 @@ class SuggestionRepository @Inject constructor(
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
+
+			// Bolt Performance Optimization:
+			// Using batch operations to avoid N+1 queries during bulk suggestions insert
+			val suggestionEntities = mutableListOf<SuggestionEntity>()
+			val currentTime = System.currentTimeMillis()
+
+			val allTags = mutableListOf<io.github.landwarderer.neyon.core.db.entity.TagEntity>()
+			for (suggestion in suggestions) {
 				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
+				allTags.addAll(manga.tags.toEntities())
+				suggestionEntities.add(
 					SuggestionEntity(
 						mangaId = manga.id,
 						relevance = suggestion.relevance,
 						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
+						createdAt = currentTime,
+					)
 				)
 			}
+
+			db.getTagsDao().upsert(allTags)
+			for (suggestion in suggestions) {
+				db.getMangaDao().upsert(suggestion.manga.toEntity(), suggestion.manga.tags.toEntities())
+			}
+
+			db.getSuggestionDao().upsertAll(suggestionEntities)
 		}
 	}
 
