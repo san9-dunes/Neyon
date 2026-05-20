@@ -59,22 +59,28 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		val suggestionEntities = suggestions.map { suggestion ->
+			SuggestionEntity(
+				mangaId = suggestion.manga.id,
+				relevance = suggestion.relevance,
+				reason = suggestion.reason,
+				createdAt = System.currentTimeMillis(),
+			)
+		}
+
+		val allTags = suggestions.flatMap { it.manga.tags.toEntities() }.distinctBy { it.id }
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
+
+			db.getTagsDao().upsert(allTags)
 			suggestions.forEach { suggestion ->
 				val manga = suggestion.manga
 				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
 				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
 			}
+
+			db.getSuggestionDao().upsertAll(suggestionEntities)
 		}
 	}
 
