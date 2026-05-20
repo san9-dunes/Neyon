@@ -1,0 +1,3 @@
+## 2024-05-20 - Adding Accessibility to Collapsing Android Extended Floating Action Buttons
+**Learning:** When using Android `ExtendedFloatingActionButton` instances that have layout behaviors causing them to shrink to icon-only on scroll (e.g., `MainActionButtonBehavior` or `ShrinkOnScrollBehavior`), the context provided by `android:text` is lost in the collapsed state. This makes them inaccessible to screen readers and visually unclear to users who don't recognize the icon.
+**Action:** Always explicitly define `android:contentDescription` for screen readers and `android:tooltipText` for visual hover/long-press feedback on these buttons, duplicating the text content if necessary.
