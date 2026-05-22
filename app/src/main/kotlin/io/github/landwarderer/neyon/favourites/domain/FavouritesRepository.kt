@@ -238,21 +238,34 @@ class FavouritesRepository @Inject constructor(
 	}
 
 	suspend fun addToCategory(categoryId: Long, mangas: Collection<Manga>) {
+		if (mangas.isEmpty()) return
+
+		val allTags = mangas.flatMap { it.tags.toEntities() }.distinctBy { it.id }
+		val allMangaEntitiesWithTags = mangas.map { manga ->
+			Pair(manga.toEntity(), manga.tags.toEntities())
+		}.distinctBy { it.first.id }
+
+		val favouriteEntities = mangas.map { manga ->
+			FavouriteEntity(
+				mangaId = manga.id,
+				categoryId = categoryId,
+				createdAt = System.currentTimeMillis(),
+				sortKey = 0,
+				deletedAt = 0L,
+				isPinned = false,
+			)
+		}
+
+		// Bolt Performance Optimization:
+		// Replaced iterative inserts inside withTransaction block with bulk operations.
+		// Constructing mappings beforehand and applying distinctBy reduces transaction locking time.
+		// Impact: Resolves N+1 query problem, drastically reducing SQLite transaction overhead during bulk category additions.
 		db.withTransaction {
-			for (manga in mangas) {
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				val entity = FavouriteEntity(
-					mangaId = manga.id,
-					categoryId = categoryId,
-					createdAt = System.currentTimeMillis(),
-					sortKey = 0,
-					deletedAt = 0L,
-					isPinned = false,
-				)
-				db.getFavouritesDao().insert(entity)
+			if (allTags.isNotEmpty()) {
+				db.getTagsDao().upsert(allTags)
 			}
+			db.getMangaDao().upsertAllWithTags(allMangaEntitiesWithTags)
+			db.getFavouritesDao().insertAll(favouriteEntities)
 		}
 	}
 
