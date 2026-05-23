@@ -1,0 +1,3 @@
+## 2026-05-23 - Missing tooltips on ExtendedFloatingActionButtons that shrink
+**Learning:** ExtendedFloatingActionButtons that collapse/shrink on scroll (e.g. using `ShrinkOnScrollBehavior`) lose their visible `android:text` label. If they don't have an explicit `android:contentDescription` or `android:tooltipText` defined, they become visually confusing and inaccessible to screen readers when collapsed to an icon-only state.
+**Action:** Always provide both `android:contentDescription` and `android:tooltipText` (using the same string resource as `android:text`) for any `ExtendedFloatingActionButton` that can shrink, so its purpose remains clear even when the text is hidden.
