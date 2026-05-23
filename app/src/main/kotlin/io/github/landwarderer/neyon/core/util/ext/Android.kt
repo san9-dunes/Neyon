@@ -217,6 +217,10 @@ fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	databaseEnabled = true
 	allowContentAccess = false
 	allowFileAccess = false
+	@Suppress("DEPRECATION")
+	allowFileAccessFromFileURLs = false
+	@Suppress("DEPRECATION")
+	allowUniversalAccessFromFileURLs = false
 	if (userAgentOverride != null) {
 		userAgentString = userAgentOverride
 	}
