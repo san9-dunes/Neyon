@@ -49,6 +49,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:contentDescription="@string/pick_custom_directory"
+        android:tooltipText="@string/add"
         android:text="@string/add"
         app:fabSize="normal"
         app:icon="@drawable/ic_add"
