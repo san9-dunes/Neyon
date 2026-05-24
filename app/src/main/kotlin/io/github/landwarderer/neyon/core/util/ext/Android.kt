@@ -207,7 +207,10 @@ fun Context.ensureRamAtLeast(requiredSize: Long) {
 	}
 }
 
+@Suppress("DEPRECATION")
 fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
+	allowFileAccessFromFileURLs = false
+	allowUniversalAccessFromFileURLs = false
 	javaScriptEnabled = true
 	domStorageEnabled = true
 	mediaPlaybackRequiresUserGesture = false
