@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-02 - [Sentinel] Prevent Universal and File Access from File URLs in WebView
+**Vulnerability:** The application configures `WebView` instances with `allowFileAccess = false`, but did not explicitly disable `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs`. Since the app supports older API levels (minSdk 23), these settings may default to `true` on older Android versions, allowing malicious JavaScript executed within a `file://` context to access other local files or make cross-origin requests.
+**Learning:** For defense in depth, especially when supporting older Android APIs, it is critical to explicitly disable `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` whenever `javaScriptEnabled = true` and `allowFileAccess = false` are set.
+**Prevention:** Always set `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` alongside `allowFileAccess = false` in `WebView` configurations. Use `@Suppress("DEPRECATION")` as these properties are deprecated in modern Android versions because they are enforced by default, but the explicit setter is required for backwards compatibility.
