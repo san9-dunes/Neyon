@@ -82,6 +82,15 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 	@Upsert
 	abstract suspend fun upsert(entity: TrackEntity)
 
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<TrackEntity>)
+
+	@Query("DELETE FROM tracks WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun deleteAll(mangaIds: Collection<Long>)
+
+	@Query("UPDATE tracks SET chapters_new = 0 WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun clearCounters(mangaIds: Collection<Long>)
+
 	@Transaction
 	@RawQuery(observedEntities = [TrackEntity::class])
 	protected abstract fun observeMangaImpl(query: SupportSQLiteQuery): Flow<List<MangaWithTrack>>
