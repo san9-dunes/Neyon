@@ -1,3 +1,3 @@
-## 2024-05-24 - Bulk Insert Optimization in Room
-**Learning:** Found an N+1 insertion problem in `MangaDao.upsert` where tags were inserted one by one in a loop (`.forEach { insert(it) }`). Room can process these much faster as a single bulk operation (`insert(tags)`).
-**Action:** Always verify if iterative DAO `insert`/`update`/`delete` calls can be replaced with a single method accepting a `Collection` for better performance.
+## 2024-05-18 - [Optimized TracksDB operations]
+**Learning:** Room's `@Upsert` on multiple items is significantly faster than using `@Upsert` on a single item in a loop over large datasets. Room supports `@Upsert` with `Collection<T>`, which avoids loop iteration and transaction switching overhead. The deduplication logic `distinctBy` prevents SQLite constraint exceptions. The deletion of elements can also be done via an `@Query` that deletes all items in an IN query.
+**Action:** Always prefer bulk queries/upserts to iteration + transaction. Ensure `distinctBy` is used when dealing with potential duplicates in bulk inserts.
