@@ -70,14 +70,23 @@ abstract class TracksDao : MangaQueryBuilder.ConditionCallback {
 	@Query("UPDATE tracks SET chapters_new = 0")
 	abstract suspend fun clearCounters()
 
+	@Query("UPDATE tracks SET chapters_new = 0 WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun clearCounters(mangaIds: Collection<Long>)
+
 	@Query("UPDATE tracks SET chapters_new = 0 WHERE manga_id = :mangaId")
 	abstract suspend fun clearCounter(mangaId: Long)
+
+	@Query("DELETE FROM tracks WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun deleteAll(mangaIds: Collection<Long>)
 
 	@Query("DELETE FROM tracks WHERE manga_id = :mangaId")
 	abstract suspend fun delete(mangaId: Long)
 
 	@Query("DELETE FROM tracks WHERE manga_id NOT IN (SELECT manga_id FROM history WHERE history.deleted_at = 0 UNION SELECT manga_id FROM favourites WHERE favourites.deleted_at = 0 AND category_id IN (SELECT category_id FROM favourite_categories WHERE favourite_categories.deleted_at = 0 AND track = 1))")
 	abstract suspend fun gc()
+
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<TrackEntity>)
 
 	@Upsert
 	abstract suspend fun upsert(entity: TrackEntity)

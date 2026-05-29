@@ -178,11 +178,7 @@ class TrackingRepository @Inject constructor(
 		when {
 			ids.isEmpty() -> return
 			ids.size == 1 -> db.getTracksDao().clearCounter(ids.single())
-			else -> db.withTransaction {
-				for (id in ids) {
-					db.getTracksDao().clearCounter(id)
-				}
-			}
+			else -> db.getTracksDao().clearCounters(ids)
 		}
 	}
 
@@ -212,12 +208,14 @@ class TrackingRepository @Inject constructor(
 		dao.gc()
 		val ids = dao.findAllIds().toMutableSet()
 		val size = ids.size
+		val toUpsert = mutableListOf<TrackEntity>()
+
 		// history
 		if (AppSettings.TRACK_HISTORY in settings.trackSources) {
 			val historyIds = db.getHistoryDao().findAllIds()
 			for (mangaId in historyIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toUpsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
@@ -226,14 +224,21 @@ class TrackingRepository @Inject constructor(
 			val favoritesIds = db.getFavouritesDao().findIdsWithTrack()
 			for (mangaId in favoritesIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					toUpsert.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
-		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
+
+		if (toUpsert.isNotEmpty()) {
+			// Ensure we deduplicate in case history and favorites overlap
+			dao.upsertAll(toUpsert.distinctBy { it.mangaId })
 		}
+
+		// remove unused
+		if (ids.isNotEmpty()) {
+			dao.deleteAll(ids)
+		}
+
 		size - ids.size
 	}
 
