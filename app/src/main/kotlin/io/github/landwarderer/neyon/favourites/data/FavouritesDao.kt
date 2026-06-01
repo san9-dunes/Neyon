@@ -173,6 +173,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	@Insert(onConflict = OnConflictStrategy.REPLACE)
 	abstract suspend fun insert(favourite: FavouriteEntity)
 
+	@Insert(onConflict = OnConflictStrategy.REPLACE)
+	abstract suspend fun insertAll(favourites: Collection<FavouriteEntity>)
+
 	/** DELETE **/
 
 	suspend fun delete(mangaId: Long) = setDeletedAt(
