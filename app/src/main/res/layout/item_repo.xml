@@ -59,6 +59,7 @@
 		android:layout_height="wrap_content"
 		android:background="?selectableItemBackgroundBorderless"
 		android:contentDescription="@string/uninstall"
+		android:tooltipText="@string/uninstall"
 		android:padding="8dp"
 		android:src="@drawable/ic_delete"
 		android:tint="?colorError"
