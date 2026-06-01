@@ -48,6 +48,9 @@ abstract class MangaDao {
 	@Upsert
 	protected abstract suspend fun upsert(manga: MangaEntity)
 
+	@Upsert
+	protected abstract suspend fun upsertAll(mangas: Collection<MangaEntity>)
+
 	@Update(onConflict = OnConflictStrategy.IGNORE)
 	abstract suspend fun update(manga: MangaEntity): Int
 
@@ -56,6 +59,9 @@ abstract class MangaDao {
 
 	@Query("DELETE FROM manga_tags WHERE manga_id = :mangaId")
 	abstract suspend fun clearTagRelation(mangaId: Long)
+
+	@Query("DELETE FROM manga_tags WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun clearTagRelations(mangaIds: Collection<Long>)
 
 	@Transaction
 	@Delete
@@ -86,6 +92,21 @@ abstract class MangaDao {
 			insertTagRelations(tags.map {
 				MangaTagsEntity(manga.id, it.id)
 			})
+		}
+	}
+
+	@Transaction
+	open suspend fun upsertAllWithTags(
+		mangas: Collection<MangaEntity>,
+		tags: Iterable<TagEntity>? = null,
+		relations: Collection<MangaTagsEntity>? = null
+	) {
+		upsertAll(mangas)
+		if (tags != null) {
+			clearTagRelations(mangas.map { it.id })
+			if (relations != null) {
+				insertTagRelations(relations)
+			}
 		}
 	}
 }

@@ -238,21 +238,25 @@ class FavouritesRepository @Inject constructor(
 	}
 
 	suspend fun addToCategory(categoryId: Long, mangas: Collection<Manga>) {
+		val allTags = mangas.flatMap { it.tags.toEntities() }.distinctBy { it.id }
+		val allMangas = mangas.map { it.toEntity() }.distinctBy { it.id }
+		val allRelations = mangas.flatMap { manga ->
+			manga.tags.toEntities().map { io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity(manga.id, it.id) }
+		}
+		val allFavourites = mangas.map { manga ->
+			FavouriteEntity(
+				mangaId = manga.id,
+				categoryId = categoryId,
+				createdAt = System.currentTimeMillis(),
+				sortKey = 0,
+				deletedAt = 0L,
+				isPinned = false,
+			)
+		}
 		db.withTransaction {
-			for (manga in mangas) {
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				val entity = FavouriteEntity(
-					mangaId = manga.id,
-					categoryId = categoryId,
-					createdAt = System.currentTimeMillis(),
-					sortKey = 0,
-					deletedAt = 0L,
-					isPinned = false,
-				)
-				db.getFavouritesDao().insert(entity)
-			}
+			db.getTagsDao().upsert(allTags)
+			db.getMangaDao().upsertAllWithTags(allMangas, allTags, allRelations)
+			db.getFavouritesDao().insertAll(allFavourites)
 		}
 	}
 

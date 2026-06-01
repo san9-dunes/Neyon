@@ -59,22 +59,26 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		val allTags = suggestions.flatMap { it.manga.tags.toEntities() }.distinctBy { it.id }
+		val allMangas = suggestions.map { it.manga.toEntity() }.distinctBy { it.id }
+		val allRelations = suggestions.flatMap { suggestion ->
+			suggestion.manga.tags.toEntities().map {
+				io.github.landwarderer.neyon.core.db.entity.MangaTagsEntity(suggestion.manga.id, it.id)
+			}
+		}
+		val allSuggestions = suggestions.map { suggestion ->
+			SuggestionEntity(
+				mangaId = suggestion.manga.id,
+				relevance = suggestion.relevance,
+				reason = suggestion.reason,
+				createdAt = System.currentTimeMillis(),
+			)
+		}
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
-			}
+			db.getTagsDao().upsert(allTags)
+			db.getMangaDao().upsertAllWithTags(allMangas, allTags, allRelations)
+			db.getSuggestionDao().upsertAll(allSuggestions)
 		}
 	}
 
