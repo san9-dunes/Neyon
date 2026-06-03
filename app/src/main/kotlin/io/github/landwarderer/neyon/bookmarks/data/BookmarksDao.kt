@@ -39,6 +39,9 @@ abstract class BookmarksDao {
 	@Insert
 	abstract suspend fun insert(entity: BookmarkEntity)
 
+	@Insert(onConflict = androidx.room.OnConflictStrategy.IGNORE)
+	abstract suspend fun insert(entities: Collection<BookmarkEntity>)
+
 	@Delete
 	abstract suspend fun delete(entity: BookmarkEntity)
 
