@@ -90,12 +90,13 @@ class BookmarksRepository @Inject constructor(
 
 		override suspend fun reverse() {
 			db.withTransaction {
-				for (e in entities) {
-					try {
-						db.getBookmarksDao().insert(e)
-					} catch (e: SQLException) {
-						e.printStackTraceDebug("BookmarksRepository::reverse")
-					}
+				try {
+					// Bolt Performance Optimization:
+					// Replaced iterative `insert(e)` inside a loop with a single bulk insert call `insert(entities)`.
+					// Impact: Resolves N+1 query problem during bulk bookmark restoration operations, reducing SQLite transaction lock time and overhead.
+					db.getBookmarksDao().insert(entities)
+				} catch (e: SQLException) {
+					e.printStackTraceDebug("BookmarksRepository::reverse")
 				}
 			}
 		}
