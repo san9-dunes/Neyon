@@ -1,0 +1,3 @@
+## 2024-05-18 - Add missing tooltipText to icon buttons
+**Learning:** In Android apps targeting `minSdk` below 26, it is safe and encouraged to use the native `android:tooltipText` attribute instead of custom app implementations (`app:tooltipText`) for hover and long-press accessibility. The OS safely ignores the native attribute on older API levels, and using it provides consistent micro-UX enhancements across the UI without requiring custom components.
+**Action:** When adding accessibility to icon-only buttons (`FloatingActionButton`, `ImageButton`, `ImageView`), always ensure both `android:contentDescription` (for screen readers) and `android:tooltipText` (for visual feedback) are populated with relevant strings from `strings.xml`.

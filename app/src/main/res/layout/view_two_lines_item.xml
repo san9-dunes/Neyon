@@ -45,6 +45,8 @@
 		android:layout_height="wrap_content"
 		android:layout_gravity="center_vertical"
 		android:background="?selectableItemBackgroundBorderless"
+		android:contentDescription="@string/expand"
+		android:tooltipText="@string/expand"
 		android:minWidth="?minTouchTargetSize"
 		android:minHeight="?minTouchTargetSize"
 		android:scaleType="center"
