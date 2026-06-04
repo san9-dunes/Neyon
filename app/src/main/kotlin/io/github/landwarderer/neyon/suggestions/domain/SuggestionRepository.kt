@@ -59,21 +59,36 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		// Convert to List safely to ensure multi-pass iteration works correctly.
+		val suggestionList = suggestions.toList()
+
+		val allTags = suggestionList.flatMap { it.manga.tags.toEntities() }.distinctBy { it.id }
+		val mangasWithTags = suggestionList.map { suggestion ->
+			val manga = suggestion.manga
+			Pair(manga.toEntity(), manga.tags.toEntities())
+		}
+		val suggestionEntities = suggestionList.map { suggestion ->
+			SuggestionEntity(
+				mangaId = suggestion.manga.id,
+				relevance = suggestion.relevance,
+				reason = suggestion.reason,
+				createdAt = System.currentTimeMillis(),
+			)
+		}
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
+
+			// Bolt Performance Optimization:
+			// Replaced iterative `suggestions.forEach { upsert(...) }` with bulk DAO operations.
+			// Impact: Solves an N+1 SQLite transaction bottleneck by mapping all entities
+			// first and batch inserting them in a single sweep.
+			if (allTags.isNotEmpty()) {
+				db.getTagsDao().upsert(allTags)
+			}
+			db.getMangaDao().upsertAllWithTags(mangasWithTags)
+			if (suggestionEntities.isNotEmpty()) {
+				db.getSuggestionDao().upsertAll(suggestionEntities)
 			}
 		}
 	}
