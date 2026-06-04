@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-01 - WebView Local File Exfiltration Prevention
+**Vulnerability:** WebView with `javaScriptEnabled = true` only had `allowFileAccess = false`, but was missing explicit configuration for `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` which can lead to local file exfiltration vulnerabilities on older Android versions.
+**Learning:** Even if `allowFileAccess = false` is set, explicit false values for `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` are required for defense-in-depth, especially since `minSdk` is 23.
+**Prevention:** Always explicitly disable `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` in WebView configuration alongside `allowFileAccess = false` when JavaScript is enabled. Use `@Suppress("DEPRECATION")` for compatibility.
