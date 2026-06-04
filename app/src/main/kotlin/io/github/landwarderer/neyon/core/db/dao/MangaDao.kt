@@ -48,6 +48,9 @@ abstract class MangaDao {
 	@Upsert
 	protected abstract suspend fun upsert(manga: MangaEntity)
 
+	@Upsert
+	protected abstract suspend fun upsertAll(mangas: Collection<MangaEntity>)
+
 	@Update(onConflict = OnConflictStrategy.IGNORE)
 	abstract suspend fun update(manga: MangaEntity): Int
 
@@ -56,6 +59,9 @@ abstract class MangaDao {
 
 	@Query("DELETE FROM manga_tags WHERE manga_id = :mangaId")
 	abstract suspend fun clearTagRelation(mangaId: Long)
+
+	@Query("DELETE FROM manga_tags WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun clearTagRelations(mangaIds: Collection<Long>)
 
 	@Transaction
 	@Delete
@@ -75,6 +81,23 @@ abstract class MangaDao {
 	abstract suspend fun cleanup(idsToKeep: Set<Long>)
 
 	@Transaction
+	open suspend fun upsertAllWithTags(mangas: Collection<Pair<MangaEntity, Iterable<TagEntity>>>) {
+		upsertAll(mangas.map { it.first }.distinctBy { it.id })
+		val mangaIds = mangas.map { it.first.id }.distinct()
+		if (mangaIds.isNotEmpty()) {
+			// Chunk by 999 to avoid SQLite parameter limit issues on older Android versions
+			mangaIds.chunked(999).forEach { chunk ->
+				clearTagRelations(chunk)
+			}
+		}
+		val allTags = mangas.flatMap { pair ->
+			pair.second.map { MangaTagsEntity(pair.first.id, it.id) }
+		}.distinctBy { it.mangaId to it.tagId }
+		if (allTags.isNotEmpty()) {
+			insertTagRelations(allTags)
+		}
+	}
+
 	open suspend fun upsert(manga: MangaEntity, tags: Iterable<TagEntity>? = null) {
 		upsert(manga)
 		if (tags != null) {
