@@ -68,6 +68,7 @@
 		android:layout_height="wrap_content"
 		android:layout_marginHorizontal="16dp"
 		android:text="@string/_continue"
+		android:tooltipText="@string/_continue"
 		android:visibility="gone"
 		app:icon="@drawable/ic_read"
 		app:layout_anchor="@id/bottomNav"
