@@ -63,6 +63,7 @@
 		android:src="@drawable/ic_delete"
 		android:tint="?colorError"
 		android:visibility="gone"
+		android:tooltipText="@string/uninstall"
 		tools:visibility="visible" />
 
 	<ImageView
