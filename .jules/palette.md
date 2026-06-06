@@ -1,0 +1,3 @@
+## 2024-05-24 - Accessibility: Tooltips on icon-only buttons
+**Learning:** Found that `FloatingActionButton` and `ImageButton` elements with `android:contentDescription` attributes were missing corresponding `android:tooltipText` attributes. While `contentDescription` is crucial for screen readers, `tooltipText` provides necessary visual feedback on long-press/hover for all users, improving overall discoverability and usability.
+**Action:** Always ensure that icon-only interactive elements like FABs and ImageButtons include both `android:contentDescription` and `android:tooltipText`. Often they can share the same string resource.
