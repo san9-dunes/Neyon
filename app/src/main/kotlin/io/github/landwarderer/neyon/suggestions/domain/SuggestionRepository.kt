@@ -14,6 +14,8 @@ import io.github.landwarderer.neyon.list.domain.ListFilterOption
 import org.koitharu.kotatsu.parsers.model.Manga
 import org.koitharu.kotatsu.parsers.model.MangaSource
 import org.koitharu.kotatsu.parsers.model.MangaTag
+import io.github.landwarderer.neyon.core.db.entity.MangaEntity
+import io.github.landwarderer.neyon.core.db.entity.TagEntity
 import io.github.landwarderer.neyon.suggestions.data.SuggestionEntity
 import io.github.landwarderer.neyon.suggestions.data.SuggestionWithManga
 import javax.inject.Inject
@@ -61,20 +63,37 @@ class SuggestionRepository @Inject constructor(
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
+
+			// Bolt Performance Optimization:
+			// Aggregating tags, mangas, and suggestion entities to perform bulk upserts
+			// instead of iterating through them individually.
+			// Impact: Solves the N+1 database transaction issue, reducing SQLite constraints and execution time.
+			val allTags = mutableListOf<TagEntity>()
+			val allMangas = mutableListOf<MangaEntity>()
+			val tagsMap = mutableMapOf<Long, Iterable<TagEntity>>()
+			val allSuggestionEntities = mutableListOf<SuggestionEntity>()
+
 			suggestions.forEach { suggestion ->
 				val manga = suggestion.manga
 				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
+
+				allTags.addAll(tags)
+				allMangas.add(manga.toEntity())
+				tagsMap[manga.id] = tags
+
+				allSuggestionEntities.add(
 					SuggestionEntity(
 						mangaId = manga.id,
 						relevance = suggestion.relevance,
 						reason = suggestion.reason,
 						createdAt = System.currentTimeMillis(),
-					),
+					)
 				)
 			}
+
+			db.getTagsDao().upsert(allTags.distinctBy { it.id })
+			db.getMangaDao().upsertAllWithTags(allMangas.distinctBy { it.id }, tagsMap)
+			db.getSuggestionDao().upsertAll(allSuggestionEntities)
 		}
 	}
 

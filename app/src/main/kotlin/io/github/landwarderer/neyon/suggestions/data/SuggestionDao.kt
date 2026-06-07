@@ -56,6 +56,11 @@ abstract class SuggestionDao : MangaQueryBuilder.ConditionCallback {
 	@Upsert
 	abstract suspend fun upsert(entity: SuggestionEntity)
 
+	// Bolt Performance Optimization:
+	// Bulk upsert to prevent N+1 transaction overhead during sync/replace operations.
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<SuggestionEntity>)
+
 	@Query("DELETE FROM suggestions")
 	abstract suspend fun deleteAll()
 
