@@ -211,13 +211,14 @@ class TrackingRepository @Inject constructor(
 		val dao = db.getTracksDao()
 		dao.gc()
 		val ids = dao.findAllIds().toMutableSet()
+		val newTracks = mutableListOf<TrackEntity>()
 		val size = ids.size
 		// history
 		if (AppSettings.TRACK_HISTORY in settings.trackSources) {
 			val historyIds = db.getHistoryDao().findAllIds()
 			for (mangaId in historyIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					newTracks.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
@@ -226,14 +227,21 @@ class TrackingRepository @Inject constructor(
 			val favoritesIds = db.getFavouritesDao().findIdsWithTrack()
 			for (mangaId in favoritesIds) {
 				if (!ids.remove(mangaId)) {
-					dao.upsert(TrackEntity.create(mangaId))
+					newTracks.add(TrackEntity.create(mangaId))
 				}
 			}
 		}
+		// Bolt Performance Optimization:
+		// Replaced iterative `dao.upsert(TrackEntity.create(mangaId))` with a bulk `upsertAll(newTracks)`.
+		// Impact: Reduces coroutine suspension overhead inside the transaction.
+		// apply inserts
+		dao.upsertAll(newTracks)
+
+		// Bolt Performance Optimization:
+		// Chunked delete to prevent `SQLiteException: too many SQL variables` on older Android versions
+		// (SQLite < 3.32.0 limits to 999).
 		// remove unused
-		for (mangaId in ids) {
-			dao.delete(mangaId)
-		}
+		ids.chunked(900).forEach { dao.deleteAll(it) }
 		size - ids.size
 	}
 
