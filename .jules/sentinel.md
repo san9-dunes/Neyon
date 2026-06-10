@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2024-05-24 - WebView Cross-Origin File Access Vulnerability
+**Vulnerability:** WebView instances configured with `javaScriptEnabled = true` lacked explicit `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` directives. On API levels below 30, this defaults to true, allowing malicious JavaScript loaded in a file:// context to access local files and cross-origin data.
+**Learning:** While `allowFileAccess = false` restricts direct file:// URL loading, older Android APIs still require explicit disallowance of cross-origin access from files to be safe. Because these properties are deprecated in newer SDKs, they are often mistakenly omitted in apps targeting older SDKs.
+**Prevention:** Always explicitly set `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` with `@Suppress("DEPRECATION")` when supporting `minSdk < 30` in applications configuring WebViews with JavaScript.
