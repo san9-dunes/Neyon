@@ -61,20 +61,32 @@ class SuggestionRepository @Inject constructor(
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
+			val allTags = mutableListOf<io.github.landwarderer.neyon.core.db.entity.TagEntity>()
+			val suggestionEntities = mutableListOf<SuggestionEntity>()
+
+			// 1. Collect and insert all tags first to avoid Foreign Key constraint violations
+			for (suggestion in suggestions) {
+				allTags.addAll(suggestion.manga.tags.toEntities())
+			}
+			db.getTagsDao().upsert(allTags.distinctBy { it.id })
+
+			// 2. Iterate again to insert manga (and tag relations) and collect suggestions
+			for (suggestion in suggestions) {
 				val manga = suggestion.manga
 				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
 				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
+				suggestionEntities.add(
 					SuggestionEntity(
 						mangaId = manga.id,
 						relevance = suggestion.relevance,
 						reason = suggestion.reason,
 						createdAt = System.currentTimeMillis(),
-					),
+					)
 				)
 			}
+
+			// 3. Bulk insert suggestions
+			db.getSuggestionDao().upsertAll(suggestionEntities)
 		}
 	}
 
