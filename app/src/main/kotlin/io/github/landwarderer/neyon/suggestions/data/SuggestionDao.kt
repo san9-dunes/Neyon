@@ -56,6 +56,9 @@ abstract class SuggestionDao : MangaQueryBuilder.ConditionCallback {
 	@Upsert
 	abstract suspend fun upsert(entity: SuggestionEntity)
 
+	@Upsert
+	abstract suspend fun upsertAll(entities: Collection<SuggestionEntity>)
+
 	@Query("DELETE FROM suggestions")
 	abstract suspend fun deleteAll()
 
