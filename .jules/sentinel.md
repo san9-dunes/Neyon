@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2025-02-21 - [WebView Local File Exfiltration Vulnerability]
+**Vulnerability:** The `WebView.configureForParser` function sets `javaScriptEnabled = true` but lacked explicit overrides for `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs`. On older API levels (Neyon supports `minSdk = 23`), this allows malicious scripts executed within the WebView context to read local files via the `file://` scheme.
+**Learning:** Even if modern APIs have secure defaults, supporting older SDKs requires explicitly disabling legacy vulnerabilities. Deprecation warnings on security settings should be suppressed, not ignored or removed, to maintain backwards compatibility.
+**Prevention:** Always pair `javaScriptEnabled = true` with explicit `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` when configuring WebViews, suppressing the deprecation warning for the sake of secure backward compatibility.
