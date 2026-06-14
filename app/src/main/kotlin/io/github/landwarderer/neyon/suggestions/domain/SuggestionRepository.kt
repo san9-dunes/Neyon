@@ -8,6 +8,8 @@ import io.github.landwarderer.neyon.core.db.entity.toEntity
 import io.github.landwarderer.neyon.core.db.entity.toManga
 import io.github.landwarderer.neyon.core.db.entity.toMangaTags
 import io.github.landwarderer.neyon.core.db.entity.toMangaTagsList
+import io.github.landwarderer.neyon.core.db.entity.MangaEntity
+import io.github.landwarderer.neyon.core.db.entity.TagEntity
 import io.github.landwarderer.neyon.core.model.toMangaSources
 import io.github.landwarderer.neyon.core.util.ext.mapItems
 import io.github.landwarderer.neyon.list.domain.ListFilterOption
@@ -59,22 +61,39 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+        val allTags = mutableListOf<TagEntity>()
+        val mangaEntities = mutableListOf<MangaEntity>()
+        val tagsMap = mutableMapOf<Long, List<TagEntity>>()
+        val suggestionEntities = mutableListOf<SuggestionEntity>()
+        val time = System.currentTimeMillis()
+
+        suggestions.forEach { suggestion ->
+            val manga = suggestion.manga
+            val tags = manga.tags.toEntities()
+
+            allTags.addAll(tags)
+            val mangaEntity = manga.toEntity()
+            mangaEntities.add(mangaEntity)
+            tagsMap[manga.id] = tags
+
+            suggestionEntities.add(
+                SuggestionEntity(
+                    mangaId = manga.id,
+                    relevance = suggestion.relevance,
+                    reason = suggestion.reason,
+                    createdAt = time,
+                )
+            )
+        }
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
-			}
+            // Bolt Performance Optimization:
+            // Replaced iterative DB inserts `.forEach { upsert(it) }` with bulk operations.
+            // Impact: Resolves N+1 query problem, drastically reducing SQLite transaction overhead during suggestion replacement.
+            db.getTagsDao().upsert(allTags.distinctBy { it.id })
+            db.getMangaDao().upsertAllWithTags(mangaEntities, tagsMap)
+            db.getSuggestionDao().upsertAll(suggestionEntities)
 		}
 	}
 
