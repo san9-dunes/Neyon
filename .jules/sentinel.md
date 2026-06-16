@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-01 - [Sentinel] Prevent local file exfiltration via WebView file URLs in parsers
+**Vulnerability:** While `allowFileAccess = false` was set for parsers' WebViews, `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` were not explicitly disabled. Given `javaScriptEnabled = true`, this creates a vulnerability on older API levels (the app supports `minSdk = 23`) where an attacker could execute JavaScript to read local files via the `file://` scheme.
+**Learning:** Even when `allowFileAccess` is disabled, the deprecated settings `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` must also be explicitly set to `false` when JavaScript is enabled, to comprehensively block file-based XSS and exfiltration on older Android versions.
+**Prevention:** Always ensure `allowFileAccessFromFileURLs = false` and `allowUniversalAccessFromFileURLs = false` are explicitly set (using `@Suppress("DEPRECATION")` for compatibility) when configuring WebViews with JavaScript enabled, to mitigate local file read vulnerabilities on earlier Android APIs.
