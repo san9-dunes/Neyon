@@ -1,0 +1,3 @@
+## 2024-05-18 - Added Tooltips to Reader Action Buttons
+**Learning:** Found that `layout_reader_actions.xml` contained several icon-only `MaterialButton` elements with `android:contentDescription` set but completely lacked `android:tooltipText`. Because these are primarily visual actions during reading, the lack of tooltips makes the icon-only buttons hard to understand for users who rely on visual hover/long-press feedback.
+**Action:** Always ensure that interactive elements like `MaterialButton` that are icon-only have an `android:tooltipText` attribute to provide a visual tooltip matching the `android:contentDescription` for better micro-UX and accessibility.
