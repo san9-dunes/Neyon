@@ -1,6 +1,7 @@
 package io.github.landwarderer.neyon.core.util.ext
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.ActivityManager
 import android.app.ActivityManager.MemoryInfo
@@ -207,6 +208,8 @@ fun Context.ensureRamAtLeast(requiredSize: Long) {
 	}
 }
 
+@Suppress("DEPRECATION")
+@SuppressLint("SetJavaScriptEnabled")
 fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	javaScriptEnabled = true
 	domStorageEnabled = true
@@ -217,6 +220,8 @@ fun WebView.configureForParser(userAgentOverride: String?) = with(settings) {
 	databaseEnabled = true
 	allowContentAccess = false
 	allowFileAccess = false
+	allowFileAccessFromFileURLs = false
+	allowUniversalAccessFromFileURLs = false
 	if (userAgentOverride != null) {
 		userAgentString = userAgentOverride
 	}
