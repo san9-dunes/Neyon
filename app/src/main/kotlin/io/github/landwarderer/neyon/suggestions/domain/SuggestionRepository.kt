@@ -59,22 +59,38 @@ class SuggestionRepository @Inject constructor(
 	}
 
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
+		val allTags = mutableListOf<io.github.landwarderer.neyon.core.db.entity.TagEntity>()
+		val allMangas = mutableListOf<io.github.landwarderer.neyon.core.db.entity.MangaEntity>()
+		val tagsMap = mutableMapOf<Long, List<io.github.landwarderer.neyon.core.db.entity.TagEntity>>()
+		val suggestionEntities = mutableListOf<SuggestionEntity>()
+		val currentTime = System.currentTimeMillis()
+
+		suggestions.forEach { suggestion ->
+			val manga = suggestion.manga
+			val tags = manga.tags.toEntities()
+
+			allTags.addAll(tags)
+			allMangas.add(manga.toEntity())
+			tagsMap[manga.id] = tags
+
+			suggestionEntities.add(
+				SuggestionEntity(
+					mangaId = manga.id,
+					relevance = suggestion.relevance,
+					reason = suggestion.reason,
+					createdAt = currentTime,
+				)
+			)
+		}
+
+		// Deduplicate tags by id before upserting
+		val uniqueTags = allTags.distinctBy { it.id }
+
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
-				)
-			}
+			db.getTagsDao().upsert(uniqueTags)
+			db.getMangaDao().upsertAllWithTags(allMangas, tagsMap)
+			db.getSuggestionDao().upsertAll(suggestionEntities)
 		}
 	}
 
