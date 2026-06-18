@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2024-05-24 - Explicitly disable file access from file URLs in WebView
+**Vulnerability:** WebView configured with javaScriptEnabled = true left allowFileAccessFromFileURLs and allowUniversalAccessFromFileURLs enabled by default on older Android versions, which allowed local file read via file:// scheme.
+**Learning:** When javaScriptEnabled is true, explicit checks for allowFileAccessFromFileURLs = false and allowUniversalAccessFromFileURLs = false are necessary to avoid data leakage on apps targeting minSdk 23.
+**Prevention:** Always explicitly set allowFileAccessFromFileURLs and allowUniversalAccessFromFileURLs to false when configuring WebViews, suppressing DEPRECATION warnings as needed for compatibility.
