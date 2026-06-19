@@ -48,6 +48,9 @@ abstract class MangaDao {
 	@Upsert
 	protected abstract suspend fun upsert(manga: MangaEntity)
 
+	@Upsert
+	protected abstract suspend fun upsertAll(mangas: Collection<MangaEntity>)
+
 	@Update(onConflict = OnConflictStrategy.IGNORE)
 	abstract suspend fun update(manga: MangaEntity): Int
 
@@ -73,6 +76,17 @@ abstract class MangaDao {
 		""",
 	)
 	abstract suspend fun cleanup(idsToKeep: Set<Long>)
+
+	@Transaction
+	open suspend fun upsertAllWithTags(mangas: Collection<MangaEntity>, tagsMap: Map<Long, Iterable<TagEntity>>) {
+		upsertAll(mangas)
+		val allRelationsToInsert = mutableListOf<MangaTagsEntity>()
+		for ((mangaId, tags) in tagsMap) {
+			clearTagRelation(mangaId)
+			allRelationsToInsert.addAll(tags.map { MangaTagsEntity(mangaId, it.id) })
+		}
+		insertTagRelations(allRelationsToInsert)
+	}
 
 	@Transaction
 	open suspend fun upsert(manga: MangaEntity, tags: Iterable<TagEntity>? = null) {
