@@ -210,6 +210,9 @@ abstract class FavouritesDao : MangaQueryBuilder.ConditionCallback {
 	@Upsert
 	abstract suspend fun upsert(entity: FavouriteEntity)
 
+	@Upsert
+	abstract suspend fun upsertAll(entities: Iterable<FavouriteEntity>)
+
 	@Transaction
 	@RawQuery(observedEntities = [FavouriteEntity::class])
 	protected abstract fun observeAllImpl(query: SupportSQLiteQuery): Flow<List<FavouriteManga>>
