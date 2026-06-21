@@ -51,13 +51,7 @@ constructor(
 			val oldFavourites = favoritesDao.findAllRaw(oldDetails.id)
 			if (oldFavourites.isNotEmpty()) {
 				favoritesDao.delete(oldManga.id)
-				for (f in oldFavourites) {
-					val e =
-						f.copy(
-							mangaId = newManga.id,
-						)
-					favoritesDao.upsert(e)
-				}
+				favoritesDao.upsertAll(oldFavourites.map { it.copy(mangaId = newManga.id) })
 			}
 			// replace history
 			val historyDao = database.getHistoryDao()
