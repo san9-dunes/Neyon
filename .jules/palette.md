@@ -1,0 +1,3 @@
+## 2024-05-19 - Adding Tooltips to Icon-Only Buttons
+**Learning:** In Android XML layouts using `<com.google.android.material.button.MaterialButton>` configured as icon-only buttons (`app:icon`), relying solely on `android:contentDescription` is insufficient for non-screen-reader users. While `minSdk` might be below API 26, the native `android:tooltipText` attribute should still be used alongside `android:contentDescription`. The Android system will safely ignore it on older APIs while providing visual hover support on API 26+.
+**Action:** When creating or updating icon-only buttons in Android layouts, always provide both `android:contentDescription` for screen readers and `android:tooltipText` (usually referencing the same string resource) for visual hover support.
