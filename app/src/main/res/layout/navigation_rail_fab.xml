@@ -25,6 +25,8 @@
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
 		android:text="@string/_continue"
+		android:contentDescription="@string/_continue"
+		android:tooltipText="@string/_continue"
 		app:icon="@drawable/ic_read" />
 
 </LinearLayout>
