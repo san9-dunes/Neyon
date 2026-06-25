@@ -8,7 +8,6 @@ import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.util.ext.call
-import io.github.landwarderer.neyon.core.util.HashUtils
 import org.koitharu.kotatsu.parsers.util.md5
 import javax.inject.Inject
 
@@ -37,12 +36,12 @@ class ProtectViewModel @Inject constructor(
 		job = launchLoadingJob {
 			val appPasswordHash = settings.appPassword ?: ""
 			val isUnlocked = if (appPasswordHash.startsWith("PBKDF2$")) {
-				HashUtils.verifyPassword(password, appPasswordHash)
+				io.github.landwarderer.neyon.core.util.HashUtils.verifyPassword(password, appPasswordHash)
 			} else {
 				val passwordHash = password.md5()
 				if (passwordHash == appPasswordHash) {
 					// Migrate to new hash
-					settings.appPassword = HashUtils.hashPassword(password)
+					settings.appPassword = io.github.landwarderer.neyon.core.util.HashUtils.hashPassword(password)
 					true
 				} else {
 					false
