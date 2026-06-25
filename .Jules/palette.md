@@ -1,0 +1,3 @@
+## 2026-04-24 - Add tooltipText to icon-only buttons
+**Learning:** Found a recurring pattern in the Android codebase where icon-only `MaterialButton`s, `FloatingActionButton`s, and `ImageButton`s frequently had `contentDescription` set for screen readers, but lacked `tooltipText`. This means mouse users or touch users performing long-presses missed out on helpful contextual text.
+**Action:** When adding or reviewing icon-only interactive elements in Android XML layouts, ensure both `android:contentDescription` (for a11y) and `android:tooltipText` (for micro-UX feedback) are consistently defined and matching.
