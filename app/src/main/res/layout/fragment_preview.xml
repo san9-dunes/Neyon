@@ -144,6 +144,7 @@
 			android:layout_height="0dp"
 			android:layout_marginEnd="16dp"
 			android:contentDescription="@string/details"
+			android:tooltipText="@string/details"
 			app:icon="@drawable/ic_expand"
 			app:layout_constraintBottom_toBottomOf="@id/button_read"
 			app:layout_constraintDimensionRatio="1"
