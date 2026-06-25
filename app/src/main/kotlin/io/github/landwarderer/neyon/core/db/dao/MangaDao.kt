@@ -48,6 +48,9 @@ abstract class MangaDao {
 	@Upsert
 	protected abstract suspend fun upsert(manga: MangaEntity)
 
+	@Upsert
+	abstract suspend fun upsert(mangas: Collection<MangaEntity>)
+
 	@Update(onConflict = OnConflictStrategy.IGNORE)
 	abstract suspend fun update(manga: MangaEntity): Int
 
@@ -56,6 +59,9 @@ abstract class MangaDao {
 
 	@Query("DELETE FROM manga_tags WHERE manga_id = :mangaId")
 	abstract suspend fun clearTagRelation(mangaId: Long)
+
+	@Query("DELETE FROM manga_tags WHERE manga_id IN (:mangaIds)")
+	abstract suspend fun clearTagRelations(mangaIds: Collection<Long>)
 
 	@Transaction
 	@Delete
