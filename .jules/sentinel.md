@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-05 - [Sentinel] Fix WebView file exfiltration vulnerability
+**Vulnerability:** The `WebView.configureForParser` method configured WebViews with `javaScriptEnabled = true` and `allowFileAccess = false`, but did not explicitly disable `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs`. Since the application supports API level 23 (`minSdk = 23`), failing to set these explicitly to `false` leaves older Android versions vulnerable to cross-origin data leaks and local file exfiltration if malicious JavaScript executes in a file scheme context.
+**Learning:** For backward compatibility on older Android versions, it is not enough to just set `allowFileAccess = false`. The properties `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` must also be strictly configured. Since these properties are deprecated on modern APIs (API 30+), they require the `@Suppress("DEPRECATION")` annotation to silence compiler warnings while ensuring the security configuration is universally applied.
+**Prevention:** Whenever configuring Android WebViews that enable JavaScript and support `minSdk < 30`, explicitly disable `allowFileAccessFromFileURLs` and `allowUniversalAccessFromFileURLs` in addition to `allowFileAccess`, and manage the compiler warning with `@Suppress("DEPRECATION")`.
