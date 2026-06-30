@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import io.github.landwarderer.neyon.core.exceptions.WrongPasswordException
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
+import io.github.landwarderer.neyon.core.util.HashUtils
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.util.ext.call
 import org.koitharu.kotatsu.parsers.util.md5
@@ -34,9 +35,19 @@ class ProtectViewModel @Inject constructor(
 			return
 		}
 		job = launchLoadingJob {
-			val passwordHash = password.md5()
-			val appPasswordHash = settings.appPassword
-			if (passwordHash == appPasswordHash) {
+			val appPasswordHash = settings.appPassword ?: ""
+			val isSuccess = if (appPasswordHash.startsWith("PBKDF2$")) {
+				HashUtils.verifyPassword(password, appPasswordHash)
+			} else {
+				val passwordHash = password.md5()
+				if (passwordHash == appPasswordHash) {
+					settings.appPassword = HashUtils.hashPassword(password)
+					true
+				} else {
+					false
+				}
+			}
+			if (isSuccess) {
 				unlock()
 			} else {
 				delay(PASSWORD_COMPARE_DELAY)
