@@ -16,3 +16,8 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+
+## 2025-03-01 - [Sentinel] Migrate App Password Hashing from MD5 to PBKDF2
+**Vulnerability:** The application lock password was previously hashed using MD5 (`password.md5()`), which is cryptographically broken and vulnerable to fast dictionary and brute-force attacks.
+**Learning:** Password hashes must use strong, iterative key derivation functions like PBKDF2, bcrypt, or Argon2. Even on older Android versions (`minSdk 23`), PBKDF2 is fully supported natively via `SecretKeyFactory`.
+**Prevention:** Never use MD5 or SHA-1 for passwords. Utilize `PBKDF2WithHmacSHA1` (or stronger where available) with a random salt and a high iteration count (e.g., 100,000 iterations). Implement automatic migration logic during the next successful login to transparently upgrade existing insecure hashes to the new format.
