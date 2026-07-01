@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2024-05-24 - Migrate Application Lock from MD5 to PBKDF2
+**Vulnerability:** The application lock password was previously stored using MD5, which is broken and vulnerable to brute-force and dictionary attacks.
+**Learning:** Upgrading hashing algorithms for existing user configurations requires a transparent migration strategy on successful login to prevent locking users out.
+**Prevention:** For sensitive passwords like application locks, use strong iterative key derivation functions like `PBKDF2WithHmacSHA1` instead of simple hash algorithms.
