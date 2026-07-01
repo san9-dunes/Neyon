@@ -55,6 +55,7 @@
         app:layout_anchor="@id/recyclerView"
         app:layout_anchorGravity="bottom|end"
         app:layout_behavior="io.github.landwarderer.neyon.core.ui.util.ShrinkOnScrollBehavior"
+        android:tooltipText="@string/pick_custom_directory"
         app:layout_dodgeInsetEdges="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

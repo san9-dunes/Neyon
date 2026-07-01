@@ -76,6 +76,7 @@
 		app:layout_dodgeInsetEdges="bottom"
 		app:layout_insetEdge="bottom"
 		tools:ignore="InconsistentLayout"
+        android:tooltipText="@string/_continue"
 		tools:visibility="visible" />
 
 	<io.github.landwarderer.neyon.core.ui.widgets.SlidingBottomNavigationView

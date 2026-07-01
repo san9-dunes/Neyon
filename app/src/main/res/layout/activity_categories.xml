@@ -64,6 +64,7 @@
 		app:layout_anchor="@id/recyclerView"
 		app:layout_anchorGravity="bottom|end"
 		app:layout_behavior="com.google.android.material.behavior.HideViewOnScrollBehavior"
+        android:tooltipText="@string/add_new_category"
 		app:layout_dodgeInsetEdges="bottom" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
