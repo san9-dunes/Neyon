@@ -11,6 +11,7 @@ import kotlinx.coroutines.plus
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
+import io.github.landwarderer.neyon.core.util.PasswordHash
 import io.github.landwarderer.neyon.core.util.ext.call
 import org.koitharu.kotatsu.parsers.util.isNumeric
 import org.koitharu.kotatsu.parsers.util.md5
@@ -39,7 +40,7 @@ class ProtectSetupViewModel @Inject constructor(
 			onClearText.call(Unit)
 		} else {
 			if (firstPassword.value == password) {
-				settings.appPassword = password.md5()
+				settings.appPassword = PasswordHash.hash(password)
 				settings.isAppPasswordNumeric = password.isNumeric()
 				onPasswordSet.call(Unit)
 			} else {

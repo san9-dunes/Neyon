@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2024-07-05 - [CRITICAL] Replace weak MD5 password hashing with PBKDF2
+**Vulnerability:** The application used MD5 without salt to hash the user's app lock password in `ProtectSetupViewModel.kt`. This is vulnerable to dictionary and rainbow table attacks.
+**Learning:** Secure key derivation functions should always be used for passwords. Transparent legacy migration ensures existing users are seamlessly upgraded without lockouts when upgrading the hashing algorithm.
+**Prevention:** Always use modern, iterative algorithms like `PBKDF2WithHmacSHA1`, `Bcrypt`, or `Argon2` with randomly generated salts for password storage.

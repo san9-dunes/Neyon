@@ -6,6 +6,7 @@ import kotlinx.coroutines.delay
 import io.github.landwarderer.neyon.core.exceptions.WrongPasswordException
 import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
+import io.github.landwarderer.neyon.core.util.PasswordHash
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.util.ext.call
 import org.koitharu.kotatsu.parsers.util.md5
@@ -34,9 +35,20 @@ class ProtectViewModel @Inject constructor(
 			return
 		}
 		job = launchLoadingJob {
-			val passwordHash = password.md5()
 			val appPasswordHash = settings.appPassword
-			if (passwordHash == appPasswordHash) {
+
+			val isValid = if (appPasswordHash?.contains(":") == true) {
+				PasswordHash.verify(password, appPasswordHash)
+			} else {
+				// Legacy MD5 fallback and migration
+				val isValidMd5 = password.md5() == appPasswordHash
+				if (isValidMd5) {
+					settings.appPassword = PasswordHash.hash(password)
+				}
+				isValidMd5
+			}
+
+			if (isValid) {
 				unlock()
 			} else {
 				delay(PASSWORD_COMPARE_DELAY)
