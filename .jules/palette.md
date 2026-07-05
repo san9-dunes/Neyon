@@ -1,0 +1,3 @@
+## 2025-02-20 - Adding Tooltips to Icon-Only Reader Actions
+**Learning:** The reader actions bottom menu relied heavily on icon-only buttons for primary reader actions (e.g., orientation, pages, bookmark). While they correctly had `android:contentDescription` for screen readers, they lacked `android:tooltipText`, leaving mouse/stylus users and those who long-press without visual hover feedback regarding the icon's function.
+**Action:** Always replicate the `android:contentDescription` string resource into the `android:tooltipText` attribute for all icon-only interactive elements (`MaterialButton`, `IconButton`, etc.) across the application to ensure visual accessibility parity with screen reader accessibility.
