@@ -74,6 +74,22 @@ abstract class MangaDao {
 	)
 	abstract suspend fun cleanup(idsToKeep: Set<Long>)
 
+	@Upsert
+	abstract suspend fun upsertAll(mangas: Collection<MangaEntity>)
+
+	@Transaction
+	open suspend fun upsertAllWithTags(mangas: Collection<MangaEntity>, tagsMap: List<Pair<Long, Collection<TagEntity>>>) {
+		upsertAll(mangas)
+		val tagsRelations = mutableListOf<MangaTagsEntity>()
+		for ((mangaId, tags) in tagsMap) {
+			clearTagRelation(mangaId)
+			tagsRelations.addAll(tags.map { MangaTagsEntity(mangaId, it.id) })
+		}
+		if (tagsRelations.isNotEmpty()) {
+			insertTagRelations(tagsRelations)
+		}
+	}
+
 	@Transaction
 	open suspend fun upsert(manga: MangaEntity, tags: Iterable<TagEntity>? = null) {
 		upsert(manga)
