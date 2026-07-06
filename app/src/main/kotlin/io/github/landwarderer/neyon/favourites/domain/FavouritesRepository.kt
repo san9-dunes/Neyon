@@ -238,21 +238,24 @@ class FavouritesRepository @Inject constructor(
 	}
 
 	suspend fun addToCategory(categoryId: Long, mangas: Collection<Manga>) {
+		if (mangas.isEmpty()) return
 		db.withTransaction {
-			for (manga in mangas) {
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				val entity = FavouriteEntity(
+			val allTags = mangas.flatMap { it.tags.toEntities() }.distinctBy { it.id }
+			db.getTagsDao().upsert(allTags)
+			val mangaEntities = mangas.map { it.toEntity() }
+			db.getMangaDao().upsertAllWithTags(mangaEntities, mangas.map { it.id to it.tags.toEntities() })
+			val time = System.currentTimeMillis()
+			val favEntities = mangas.map { manga ->
+				FavouriteEntity(
 					mangaId = manga.id,
 					categoryId = categoryId,
-					createdAt = System.currentTimeMillis(),
+					createdAt = time,
 					sortKey = 0,
 					deletedAt = 0L,
 					isPinned = false,
 				)
-				db.getFavouritesDao().insert(entity)
 			}
+			db.getFavouritesDao().insertAll(favEntities)
 		}
 	}
 
