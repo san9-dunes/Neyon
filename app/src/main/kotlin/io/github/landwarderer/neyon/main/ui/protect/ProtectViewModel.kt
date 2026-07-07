@@ -8,6 +8,7 @@ import io.github.landwarderer.neyon.core.prefs.AppSettings
 import io.github.landwarderer.neyon.core.ui.BaseViewModel
 import io.github.landwarderer.neyon.core.util.ext.MutableEventFlow
 import io.github.landwarderer.neyon.core.util.ext.call
+import io.github.landwarderer.neyon.core.util.PasswordHash
 import org.koitharu.kotatsu.parsers.util.md5
 import javax.inject.Inject
 
@@ -34,9 +35,20 @@ class ProtectViewModel @Inject constructor(
 			return
 		}
 		job = launchLoadingJob {
-			val passwordHash = password.md5()
 			val appPasswordHash = settings.appPassword
-			if (passwordHash == appPasswordHash) {
+			val isLegacyMd5 = appPasswordHash != null && !appPasswordHash.contains(":")
+
+			val isValid = if (isLegacyMd5) {
+				val legacyHash = password.md5()
+				if (legacyHash == appPasswordHash) {
+					settings.appPassword = PasswordHash.hash(password)
+					true
+				} else false
+			} else {
+				appPasswordHash != null && PasswordHash.verify(password, appPasswordHash)
+			}
+
+			if (isValid) {
 				unlock()
 			} else {
 				delay(PASSWORD_COMPARE_DELAY)
