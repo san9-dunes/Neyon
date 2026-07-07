@@ -16,3 +16,7 @@
 2) Restrict `<base-config>` trust anchors strictly to `<certificates src="system" />`.
 3) Confine `<certificates src="user" />` explicitly to `<debug-overrides>` so they only operate during local development.
 4) If specific domains genuinely require cleartext connections (e.g. `neverssl.com`), whitelist them selectively via `<domain-config cleartextTrafficPermitted="true">`.
+## 2024-07-07 - [App Lock Password Hashing]
+**Vulnerability:** Application lock passwords were intentionally hashed using MD5.
+**Learning:** Using weak hash functions like MD5 for any sensitive data, especially local protection mechanisms, leaves it vulnerable to dictionary and brute force attacks. Even local secrets require strong hashing.
+**Prevention:** Use strong key derivation functions such as PBKDF2 (e.g. `PBKDF2WithHmacSHA1`) along with a random salt for hashing all user passwords or passcodes. Provide a seamless legacy upgrade path where possible upon successful login.
