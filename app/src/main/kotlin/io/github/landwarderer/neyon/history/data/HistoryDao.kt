@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RawQuery
 import androidx.room.Transaction
+import androidx.room.Upsert
 import androidx.sqlite.db.SupportSQLiteQuery
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.flow.Flow
@@ -166,21 +167,26 @@ abstract class HistoryDao : MangaQueryBuilder.ConditionCallback {
 		updatedAt = entity.updatedAt,
 	)
 
+	@Upsert
+	protected abstract suspend fun roomUpsert(entity: HistoryEntity): Long
+
+	@Upsert
+	protected abstract suspend fun roomUpsert(entities: Iterable<HistoryEntity>)
+
 	@Transaction
 	open suspend fun upsert(entity: HistoryEntity): Boolean {
-		return if (update(entity) == 0) {
-			insert(entity)
-			true
-		} else false
+		// Bolt Performance Optimization:
+		// Delegate to Room's native @Upsert to handle insertion/updating efficiently.
+		// A return value of -1L indicates an update occurred, while a positive ID indicates an insert.
+		return roomUpsert(entity) != -1L
 	}
 
 	@Transaction
 	open suspend fun upsert(entities: Iterable<HistoryEntity>) {
-		for (e in entities) {
-			if (update(e) == 0) {
-				insert(e)
-			}
-		}
+		// Bolt Performance Optimization:
+		// Replaced iterative update/insert loop with a single bulk @Upsert operation.
+		// Impact: Resolves N+1 query problem, drastically reducing SQLite transaction overhead during bulk upserts.
+		roomUpsert(entities)
 	}
 
 	@Query("UPDATE history SET deleted_at = :deletedAt WHERE manga_id = :mangaId")
