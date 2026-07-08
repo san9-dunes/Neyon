@@ -61,19 +61,33 @@ class SuggestionRepository @Inject constructor(
 	suspend fun replace(suggestions: Iterable<MangaSuggestion>) {
 		db.withTransaction {
 			db.getSuggestionDao().deleteAll()
-			suggestions.forEach { suggestion ->
-				val manga = suggestion.manga
-				val tags = manga.tags.toEntities()
-				db.getTagsDao().upsert(tags)
-				db.getMangaDao().upsert(manga.toEntity(), tags)
-				db.getSuggestionDao().upsert(
-					SuggestionEntity(
-						mangaId = manga.id,
-						relevance = suggestion.relevance,
-						reason = suggestion.reason,
-						createdAt = System.currentTimeMillis(),
-					),
+
+			// Bolt Performance Optimization:
+			// Replaced iterative DB inserts with bulk operations to fix an N+1 query problem.
+			// Impact: Dramatically reduces SQLite transaction overhead when updating suggestions.
+
+			val allTags = suggestions.flatMap { it.manga.tags.toEntities() }.distinctBy { it.id }
+			if (allTags.isNotEmpty()) {
+				db.getTagsDao().upsert(allTags)
+			}
+
+			val mangaWithTags = suggestions.map { suggestion ->
+				Pair(suggestion.manga.toEntity(), suggestion.manga.tags.toEntities())
+			}
+			if (mangaWithTags.isNotEmpty()) {
+				db.getMangaDao().upsertAllWithTags(mangaWithTags)
+			}
+
+			val suggestionEntities = suggestions.map { suggestion ->
+				SuggestionEntity(
+					mangaId = suggestion.manga.id,
+					relevance = suggestion.relevance,
+					reason = suggestion.reason,
+					createdAt = System.currentTimeMillis(),
 				)
+			}
+			if (suggestionEntities.isNotEmpty()) {
+				db.getSuggestionDao().upsertAll(suggestionEntities)
 			}
 		}
 	}
